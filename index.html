@@ -231,8 +231,8 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-he
     <div class="llogo"><div class="llogo-badge">🏛️</div></div>
     <div class="ltitle" style="text-align:center;margin-bottom:4px;">LegisGov</div>
     <div class="lsub">Câmara Municipal · Processo Legislativo Digital</div>
-    <label class="llbl">E-mail</label>
-    <input class="linp" id="lemail" type="email" placeholder="seu.nome@camara.gov.br">
+    <label class="llbl">CPF</label>
+    <input class="linp" id="lcpf" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
     <label class="llbl">Senha</label>
     <input class="linp" id="lsenha" type="password" placeholder="••••••••">
     <button class="lbtn" onclick="doLogin()">ENTRAR NO SISTEMA</button>
@@ -635,7 +635,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-he
       <option value="Administrador">Administrador</option>
     </select>
     <div class="fg"><div><label class="m-lbl">Partido</label><input class="m-inp" id="vPartido" placeholder="Sigla (se Vereador)"></div><div><label class="m-lbl">CPF</label><input class="m-inp" id="vCpf" placeholder="000.000.000-00"></div></div>
-    <label class="m-lbl">E-mail de acesso</label><input class="m-inp" id="vEmail" type="email" placeholder="nome@camara.gov.br">
+    <label class="m-lbl">CPF de acesso</label><input class="m-inp" id="vCpfLogin" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
     <label class="m-lbl">Senha provisória</label><input class="m-inp" id="vSenha" type="text" placeholder="Mínimo 6 caracteres">
     <div style="font-size:11px;color:var(--tx3);margin:-6px 0 12px;">Combine essa senha com a pessoa por fora do sistema — ela pode trocar depois.</div>
     <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR E CRIAR LOGIN</button>
@@ -829,7 +829,20 @@ const db = {
   },
 };
 
-// ═══ LOGIN REAL — e-mail/senha definem automaticamente a Câmara e o cargo ═══
+// ═══ LOGIN REAL — CPF/senha definem automaticamente a Câmara e o cargo ═══
+function mascaraCpf(input){
+  let v=input.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>9)v=v.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/,'$1.$2.$3-$4');
+  else if(v.length>6)v=v.replace(/^(\d{3})(\d{3})(\d{1,3})$/,'$1.$2.$3');
+  else if(v.length>3)v=v.replace(/^(\d{3})(\d{1,3})$/,'$1.$2');
+  input.value=v;
+}
+function cpfParaEmailTecnico(cpfDigitado){
+  // CPF não é um e-mail de verdade, mas o Supabase Auth exige um campo "email" tecnicamente.
+  // Convertemos o CPF (só números) num endereço técnico interno que nunca aparece para o usuário.
+  const apenasNumeros=cpfDigitado.replace(/\D/g,'');
+  return `${apenasNumeros}@legisgov.interno`;
+}
 function mostrarErroLogin(msg){
   const el=document.getElementById('loginErro');
   el.textContent=msg;
@@ -841,13 +854,16 @@ function esconderErroLogin(){
 
 async function doLogin(){
   esconderErroLogin();
-  const email=document.getElementById('lemail').value.trim();
+  const cpf=document.getElementById('lcpf').value.trim();
   const senha=document.getElementById('lsenha').value;
-  if(!email||!senha){mostrarErroLogin('⚠️ Preencha e-mail e senha.');return;}
+  const apenasNumeros=cpf.replace(/\D/g,'');
+  if(apenasNumeros.length!==11||!senha){mostrarErroLogin('⚠️ Preencha um CPF válido (11 dígitos) e a senha.');return;}
+
+  const emailTecnico=cpfParaEmailTecnico(cpf);
 
   try{
     // 1) autentica no Supabase Auth — senha sempre criptografada, nunca lida em texto puro
-    const sessao=await auth.login(email,senha);
+    const sessao=await auth.login(emailTecnico,senha);
     sessaoAuth={access_token:sessao.access_token,refresh_token:sessao.refresh_token};
 
     // 2) busca o perfil do usuário — é ELE quem diz a qual Câmara a pessoa pertence e seu cargo
@@ -1074,12 +1090,13 @@ function abrirDetVereador(id){
 async function salvarVereador(){
   const nome=document.getElementById('vNome').value.trim();
   const cargo=document.getElementById('vCargo').value;
-  const email=document.getElementById('vEmail').value.trim();
+  const cpfLogin=document.getElementById('vCpfLogin').value.trim();
   const senha=document.getElementById('vSenha').value;
   const partido=document.getElementById('vPartido').value||'—';
+  const apenasNumeros=cpfLogin.replace(/\D/g,'');
 
   if(!nome){toast('⚠️ Informe o nome');return;}
-  if(!email||!senha){toast('⚠️ Informe e-mail e senha de acesso');return;}
+  if(apenasNumeros.length!==11||!senha){toast('⚠️ Informe um CPF válido (11 dígitos) e a senha de acesso');return;}
   if(senha.length<6){toast('⚠️ A senha precisa ter pelo menos 6 caracteres');return;}
 
   if(!supabaseOnline){
@@ -1087,9 +1104,11 @@ async function salvarVereador(){
     return;
   }
 
+  const emailTecnico=cpfParaEmailTecnico(cpfLogin);
+
   try{
-    // 1) cria o login real no Supabase Auth (senha sempre criptografada)
-    const novoUsuario=await auth.cadastrar(email,senha);
+    // 1) cria o login real no Supabase Auth (senha sempre criptografada, identificado internamente pelo CPF)
+    const novoUsuario=await auth.cadastrar(emailTecnico,senha);
     const novoUserId=novoUsuario.user?.id || novoUsuario.id;
     if(!novoUserId)throw new Error('Não foi possível obter o ID do novo usuário');
 
