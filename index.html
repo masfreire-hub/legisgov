@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LegisGov — Sistema Legislativo Inteligente</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --sb-w:225px; --tb-h:56px;
+  --navy:#0F2A4A; --navy2:#1E4470; --navy3:#5B89C2; --navy-l:#EFF4FA;
+  --gold:#B8860B; --gold2:#D4A017; --gold-l:#FEF9E7;
+  --emerald:#0E7C5A; --emerald2:#10A573; --emerald-l:#E8F8F2;
+  --red:#B91C1C; --red2:#DC2626; --red-l:#FEF2F2;
+  --purple:#5B21B6; --purple2:#7C3AED; --purple-l:#F3EEFC;
+  --bg:#F6F8FB; --surface:#fff; --surface2:#F1F5F9; --surface3:#E9EEF5;
+  --border:#E2E8F0; --border2:#CBD5E1;
+  --tx:#0F1B2D; --tx2:#3D4D63; --tx3:#64748B; --tx4:#94A3B8;
+  --sb-bg:#081B30; --sb-bg2:#0F2A4A;
+  --sb-text:rgba(255,255,255,.55); --sb-act:#fff;
+  --sb-hover:rgba(255,255,255,.07); --sb-active:rgba(184,134,11,.22);
+  --r:12px; --rs:8px; --rl:16px;
+  --sh1:0 1px 3px rgba(8,27,48,.07); --sh2:0 4px 14px rgba(8,27,48,.1); --sh3:0 12px 32px rgba(8,27,48,.16);
+  --ease:cubic-bezier(.4,0,.2,1); --dur:.18s;
+}
+*{scrollbar-width:thin;scrollbar-color:#C7D2DE transparent;}
+*::-webkit-scrollbar{width:4px;height:4px;}
+*::-webkit-scrollbar-thumb{background:#C7D2DE;border-radius:4px;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse2{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}70%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
+@keyframes liveDot{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes sweep{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#081B30 0%,#0F2A4A 50%,#081B30 100%);}
+#loginScreen::before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(212,160,23,.16) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 85% 80%,rgba(16,165,115,.1) 0%,transparent 60%);}
+#loginScreen.hidden{display:none!important;}
+.lcard{width:100%;max-width:380px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:32px;backdrop-filter:blur(20px);position:relative;z-index:1;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.llogo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;}
+.llogo-badge{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--navy2),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:24px;}
+.ltitle{font-size:22px;font-weight:900;color:#fff;letter-spacing:.5px;}
+.lsub{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:2px;font-weight:700;text-transform:uppercase;text-align:center;margin-bottom:28px;}
+.llbl{display:block;font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.linp{display:block;width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;color:#fff;font-family:inherit;font-size:14px;font-weight:500;outline:none;margin-bottom:14px;transition:all var(--dur) var(--ease);}
+.linp:focus{border-color:rgba(212,160,23,.7);background:rgba(255,255,255,.1);box-shadow:0 0 0 3px rgba(212,160,23,.2);}
+.linp::placeholder{color:rgba(255,255,255,.25);}
+.lbtn{width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--navy2),#2A5491);color:#fff;font-family:inherit;font-size:14px;font-weight:800;letter-spacing:.5px;cursor:pointer;transition:all .2s var(--ease);box-shadow:0 4px 15px rgba(30,68,112,.4);}
+.lbtn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(30,68,112,.5);}
+.ldemo{font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:16px;}
+.ldemo span{color:rgba(212,160,23,.85);cursor:pointer;}
+.ldemo span:hover{color:var(--gold2);}
+
+/* APP */
+#mainApp{display:none;min-height:100dvh;}
+#mainApp.on{display:block;}
+
+/* TOPBAR */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--tb-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px 0 0;gap:0;box-shadow:var(--sh1);}
+.tb-logo{width:var(--sb-w);flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 16px;}
+.tb-logo-badge{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--navy2),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.tb-logo-text{font-size:13px;font-weight:800;color:var(--tx);letter-spacing:.3px;}
+.tb-mid{flex:1;display:flex;align-items:center;gap:12px;padding:0 16px;}
+.tb-page{font-size:15px;font-weight:800;color:var(--tx);}
+.tb-right{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.tb-badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;background:var(--navy-l);color:var(--navy2);}
+.tb-badge.live{background:var(--red-l);color:var(--red);display:flex;align-items:center;gap:5px;}
+.tb-live-dot{width:6px;height:6px;border-radius:50%;background:var(--red2);animation:liveDot 1.2s infinite;}
+.tb-btn{width:34px;height:34px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--dur);color:var(--tx2);position:relative;}
+.tb-btn:hover{background:var(--navy-l);border-color:var(--navy3);color:var(--navy2);}
+.tb-notif-dot{position:absolute;top:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:var(--red2);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface);animation:pulse2 2s infinite;}
+.tb-av{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--navy2),#2A5491);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
+/* SIDEBAR */
+#sidebar{position:fixed;top:var(--tb-h);left:0;bottom:0;width:var(--sb-w);background:var(--sb-bg);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;padding:14px 0 20px;z-index:90;}
+.sb-section{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.2);padding:12px 16px 5px;}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 16px;margin:1px 8px;border-radius:9px;cursor:pointer;transition:all var(--dur) var(--ease);color:var(--sb-text);font-size:12.5px;font-weight:600;position:relative;}
+.ni:hover{background:var(--sb-hover);color:rgba(255,255,255,.8);}
+.ni.on{background:var(--sb-active);color:var(--sb-act);}
+.ni.on::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;border-radius:0 2px 2px 0;background:var(--gold2);box-shadow:0 0 8px rgba(212,160,23,.5);}
+.ni-ico{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;}
+.ni-lb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ni-badge{margin-left:auto;background:var(--red2);color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;flex-shrink:0;}
+.ni-badge.gold{background:var(--gold2);}
+.sb-spacer{flex:1;}
+
+/* CONTENT */
+.content{margin-left:var(--sb-w);padding-top:var(--tb-h);min-height:100dvh;}
+.page{display:none;padding:24px;animation:fadeUp .22s var(--ease) both;}
+.page.on{display:block;}
+.ph{margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.ph-title{font-size:22px;font-weight:900;color:var(--tx);letter-spacing:-.3px;margin-bottom:3px;}
+.ph-sub{font-size:13px;color:var(--tx3);font-weight:500;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh1);transition:box-shadow .2s;}
+.card:hover{box-shadow:var(--sh2);}
+.card-title{font-size:13px;font-weight:800;color:var(--tx);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.g4{grid-template-columns:1fr 1fr;}.g3{grid-template-columns:1fr 1fr;}}
+
+/* KPI */
+.kpi{border-radius:var(--rl);padding:18px 20px;cursor:pointer;position:relative;overflow:hidden;transition:all .2s var(--ease);box-shadow:0 4px 16px rgba(8,27,48,.1);}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(8,27,48,.18);}
+.kpi::after{content:'';position:absolute;top:-15px;right:-15px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08);}
+.kpi-ico{font-size:20px;margin-bottom:10px;}
+.kpi-val{font-size:28px;font-weight:900;color:#fff;line-height:1;margin-bottom:3px;}
+.kpi-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.kpi-sub{font-size:11px;color:rgba(255,255,255,.6);}
+.kc-navy{background:linear-gradient(135deg,#0F2A4A,#2A5491);}
+.kc-gold{background:linear-gradient(135deg,#92660A,#D4A017);}
+.kc-emerald{background:linear-gradient(135deg,#0E7C5A,#10A573);}
+.kc-red{background:linear-gradient(135deg,#991B1B,#DC2626);}
+.kc-purple{background:linear-gradient(135deg,#4C1D95,#7C3AED);}
+
+/* BADGE */
+.b{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
+.b-navy{background:var(--navy-l);color:var(--navy2);}
+.b-emerald{background:var(--emerald-l);color:var(--emerald);}
+.b-gold{background:var(--gold-l);color:#92660A;}
+.b-red{background:var(--red-l);color:var(--red);}
+.b-purple{background:var(--purple-l);color:var(--purple);}
+.b-gray{background:#F1F5F9;color:#64748B;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{background:var(--surface2);padding:9px 14px;text-align:left;font-size:10px;font-weight:800;color:var(--navy2);text-transform:uppercase;letter-spacing:.7px;border-bottom:2px solid var(--border);}
+.tbl td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--tx2);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--surface2);}
+
+/* PROGRESS */
+.pb{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.pb-fill{height:100%;border-radius:3px;transition:width .5s var(--ease);}
+
+/* AVATAR */
+.av{border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;z-index:500;background:rgba(8,27,48,.5);align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+.ov.on{display:flex;}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:20px 20px 32px;animation:fadeUp .25s var(--ease);}
+@media(min-width:600px){.ov{align-items:center;}.modal{border-radius:20px;max-height:88vh;}}
+.m-title{font-size:17px;font-weight:800;color:var(--tx);margin-bottom:16px;}
+.m-lbl{font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:block;}
+.m-inp{display:block;width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-family:inherit;font-size:13px;color:var(--tx);outline:none;margin-bottom:12px;}
+.m-inp:focus{border-color:var(--navy3);}
+.m-sel{display:block;width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-family:inherit;font-size:13px;color:var(--tx);outline:none;margin-bottom:12px;}
+.m-ta{display:block;width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-family:inherit;font-size:13px;color:var(--tx);outline:none;resize:vertical;min-height:80px;margin-bottom:12px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.btn-p{width:100%;padding:12px;border:none;border-radius:var(--rs);background:linear-gradient(135deg,var(--navy2),#2A5491);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;margin-top:4px;}
+.btn-c{width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--tx2);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;}
+.btn-sm{padding:7px 14px;border-radius:var(--rs);border:none;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#081B30;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap;max-width:90vw;}
+#toast.on{opacity:1;}
+
+/* DETAIL PANEL */
+#detPanel{position:fixed;right:0;top:var(--tb-h);bottom:0;width:460px;background:var(--surface);border-left:1px solid var(--border);z-index:200;transform:translateX(100%);transition:transform .25s var(--ease);display:flex;flex-direction:column;box-shadow:var(--sh3);}
+#detPanel.on{transform:translateX(0);}
+.det-hdr{padding:16px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.det-close{width:30px;height:30px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:auto;font-size:16px;color:var(--tx3);}
+.det-body{flex:1;overflow-y:auto;padding:16px;}
+.det-sec{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 7px;}
+
+/* TIMELINE */
+.tl-item{display:flex;gap:12px;padding-bottom:18px;position:relative;}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:13px;top:30px;bottom:0;width:2px;background:var(--border);}
+.tl-dot{width:28px;height:28px;border-radius:50%;background:var(--navy-l);color:var(--navy2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;z-index:1;}
+.tl-dot.done{background:var(--emerald-l);color:var(--emerald);}
+.tl-dot.current{background:var(--gold-l);color:#92660A;}
+.tl-content{flex:1;padding-top:2px;}
+.tl-title{font-size:12.5px;font-weight:700;color:var(--tx);}
+.tl-meta{font-size:10.5px;color:var(--tx3);margin-top:2px;}
+
+/* VOTE PANEL */
+.vote-btn{flex:1;padding:18px;border-radius:12px;border:2px solid;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.vote-btn.sim{border-color:#A7E5CC;background:var(--emerald-l);color:var(--emerald);}
+.vote-btn.sim:hover,.vote-btn.sim.active{background:var(--emerald);color:#fff;}
+.vote-btn.nao{border-color:#F5B7B1;background:var(--red-l);color:var(--red);}
+.vote-btn.nao:hover,.vote-btn.nao.active{background:var(--red);color:#fff;}
+.vote-btn.abs{border-color:var(--border2);background:var(--surface2);color:var(--tx3);}
+.vote-btn.abs:hover,.vote-btn.abs.active{background:var(--tx3);color:#fff;}
+
+/* QUORUM RING */
+.quorum-ring{position:relative;width:140px;height:140px;margin:0 auto;}
+.quorum-ring svg{width:100%;height:100%;transform:rotate(-90deg);}
+.quorum-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+/* CHAT */
+.chat-bubble{max-width:80%;padding:10px 12px;border-radius:14px;font-size:12.5px;line-height:1.6;}
+.chat-ia{background:var(--surface2);color:var(--tx2);border:1px solid var(--border);border-radius:4px 14px 14px 14px;}
+.chat-user{background:linear-gradient(135deg,var(--navy2),#2A5491);color:#fff;border-radius:14px 4px 14px 14px;margin-left:auto;}
+
+/* LOADING */
+#loadScreen{position:fixed;inset:0;z-index:9998;background:var(--sb-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+#loadScreen.hidden{display:none;}
+.load-logo{font-size:40px;margin-bottom:8px;}
+.load-title{font-size:18px;font-weight:800;color:#fff;letter-spacing:2px;}
+.load-sub{font-size:12px;color:rgba(255,255,255,.4);letter-spacing:1px;}
+.load-bar{width:200px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;margin-top:8px;}
+.load-fill{height:100%;background:var(--gold2);border-radius:2px;transition:width .3s;}
+
+/* MOBILE */
+@media(max-width:880px){
+  :root{--sb-w:0px;}
+  #sidebar{transform:translateX(-100%);transition:transform .25s var(--ease);width:250px;z-index:300;}
+  #sidebar.on{transform:translateX(0);}
+  .content{margin-left:0;}
+  .tb-logo{width:auto;}
+  #detPanel{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div id="loadScreen">
+  <div class="load-logo">🏛️</div>
+  <div class="load-title">LEGISGOV</div>
+  <div class="load-sub">SISTEMA LEGISLATIVO INTELIGENTE</div>
+  <div class="load-bar"><div class="load-fill" id="loadFill" style="width:0%"></div></div>
+</div>
+
+<div id="loginScreen">
+  <div class="lcard">
+    <div class="llogo"><div class="llogo-badge">🏛️</div></div>
+    <div class="ltitle" style="text-align:center;margin-bottom:4px;">LegisGov</div>
+    <div class="lsub">Câmara Municipal · Processo Legislativo Digital</div>
+    <label class="llbl">E-mail Institucional</label>
+    <input class="linp" id="lemail" type="email" placeholder="vereador@camara.gov.br" value="presidente@camara.gov.br">
+    <label class="llbl">Senha</label>
+    <input class="linp" id="lsenha" type="password" placeholder="••••••••" value="123456">
+    <button class="lbtn" onclick="doLogin()">ENTRAR NO SISTEMA</button>
+    <div class="ldemo">Acesso demo: <span onclick="loginDemo('presidente')">🏛️ Presidente</span> · <span onclick="loginDemo('vereador')">👤 Vereador</span> · <span onclick="loginDemo('secretaria')">📋 Secretaria</span></div>
+  </div>
+</div>
+
+<div id="mainApp">
+
+  <div class="topbar">
+    <div class="tb-logo">
+      <span style="display:none;cursor:pointer;font-size:20px;" id="hamburger" onclick="toggleSidebar()">☰</span>
+      <div class="tb-logo-badge">🏛️</div>
+      <div class="tb-logo-text">LEGISGOV</div>
+    </div>
+    <div class="tb-mid">
+      <div class="tb-page" id="tbPage">Dashboard</div>
+      <span class="tb-badge" id="tbCamara">Câmara Municipal · 19ª Legislatura</span>
+      <span class="tb-badge live" id="tbLive" style="display:none;"><span class="tb-live-dot"></span> AO VIVO</span>
+    </div>
+    <div class="tb-right">
+      <div class="tb-btn" onclick="sw('sessao')" title="Sessão Plenária">🏛️</div>
+      <div class="tb-btn" onclick="toast('🔔 3 alertas: 1 prazo vencendo, 2 pareceres pendentes')" title="Alertas">
+        🔔<div class="tb-notif-dot">3</div>
+      </div>
+      <div class="tb-btn" onclick="sw('assistente')" title="Assistente IA">🤖</div>
+      <div class="tb-av" id="userAv" onclick="logout()">PR</div>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <div class="sb-section">PRINCIPAL</div>
+    <div class="ni on" onclick="sw('dash',this)" id="ni-dash"><span class="ni-ico">📊</span><span class="ni-lb">Dashboard</span></div>
+    <div class="ni" onclick="sw('vereadores',this)" id="ni-vereadores"><span class="ni-ico">👥</span><span class="ni-lb">Vereadores</span></div>
+    <div class="ni" onclick="sw('comissoes',this)" id="ni-comissoes"><span class="ni-ico">🗂️</span><span class="ni-lb">Comissões</span></div>
+
+    <div class="sb-section">LEGISLATIVO</div>
+    <div class="ni" onclick="sw('materias',this)" id="ni-materias"><span class="ni-ico">📜</span><span class="ni-lb">Processo Legislativo</span><span class="ni-badge">7</span></div>
+    <div class="ni" onclick="sw('tramitacao',this)" id="ni-tramitacao"><span class="ni-ico">🔀</span><span class="ni-lb">Tramitação</span></div>
+
+    <div class="sb-section">PLENÁRIO</div>
+    <div class="ni" onclick="sw('sessao',this)" id="ni-sessao"><span class="ni-ico">🏛️</span><span class="ni-lb">Sessão Plenária</span></div>
+    <div class="ni" onclick="sw('votacao',this)" id="ni-votacao"><span class="ni-ico">🗳️</span><span class="ni-lb">Votação Eletrônica</span></div>
+    <div class="ni" onclick="sw('transmissao',this)" id="ni-transmissao"><span class="ni-ico">📡</span><span class="ni-lb">Transmissão ao Vivo</span></div>
+
+    <div class="sb-section">FISCALIZAÇÃO</div>
+    <div class="ni" onclick="sw('contas',this)" id="ni-contas"><span class="ni-ico">💰</span><span class="ni-lb">Julgamento de Contas</span></div>
+    <div class="ni" onclick="sw('emendas',this)" id="ni-emendas"><span class="ni-ico">📌</span><span class="ni-lb">Emendas Parlamentares</span></div>
+    <div class="ni" onclick="sw('transparencia',this)" id="ni-transparencia"><span class="ni-ico">🔍</span><span class="ni-lb">Portal Transparência</span></div>
+
+    <div class="sb-section">INTELIGÊNCIA</div>
+    <div class="ni" onclick="sw('atas',this)" id="ni-atas"><span class="ni-ico">📝</span><span class="ni-lb">Atas (IA)</span><span class="ni-badge gold">2</span></div>
+    <div class="ni" onclick="sw('assistente',this)" id="ni-assistente"><span class="ni-ico">🤖</span><span class="ni-lb">Assistente IA</span></div>
+
+    <div class="sb-section">SISTEMA</div>
+    <div class="ni" onclick="sw('auditoria',this)" id="ni-auditoria"><span class="ni-ico">🛡️</span><span class="ni-lb">Auditoria</span></div>
+    <div class="ni" onclick="sw('notificacoes',this)" id="ni-notificacoes"><span class="ni-ico">📲</span><span class="ni-lb">Notificações</span></div>
+
+    <div class="sb-spacer"></div>
+    <div class="ni" onclick="logout()" style="margin-top:8px;"><span class="ni-ico">🚪</span><span class="ni-lb">Sair</span></div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="page on" id="p-dash">
+      <div class="ph">
+        <div><div class="ph-title" id="dashGreeting">Bom dia, Presidente!</div><div class="ph-sub" id="dashDate">Carregando...</div></div>
+        <div style="display:flex;gap:8px;">
+          <select id="filtroAno" style="padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;"><option>2026</option><option>2025</option><option>2024</option></select>
+          <select id="filtroLeg" style="padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;"><option>19ª Legislatura</option><option>18ª Legislatura</option></select>
+        </div>
+      </div>
+
+      <div class="g4" style="margin-bottom:16px;">
+        <div class="kpi kc-navy" onclick="sw('materias')"><div class="kpi-ico">📜</div><div class="kpi-val">23</div><div class="kpi-label">Em Tramitação</div><div class="kpi-sub">7 com prazo crítico</div></div>
+        <div class="kpi kc-emerald" onclick="sw('sessao')"><div class="kpi-ico">🏛️</div><div class="kpi-val">2</div><div class="kpi-label">Sessões Agendadas</div><div class="kpi-sub">Próxima: hoje 14h</div></div>
+        <div class="kpi kc-gold" onclick="sw('comissoes')"><div class="kpi-ico">🗂️</div><div class="kpi-val">6</div><div class="kpi-label">Comissões Ativas</div><div class="kpi-sub">1 CPI em curso</div></div>
+        <div class="kpi kc-purple" onclick="sw('emendas')"><div class="kpi-ico">💰</div><div class="kpi-val">68%</div><div class="kpi-label">Emendas Executadas</div><div class="kpi-sub">R$ 1,8M de R$ 2,6M</div></div>
+      </div>
+
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title">📊 Projetos por Status</div>
+          <div id="dashStatusProj"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🏆 Indicadores por Vereador</div>
+          <div id="dashIndicVereador"></div>
+        </div>
+      </div>
+
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title">⏰ Prazos Críticos</div>
+          <div id="dashPrazos"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Processos Administrativos</div>
+          <div id="dashProcAdmin"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📈 Matérias Aprovadas vs Rejeitadas — 2026</div>
+        <div style="display:flex;align-items:flex-end;gap:8px;height:130px;padding:0 4px;" id="chartAprovacao"></div>
+        <div style="display:flex;gap:8px;margin-top:6px;" id="chartAprovacaoLabels"></div>
+      </div>
+    </div>
+
+    <!-- ═══ VEREADORES ═══ -->
+    <div class="page" id="p-vereadores">
+      <div class="ph">
+        <div><div class="ph-title">👥 Vereadores</div><div class="ph-sub">19ª Legislatura · 2025-2028</div></div>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mVereador')">+ Novo Vereador</button>
+      </div>
+      <div class="card">
+        <table class="tbl"><thead><tr><th></th><th>Nome</th><th>Partido</th><th>Presença</th><th>Proposições</th><th>Status</th></tr></thead>
+        <tbody id="tbVereadores"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══ COMISSÕES ═══ -->
+    <div class="page" id="p-comissoes">
+      <div class="ph">
+        <div><div class="ph-title">🗂️ Comissões</div><div class="ph-sub">Permanentes, temporárias, especiais e CPIs</div></div>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mComissao')">+ Nova Comissão</button>
+      </div>
+      <div id="listaComissoes"></div>
+    </div>
+
+    <!-- ═══ PROCESSO LEGISLATIVO ═══ -->
+    <div class="page" id="p-materias">
+      <div class="ph">
+        <div><div class="ph-title">📜 Processo Legislativo</div><div class="ph-sub">Projetos de Lei, Requerimentos, Moções e demais matérias</div></div>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mMateria')">+ Protocolar Matéria</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <input id="buscaMateria" onkeyup="renderMaterias()" placeholder="🔍 Buscar por número ou ementa..." style="flex:1;min-width:200px;padding:9px 14px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;">
+        <select id="filtroTipoMateria" onchange="renderMaterias()" style="padding:9px 14px;border:1px solid var(--border);border-radius:10px;font-size:13px;background:var(--surface);">
+          <option value="">Todos os tipos</option><option>Projeto de Lei</option><option>Requerimento</option><option>Moção</option><option>Indicação</option>
+        </select>
+      </div>
+      <div class="card">
+        <table class="tbl"><thead><tr><th>Nº/Ano</th><th>Tipo</th><th>Ementa</th><th>Autor</th><th>Situação</th><th>Prazo</th></tr></thead>
+        <tbody id="tbMaterias"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══ TRAMITAÇÃO ═══ -->
+    <div class="page" id="p-tramitacao">
+      <div class="ph">
+        <div><div class="ph-title">🔀 Controle de Tramitação</div><div class="ph-sub">Timeline imutável — selecione uma matéria para ver o histórico completo</div></div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title" id="tramitacaoTitulo">📜 PL 045/2026 — Reforma da Iluminação Pública com Energia Solar</div>
+        <div id="timelineMateria"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚙️ Fluxo Configurado — <span id="tramitacaoTipoFluxo">Projeto de Lei</span></div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:700;" id="fluxoConfig"></div>
+      </div>
+    </div>
+
+    <!-- ═══ SESSÃO PLENÁRIA ═══ -->
+    <div class="page" id="p-sessao">
+      <div class="ph">
+        <div><div class="ph-title">🏛️ Sessão Plenária</div><div class="ph-sub" id="sessaoStatus">Sessão Ordinária · 19/06/2026 · 14h00</div></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm" id="btnAbrirSessao" style="background:var(--emerald);color:#fff;" onclick="toggleSessao()">▶ Abrir Sessão</button>
+        </div>
+      </div>
+      <div class="g3" style="margin-bottom:14px;">
+        <div class="card" style="text-align:center;">
+          <div class="card-title" style="justify-content:center;">🧮 Quórum</div>
+          <div class="quorum-ring">
+            <svg viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="60" fill="none" stroke="#E2E8F0" stroke-width="12"/>
+              <circle cx="70" cy="70" r="60" fill="none" stroke="#0E7C5A" stroke-width="12" stroke-dasharray="377" stroke-dashoffset="94" stroke-linecap="round" id="quorumArc"/>
+            </svg>
+            <div class="quorum-ring-text">
+              <div style="font-size:24px;font-weight:900;color:var(--emerald);" id="quorumNum">15/19</div>
+              <div style="font-size:10px;color:var(--tx3);font-weight:700;">PRESENTES</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--tx3);">Quórum mínimo (simples) atingido ✅</div>
+        </div>
+        <div class="card">
+          <div class="card-title">🎙️ Lista de Oradores</div>
+          <div id="listaOradores"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⏱️ Cronômetro de Fala</div>
+          <div style="text-align:center;padding:14px 0;">
+            <div style="font-size:42px;font-weight:900;color:var(--navy2);font-family:monospace;" id="cronometro">03:00</div>
+            <div style="font-size:11px;color:var(--tx3);margin-top:4px;" id="cronometroOrador">Vereador Carlos Mendes — Grande Expediente</div>
+            <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
+              <button class="btn-sm" style="background:var(--emerald);color:#fff;" onclick="iniciarCronometro()">▶ Iniciar</button>
+              <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="pausarCronometro()">⏸ Pausar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Ordem do Dia</div>
+        <div id="ordemDoDia"></div>
+      </div>
+    </div>
+
+    <!-- ═══ VOTAÇÃO ═══ -->
+    <div class="page" id="p-votacao">
+      <div class="ph">
+        <div><div class="ph-title">🗳️ Votação Eletrônica</div><div class="ph-sub" id="votacaoSubtitulo">PL 045/2026 — Reforma da Iluminação Pública com Energia Solar</div></div>
+        <span class="b b-navy">Votação Nominal</span>
+      </div>
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-title">🗳️ Registrar Voto — Vereador(a) logado(a)</div>
+          <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <button class="vote-btn sim" id="voteSim" onclick="registrarVoto('sim')">✅ SIM</button>
+            <button class="vote-btn nao" id="voteNao" onclick="registrarVoto('nao')">❌ NÃO</button>
+            <button class="vote-btn abs" id="voteAbs" onclick="registrarVoto('abstencao')">➖ ABSTENÇÃO</button>
+          </div>
+          <div id="voteStatus" style="font-size:12px;color:var(--tx3);text-align:center;">Aguardando seu voto — será assinado digitalmente via certificado ICP-Brasil</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Apuração em Tempo Real</div>
+          <div id="apuracaoVotos"></div>
+          <button class="btn-sm" id="btnEncerrarVotacao" style="background:var(--navy2);color:#fff;width:100%;margin-top:14px;" onclick="encerrarVotacaoEAvancar()">🏁 Encerrar Votação e Apurar Resultado</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Votos Registrados (Nominal)</div>
+        <table class="tbl"><thead><tr><th>Vereador</th><th>Voto</th><th>Horário</th><th>Assinatura Digital</th></tr></thead>
+        <tbody id="tbVotos"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══ TRANSMISSÃO ═══ -->
+    <div class="page" id="p-transmissao">
+      <div class="ph">
+        <div><div class="ph-title">📡 Transmissão ao Vivo</div><div class="ph-sub">YouTube · Facebook · Instagram</div></div>
+        <button class="btn-sm" id="btnLive" style="background:var(--red2);color:#fff;" onclick="toggleLive()">🔴 Iniciar Transmissão</button>
+      </div>
+      <div class="g3" style="margin-bottom:14px;">
+        <div class="card" style="text-align:center;">
+          <div style="font-size:28px;margin-bottom:6px;">▶️</div>
+          <div style="font-size:13px;font-weight:800;">YouTube</div>
+          <div class="b b-gray" id="statusYoutube" style="margin-top:8px;">Offline</div>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div style="font-size:28px;margin-bottom:6px;">📘</div>
+          <div style="font-size:13px;font-weight:800;">Facebook</div>
+          <div class="b b-gray" id="statusFacebook" style="margin-top:8px;">Offline</div>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div style="font-size:28px;margin-bottom:6px;">📷</div>
+          <div style="font-size:13px;font-weight:800;">Instagram</div>
+          <div class="b b-gray" id="statusInstagram" style="margin-top:8px;">Offline</div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-title">👁️ Audiência em Tempo Real</div>
+          <div style="text-align:center;padding:20px 0;">
+            <div style="font-size:42px;font-weight:900;color:var(--navy2);" id="audienciaNum">0</div>
+            <div style="font-size:11px;color:var(--tx3);">espectadores simultâneos</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">💬 Comentários ao Vivo</div>
+          <div id="comentariosLive" style="max-height:200px;overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ JULGAMENTO DE CONTAS ═══ -->
+    <div class="page" id="p-contas">
+      <div class="ph">
+        <div><div class="ph-title">💰 Julgamento das Contas do Executivo</div><div class="ph-sub">Controle externo exercido pela Câmara</div></div>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mContas')">+ Novo Processo</button>
+      </div>
+      <div class="card">
+        <table class="tbl"><thead><tr><th>Exercício</th><th>Gestor</th><th>Parecer TC</th><th>Situação</th><th>Prazo</th></tr></thead>
+        <tbody id="tbContas"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══ EMENDAS ═══ -->
+    <div class="page" id="p-emendas">
+      <div class="ph">
+        <div><div class="ph-title">📌 Emendas Parlamentares</div><div class="ph-sub">Rastreio do recurso, da proposta ao pagamento</div></div>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mEmenda')">+ Nova Emenda</button>
+      </div>
+      <div class="g3" style="margin-bottom:14px;">
+        <div class="kpi kc-navy"><div class="kpi-ico">💰</div><div class="kpi-val">R$2,6M</div><div class="kpi-label">Total Proposto</div></div>
+        <div class="kpi kc-emerald"><div class="kpi-ico">✅</div><div class="kpi-val">R$1,8M</div><div class="kpi-label">Total Executado</div></div>
+        <div class="kpi kc-gold"><div class="kpi-ico">📊</div><div class="kpi-val">68%</div><div class="kpi-label">% Execução</div></div>
+      </div>
+      <div class="card">
+        <table class="tbl"><thead><tr><th>Autor</th><th>Beneficiário</th><th>Valor</th><th>Exercício</th><th>Status</th></tr></thead>
+        <tbody id="tbEmendas"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══ PORTAL TRANSPARÊNCIA ═══ -->
+    <div class="page" id="p-transparencia">
+      <div class="ph">
+        <div><div class="ph-title">🔍 Portal da Transparência</div><div class="ph-sub">Visualização pública — dados publicados automaticamente</div></div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <input placeholder="🔍 Buscar projetos, leis, votações, atas..." style="width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;outline:none;">
+      </div>
+      <div class="g4">
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('📜 23 projetos publicados')"><div style="font-size:24px;margin-bottom:6px;">📜</div><div style="font-size:11px;font-weight:700;">Projetos</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('⚖️ 142 leis publicadas')"><div style="font-size:24px;margin-bottom:6px;">⚖️</div><div style="font-size:11px;font-weight:700;">Leis</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('🏛️ 48 sessões publicadas')"><div style="font-size:24px;margin-bottom:6px;">🏛️</div><div style="font-size:11px;font-weight:700;">Sessões</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('🗳️ 312 votações publicadas')"><div style="font-size:24px;margin-bottom:6px;">🗳️</div><div style="font-size:11px;font-weight:700;">Votações</div></div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">📋 Publicações Recentes</div>
+        <div id="listaTransparencia"></div>
+      </div>
+    </div>
+
+    <!-- ═══ ATAS (IA) ═══ -->
+    <div class="page" id="p-atas">
+      <div class="ph">
+        <div><div class="ph-title">📝 Atas com Inteligência Artificial</div><div class="ph-sub">Transcrição automática e geração de ata</div></div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">🤖 Última Sessão Transcrita — 19/06/2026</div>
+        <div id="ataGerada"></div>
+      </div>
+      <div class="card">
+        <table class="tbl"><thead><tr><th>Sessão</th><th>Data</th><th>Status</th><th>Ação</th></tr></thead>
+        <tbody id="tbAtas"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══ ASSISTENTE IA ═══ -->
+    <div class="page" id="p-assistente">
+      <div class="ph"><div><div class="ph-title">🤖 Assistente Legislativo IA</div><div class="ph-sub">Pergunte sobre qualquer matéria, votação ou sessão</div></div></div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-title">💬 Chat com o Assistente</div>
+          <div id="iaChat" style="height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0;margin-bottom:12px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input class="m-inp" id="iaInput" placeholder="Pergunte sobre um projeto, votação ou sessão..." style="flex:1;margin:0;" onkeydown="if(event.key==='Enter')enviarIA()">
+            <button onclick="enviarIA()" style="padding:10px 16px;border-radius:var(--rs);background:var(--navy2);color:#fff;border:none;font-size:13px;cursor:pointer;font-weight:700;">Enviar</button>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;" id="iaSugestoes"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Capacidades do Assistente</div>
+          <div class="feat-list" style="display:flex;flex-direction:column;gap:10px;">
+            <div style="font-size:12px;color:var(--tx2);">📍 Localizar matérias em tramitação</div>
+            <div style="font-size:12px;color:var(--tx2);">🗳️ Consultar histórico de votações</div>
+            <div style="font-size:12px;color:var(--tx2);">⏰ Identificar projetos parados</div>
+            <div style="font-size:12px;color:var(--tx2);">📝 Gerar minuta de parecer</div>
+            <div style="font-size:12px;color:var(--tx2);">📄 Resumir sessões plenárias</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AUDITORIA ═══ -->
+    <div class="page" id="p-auditoria">
+      <div class="ph"><div><div class="ph-title">🛡️ Auditoria</div><div class="ph-sub">Log imutável — nenhum registro pode ser excluído</div></div></div>
+      <div class="card">
+        <table class="tbl"><thead><tr><th>Usuário</th><th>Ação</th><th>Recurso</th><th>IP</th><th>Data/Hora</th></tr></thead>
+        <tbody id="tbAuditoria"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ═══ NOTIFICAÇÕES ═══ -->
+    <div class="page" id="p-notificacoes">
+      <div class="ph"><div><div class="ph-title">📲 Notificações</div><div class="ph-sub">Sistema, e-mail e WhatsApp</div></div></div>
+      <div id="listaNotificacoes"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="ov" id="mVereador">
+  <div class="modal">
+    <div class="m-title">👤 Novo Vereador</div>
+    <label class="m-lbl">Nome Completo</label><input class="m-inp" id="vNome" placeholder="Nome civil">
+    <label class="m-lbl">Nome Parlamentar</label><input class="m-inp" id="vNomeParl" placeholder="Como é tratado em sessão">
+    <div class="fg"><div><label class="m-lbl">Partido</label><input class="m-inp" id="vPartido" placeholder="Sigla"></div><div><label class="m-lbl">CPF</label><input class="m-inp" id="vCpf" placeholder="000.000.000-00"></div></div>
+    <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR</button>
+    <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mComissao">
+  <div class="modal">
+    <div class="m-title">🗂️ Nova Comissão</div>
+    <label class="m-lbl">Nome</label><input class="m-inp" id="cNome" placeholder="Ex: Comissão de Justiça e Redação">
+    <label class="m-lbl">Tipo</label><select class="m-sel" id="cTipo"><option>Permanente</option><option>Temporária</option><option>Especial</option><option>CPI</option></select>
+    <label class="m-lbl">Presidente</label><select class="m-sel" id="cPresidente"></select>
+    <button class="btn-p" onclick="salvarComissao()">💾 CRIAR COMISSÃO</button>
+    <button class="btn-c" onclick="fecharModal('mComissao')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mMateria">
+  <div class="modal">
+    <div class="m-title">📜 Protocolar Matéria</div>
+    <label class="m-lbl">Tipo</label><select class="m-sel" id="mtTipo"><option>Projeto de Lei</option><option>Projeto de Lei Complementar</option><option>Requerimento</option><option>Moção</option><option>Indicação</option></select>
+    <label class="m-lbl">Autor</label><select class="m-sel" id="mtAutor"></select>
+    <label class="m-lbl">Ementa</label><textarea class="m-ta" id="mtEmenta" placeholder="Resumo oficial da matéria..."></textarea>
+    <label class="m-lbl">Justificativa</label><textarea class="m-ta" id="mtJustif" placeholder="Fundamentação..."></textarea>
+    <button class="btn-p" onclick="salvarMateria()">📜 PROTOCOLAR</button>
+    <button class="btn-c" onclick="fecharModal('mMateria')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mAcaoEtapa">
+  <div class="modal">
+    <div class="m-title" id="aeTitulo">Registrar etapa</div>
+    <div id="aeCorpo"></div>
+    <button class="btn-p" onclick="confirmarAcaoEtapa()">✅ CONFIRMAR E AVANÇAR</button>
+    <button class="btn-c" onclick="fecharModal('mAcaoEtapa')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mContas">
+  <div class="modal">
+    <div class="m-title">💰 Novo Processo de Contas</div>
+    <label class="m-lbl">Exercício</label><input class="m-inp" id="ctExercicio" type="number" placeholder="2026">
+    <label class="m-lbl">Gestor</label><input class="m-inp" id="ctGestor" placeholder="Nome do Prefeito">
+    <label class="m-lbl">Parecer do Tribunal de Contas</label><select class="m-sel" id="ctParecer"><option>Favorável</option><option>Favorável com ressalvas</option><option>Contrário</option></select>
+    <button class="btn-p" onclick="salvarContas()">💾 REGISTRAR</button>
+    <button class="btn-c" onclick="fecharModal('mContas')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mEmenda">
+  <div class="modal">
+    <div class="m-title">📌 Nova Emenda Parlamentar</div>
+    <label class="m-lbl">Autor</label><select class="m-sel" id="emAutor"></select>
+    <label class="m-lbl">Beneficiário</label><input class="m-inp" id="emBenef" placeholder="Secretaria ou entidade">
+    <div class="fg"><div><label class="m-lbl">Valor (R$)</label><input class="m-inp" id="emValor" type="number" placeholder="50000"></div><div><label class="m-lbl">Exercício</label><input class="m-inp" id="emExercicio" type="number" placeholder="2026"></div></div>
+    <button class="btn-p" onclick="salvarEmenda()">📌 REGISTRAR EMENDA</button>
+    <button class="btn-c" onclick="fecharModal('mEmenda')">Cancelar</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="detPanel">
+  <div class="det-hdr"><span id="detTitle" style="font-size:15px;font-weight:800;color:var(--tx);">Detalhe</span><div class="det-close" onclick="fecharDet()">✕</div></div>
+  <div class="det-body" id="detBody"></div>
+</div>
+
+<script>
+let curUser=null;
+let vereadores=[],comissoes=[],materias=[],sessoes=[],votos=[],contasExec=[],emendas=[],auditoria=[],notificacoes=[];
+let sessaoAberta=false, liveOn=false, cronInterval=null, cronSegundos=180;
+let materiaSelecionada=null;
+let materiaEmVotacao=null; // número da matéria atualmente sendo votada na tela de Votação Eletrônica
+let votosPorMateria={}; // { '045/2026': [{nome,voto,hora}, ...] }
+
+/* ═══════════════════════════════════════════════════════════
+   INTEGRAÇÃO COM SUPABASE — banco de dados real, compartilhado
+   entre todos os usuários, hospedado na nuvem.
+   ═══════════════════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://jxautkgxdxugfegzbssr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_eJNWbkSaefmCkc9SEmvkCw_LJIQu3jT';
+let supabaseOnline = false; // fica true se a primeira leitura funcionar
+
+async function sbRequest(path, options = {}) {
+  const url = `${SUPABASE_URL}/rest/v1/${path}`;
+  // Importante: chaves no novo formato (sb_publishable_...) NÃO são JWT.
+  // Vão apenas no header "apikey" — nunca em "Authorization: Bearer", senão a API rejeita com 403.
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+  const resp = await fetch(url, { ...options, headers });
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => '');
+    throw new Error(`Supabase ${resp.status}: ${errText}`);
+  }
+  // DELETE e alguns PATCH retornam corpo vazio
+  const text = await resp.text();
+  return text ? JSON.parse(text) : null;
+}
+
+const db = {
+  async listarVereadores() {
+    return sbRequest('legisgov_vereadores?select=*&order=id.asc');
+  },
+  async listarMaterias() {
+    return sbRequest('legisgov_materias?select=*&order=criado_em.desc');
+  },
+  async listarVotos(materiaNum) {
+    return sbRequest(`legisgov_votos?materia_num=eq.${encodeURIComponent(materiaNum)}&select=*`);
+  },
+  async criarMateria(materia) {
+    return sbRequest('legisgov_materias', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(materia)
+    });
+  },
+  async atualizarMateria(num, campos) {
+    return sbRequest(`legisgov_materias?num=eq.${encodeURIComponent(num)}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(campos)
+    });
+  },
+  async upsertVoto(materiaNum, nome, voto, hora) {
+    // on conflict (materia_num, nome) — substitui o voto existente em vez de duplicar
+    return sbRequest('legisgov_votos', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify({ materia_num: materiaNum, nome, voto, hora })
+    });
+  },
+  async atualizarPresenca(id, presente) {
+    return sbRequest(`legisgov_vereadores?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ presente })
+    });
+  },
+  async logAuditoria(acao, referencia, usuario) {
+    return sbRequest('legisgov_auditoria', {
+      method: 'POST',
+      body: JSON.stringify({ acao, referencia, usuario })
+    });
+  },
+};
+
+async function initDados(){
+  // dados que não mudam de Câmara para Câmara (ainda fixos, não fazem parte das tabelas Supabase desta etapa)
+  comissoes=[
+    {nome:'Comissão de Justiça e Redação',tipo:'Permanente',presidente:'Ana Paula Ribeiro',membros:5,materias:8},
+    {nome:'Comissão de Finanças e Orçamento',tipo:'Permanente',presidente:'João Ferreira Lima',membros:5,materias:6},
+    {nome:'Comissão de Obras e Serviços Públicos',tipo:'Permanente',presidente:'Maria Aparecida Souza',membros:4,materias:5},
+    {nome:'CPI — Irregularidades em Licitações',tipo:'CPI',presidente:'Carlos Mendes Filho',membros:5,materias:1},
+    {nome:'Comissão Especial — Revisão Lei Orgânica',tipo:'Especial',presidente:'Ana Paula Ribeiro',membros:7,materias:1},
+  ];
+  contasExec=[
+    {exercicio:2024,gestor:'Prefeito Municipal',parecer:'Favorável com ressalvas',situacao:'Julgado — Aprovado',prazo:'—'},
+    {exercicio:2025,gestor:'Prefeito Municipal',parecer:'Em análise',situacao:'Comissão',prazo:'15/07/2026'},
+  ];
+  emendas=[
+    {autor:'João Ferreira Lima',benef:'Secretaria de Saúde',valor:180000,exercicio:2026,status:'Paga'},
+    {autor:'Maria Aparecida Souza',benef:'Secretaria de Educação',valor:250000,exercicio:2026,status:'Liquidada'},
+    {autor:'Ana Paula Ribeiro',benef:'Secretaria de Obras',valor:420000,exercicio:2026,status:'Empenhada'},
+    {autor:'Carlos Mendes Filho',benef:'Assistência Social',valor:95000,exercicio:2026,status:'Aprovada'},
+    {autor:'Roberto Carlos Alves',benef:'Secretaria de Esportes',valor:60000,exercicio:2026,status:'Proposta'},
+  ];
+  notificacoes=[
+    {tipo:'Prazo',titulo:'Prazo de parecer vence em 1 dia',desc:'PL 029/2026 — Comissão de Obras',quando:'há 2h'},
+    {tipo:'Sessão',titulo:'Sessão Ordinária convocada',desc:'Hoje às 14h — Plenário Principal',quando:'há 5h'},
+    {tipo:'Votação',titulo:'Votação aberta',desc:'PL 045/2026 está em votação nominal',quando:'agora'},
+  ];
+
+  // tenta carregar do Supabase (banco real, compartilhado entre todos os usuários)
+  try {
+    const [vereadoresDB, materiasDB] = await Promise.all([
+      db.listarVereadores(),
+      db.listarMaterias(),
+    ]);
+    vereadores = vereadoresDB.map(v => ({
+      id: v.id, nome: v.nome, partido: v.partido, presente: v.presente, eu: v.eu,
+      // campos de exibição usados no Dashboard/Vereadores (mantidos com valor padrão por enquanto)
+      presenca: 90, proposicoes: 0, status: 'active', av: v.nome.split(' ').map(p=>p[0]).slice(0,2).join(''), cor: '#0F2A4A'
+    }));
+    materias = materiasDB.map(m => ({
+      num: m.num, tipo: m.tipo, ementa: m.ementa, justificativa: m.justificativa,
+      autor: m.autor, situacao: m.situacao, prazo: m.prazo, critico: m.critico,
+      historico: m.historico || {}
+    }));
+    supabaseOnline = true;
+    auditoria=[]; // auditoria real será carregada sob demanda na tela de Auditoria
+    console.log('✅ LegisGov conectado ao Supabase — dados carregados do banco real.');
+  } catch (err) {
+    console.error('⚠️ Não foi possível conectar ao Supabase, usando dados de exemplo locais:', err);
+    supabaseOnline = false;
+    vereadores=[
+      {id:1,nome:'João Ferreira Lima',partido:'PSD',presenca:96,proposicoes:14,status:'active',av:'JF',cor:'#0F2A4A',presente:true},
+      {id:2,nome:'Maria Aparecida Souza',partido:'PT',presenca:88,proposicoes:9,status:'active',av:'MA',cor:'#0E7C5A',presente:true},
+      {id:3,nome:'Carlos Mendes Filho',partido:'MDB',presenca:74,proposicoes:6,status:'active',av:'CM',cor:'#B8860B',presente:true},
+      {id:4,nome:'Ana Paula Ribeiro',partido:'PSDB',presenca:100,proposicoes:18,status:'active',av:'AP',cor:'#5B21B6',presente:true},
+      {id:5,nome:'Roberto Carlos Alves',partido:'PL',presenca:62,proposicoes:3,status:'risk',av:'RC',cor:'#DC2626',presente:false},
+    ];
+    materias=[
+      {num:'045/2026',tipo:'Projeto de Lei',ementa:'Reforma da Iluminação Pública com Energia Solar',autor:'João Ferreira Lima',situacao:'Plenário',prazo:'22/06/2026',critico:true,historico:{}},
+      {num:'046/2026',tipo:'Requerimento',ementa:'Solicita informações sobre obras na Av. Central',autor:'Maria Aparecida Souza',situacao:'Comissão',prazo:'25/06/2026',critico:false,historico:{}},
+      {num:'012/2026',tipo:'Projeto de Lei Complementar',ementa:'Altera o Código Tributário Municipal',autor:'Ana Paula Ribeiro',situacao:'Jurídico',prazo:'30/06/2026',critico:false,historico:{}},
+      {num:'038/2026',tipo:'Moção',ementa:'Moção de Aplauso aos profissionais de saúde',autor:'Carlos Mendes Filho',situacao:'Aprovado',prazo:'—',critico:false,historico:{}},
+      {num:'041/2026',tipo:'Indicação',ementa:'Indica a instalação de semáforo na Rua das Flores',autor:'Roberto Carlos Alves',situacao:'Protocolado',prazo:'28/06/2026',critico:false,historico:{}},
+      {num:'029/2026',tipo:'Projeto de Lei',ementa:'Institui o Programa Municipal de Hortas Comunitárias',autor:'Maria Aparecida Souza',situacao:'Parecer',prazo:'20/06/2026',critico:true,historico:{}},
+      {num:'008/2026',tipo:'Veto',ementa:'Veto parcial ao PL 003/2026 — Zoneamento Urbano',autor:'Executivo Municipal',situacao:'Plenário',prazo:'24/06/2026',critico:true,historico:{}},
+    ];
+    auditoria=[
+      {user:'Ana Paula Ribeiro',acao:'Assinatura de Voto',recurso:'PL 045/2026',ip:'192.168.1.42',data:'19/06/2026 14:32'},
+      {user:'Secretaria Legislativa',acao:'Publicação de Ata',recurso:'Sessão 18/06/2026',ip:'192.168.1.10',data:'19/06/2026 09:15'},
+      {user:'João Ferreira Lima',acao:'Protocolo de Matéria',recurso:'PL 045/2026',ip:'192.168.1.55',data:'15/06/2026 11:02'},
+      {user:'Presidente',acao:'Abertura de Sessão',recurso:'Sessão 18/06/2026',ip:'192.168.1.05',data:'18/06/2026 14:00'},
+    ];
+    toast('⚠️ Sem conexão com o banco — usando dados de demonstração (não serão salvos)');
+  }
+}
+
+function doLogin(){
+  const email=document.getElementById('lemail').value.trim();
+  if(!email){toast('⚠️ Digite seu e-mail');return;}
+  const perfis={'presidente@camara.gov.br':{nome:'Ana Paula Ribeiro',av:'AP',cargo:'Presidente'},'vereador@camara.gov.br':{nome:'João Ferreira Lima',av:'JF',cargo:'Vereador'},'secretaria@camara.gov.br':{nome:'Secretaria Legislativa',av:'SL',cargo:'Secretaria'}};
+  entrar(perfis[email]||{nome:'Usuário Demo',av:'PR',cargo:'Presidente'});
+}
+function loginDemo(t){const m={presidente:'presidente@camara.gov.br',vereador:'vereador@camara.gov.br',secretaria:'secretaria@camara.gov.br'};document.getElementById('lemail').value=m[t];doLogin();}
+async function entrar(u){
+  curUser=u;
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainApp').classList.add('on');
+  document.getElementById('userAv').textContent=u.av;
+  toast('⏳ Carregando dados do banco...');
+  await initDados();
+  renderAll();
+  if(supabaseOnline)toast('✅ Conectado ao banco de dados real');
+}
+function logout(){if(!confirm('Sair do sistema?'))return;document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('mainApp').classList.remove('on');}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('on');}
+
+function sw(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('p-'+page)?.classList.add('on');
+  const ni=document.getElementById('ni-'+page);
+  if(ni)ni.classList.add('on');else if(el)el.classList.add('on');
+  const titles={dash:'Dashboard',vereadores:'Vereadores',comissoes:'Comissões',materias:'Processo Legislativo',tramitacao:'Controle de Tramitação',sessao:'Sessão Plenária',votacao:'Votação Eletrônica',transmissao:'Transmissão ao Vivo',contas:'Julgamento de Contas',emendas:'Emendas Parlamentares',transparencia:'Portal da Transparência',atas:'Atas com IA',assistente:'Assistente IA',auditoria:'Auditoria',notificacoes:'Notificações'};
+  document.getElementById('tbPage').textContent=titles[page]||page;
+  const r={dash:renderDash,vereadores:renderVereadores,comissoes:renderComissoes,materias:renderMaterias,tramitacao:renderTramitacao,sessao:renderSessao,votacao:renderVotacao,transmissao:renderTransmissao,contas:renderContas,emendas:renderEmendas,transparencia:renderTransparencia,atas:renderAtas,assistente:renderAssistente,auditoria:renderAuditoria,notificacoes:renderNotificacoes};
+  if(r[page])setTimeout(r[page],30);
+  fecharDet();document.getElementById('sidebar').classList.remove('on');
+}
+function renderAll(){renderDash();}
+function atualizarSaudacao(){const h=new Date().getHours();const s=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';document.getElementById('dashGreeting').textContent=`${s}, ${curUser?.nome?.split(' ')[0]||'Presidente'}!`;document.getElementById('dashDate').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+
+function popularSelects(){
+  ['cPresidente','mtAutor','emAutor'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=vereadores.map(v=>`<option>${v.nome}</option>`).join('');});
+}
+
+// ═══ DASHBOARD ═══
+function renderDash(){
+  atualizarSaudacao();popularSelects();
+  const spEl=document.getElementById('dashStatusProj');
+  if(spEl){
+    const st=[{l:'Protocolado',v:4,c:'#94A3B8'},{l:'Jurídico',v:3,c:'#5B21B6'},{l:'Comissão',v:6,c:'#B8860B'},{l:'Plenário',v:5,c:'#1E4470'},{l:'Aprovado',v:38,c:'#0E7C5A'},{l:'Rejeitado',v:6,c:'#DC2626'}];
+    spEl.innerHTML=st.map(s=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><div style="width:10px;height:10px;border-radius:3px;background:${s.c};flex-shrink:0;"></div><span style="font-size:12px;color:var(--tx2);flex:1;">${s.l}</span><span style="font-size:13px;font-weight:800;color:${s.c};">${s.v}</span></div>`).join('');
+  }
+  const ivEl=document.getElementById('dashIndicVereador');
+  if(ivEl)ivEl.innerHTML=vereadores.slice(0,5).map(v=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div class="av" style="width:26px;height:26px;background:${v.cor};font-size:10px;">${v.av}</div><span style="font-size:11.5px;color:var(--tx2);flex:1;">${v.nome}</span><span class="b ${v.presenca>=80?'b-emerald':v.presenca>=60?'b-gold':'b-red'}">${v.presenca}%</span></div>`).join('');
+  const pzEl=document.getElementById('dashPrazos');
+  if(pzEl)pzEl.innerHTML=materias.filter(m=>m.critico).map(m=>`<div class="risk-item" style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${m.num}</span><span style="font-size:11.5px;color:var(--tx2);flex:1;">${m.ementa.substring(0,40)}...</span><span class="b b-red">${m.prazo}</span></div>`).join('');
+  const paEl=document.getElementById('dashProcAdmin');
+  if(paEl)paEl.innerHTML=`<div style="font-size:12px;color:var(--tx2);line-height:2;">📁 12 processos administrativos ativos<br>📋 3 licitações em análise<br>👥 2 processos de RH em tramitação<br>🏗️ 4 prestações de contas de convênios</div>`;
+  const caEl=document.getElementById('chartAprovacao'),clEl=document.getElementById('chartAprovacaoLabels');
+  if(caEl){const meses=['Jan','Fev','Mar','Abr','Mai','Jun'];const aprov=[5,7,4,8,6,9];const rejei=[1,0,2,1,1,1];const max=10;
+    caEl.innerHTML=meses.map((m,i)=>`<div style="flex:1;display:flex;flex-direction:column;gap:2px;height:100%;justify-content:flex-end;"><div style="background:#0E7C5A;border-radius:3px 3px 0 0;height:${(aprov[i]/max)*100}%;"></div><div style="background:#DC2626;border-radius:0 0 3px 3px;height:${(rejei[i]/max)*40}%;"></div></div>`).join('');
+    clEl.innerHTML=meses.map(m=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--tx3);font-weight:600;">${m}</div>`).join('');}
+}
+
+// ═══ VEREADORES ═══
+function renderVereadores(){
+  document.getElementById('tbVereadores').innerHTML=vereadores.map(v=>`<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;"><td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td><td><strong>${v.nome}</strong></td><td><span class="b b-navy">${v.partido}</span></td><td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca}%;background:${v.presenca>=80?'#0E7C5A':v.presenca>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca}%</span></div></td><td>${v.proposicoes}</td><td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td></tr>`).join('');
+}
+function abrirDetVereador(id){
+  const v=vereadores.find(x=>x.id===id);if(!v)return;
+  document.getElementById('detTitle').textContent=v.nome;
+  document.getElementById('detBody').innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;"><div class="av" style="width:52px;height:52px;background:${v.cor};font-size:18px;">${v.av}</div><div><div style="font-size:16px;font-weight:800;">${v.nome}</div><div style="font-size:12px;color:var(--tx3);">${v.partido} · 19ª Legislatura</div></div></div><div class="det-sec">PRESENÇA</div><div class="pb" style="margin-bottom:4px;"><div class="pb-fill" style="width:${v.presenca}%;background:#0E7C5A;"></div></div><div style="font-size:11px;color:var(--tx3);">${v.presenca}% de presença nas sessões</div><div class="det-sec">PROPOSIÇÕES</div><div style="font-size:22px;font-weight:900;color:var(--navy2);">${v.proposicoes}</div>`;
+  document.getElementById('detPanel').classList.add('on');
+}
+function salvarVereador(){const nome=document.getElementById('vNome').value.trim();if(!nome){toast('⚠️ Informe o nome');return;}vereadores.push({id:vereadores.length+1,nome,partido:document.getElementById('vPartido').value||'—',presenca:100,proposicoes:0,status:'active',av:nome.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase(),cor:'#0F2A4A'});fecharModal('mVereador');renderVereadores();toast('✅ Vereador cadastrado!');}
+
+// ═══ COMISSÕES ═══
+function renderComissoes(){
+  popularSelects();
+  document.getElementById('listaComissoes').innerHTML=comissoes.map(c=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span class="b ${c.tipo==='CPI'?'b-red':c.tipo==='Especial'?'b-purple':c.tipo==='Temporária'?'b-gold':'b-navy'}">${c.tipo}</span><strong style="font-size:13px;flex:1;">${c.nome}</strong><span style="font-size:11px;color:var(--tx3);">${c.materias} matérias</span></div><div style="font-size:11.5px;color:var(--tx3);margin-top:8px;">👤 Presidente: ${c.presidente} · 👥 ${c.membros} membros</div></div>`).join('');
+}
+function salvarComissao(){const nome=document.getElementById('cNome').value.trim();if(!nome){toast('⚠️ Informe o nome');return;}comissoes.push({nome,tipo:document.getElementById('cTipo').value,presidente:document.getElementById('cPresidente').value,membros:1,materias:0});fecharModal('mComissao');renderComissoes();toast('✅ Comissão criada!');}
+
+// ═══ MATÉRIAS ═══
+function abrirTramitacao(num){
+  materiaSelecionada=materias.find(m=>m.num===num)||null;
+  sw('tramitacao');
+}
+function renderMaterias(){
+  popularSelects();
+  const busca=(document.getElementById('buscaMateria')?.value||'').toLowerCase();
+  const filtro=document.getElementById('filtroTipoMateria')?.value||'';
+  let lista=materias.filter(m=>m.num.includes(busca)||m.ementa.toLowerCase().includes(busca));
+  if(filtro)lista=lista.filter(m=>m.tipo===filtro);
+  document.getElementById('tbMaterias').innerHTML=lista.map(m=>`<tr onclick="abrirTramitacao('${m.num}')" style="cursor:pointer;"><td><strong>${m.num}</strong></td><td><span class="b b-navy">${m.tipo}</span></td><td style="max-width:280px;">${m.ementa}</td><td>${m.autor}</td><td><span class="b ${m.situacao==='Aprovado'||m.situacao==='Arquivado'?'b-emerald':m.situacao==='Rejeitado'||m.situacao==='Vetado'?'b-red':m.situacao==='Plenário'?'b-gold':'b-gray'}">${m.situacao}</span></td><td style="color:${m.critico?'var(--red)':'var(--tx2)'};font-weight:${m.critico?'700':'400'};">${m.prazo}</td></tr>`).join('');
+}
+async function salvarMateria(){
+  const ementa=document.getElementById('mtEmenta').value.trim();
+  if(!ementa){toast('⚠️ Informe a ementa');return;}
+  const justificativa=document.getElementById('mtJustif')?.value.trim()||'';
+  const nova={
+    num:`0${materias.length+50}/2026`,
+    tipo:document.getElementById('mtTipo').value,
+    ementa, justificativa,
+    autor:document.getElementById('mtAutor').value,
+    situacao:'Protocolado', prazo:'—', critico:false, historico:{}
+  };
+  // mostra na tela já (otimista), e confirma com o banco em seguida
+  materias.unshift(nova);
+  fecharModal('mMateria');
+  renderMaterias();
+  toast('📜 Matéria protocolada — salvando no banco...');
+
+  if(supabaseOnline){
+    try{
+      await db.criarMateria(nova);
+      await db.logAuditoria('Protocolo de Matéria', nova.num, curUser?.nome||'Usuário');
+      toast('✅ Matéria salva no banco de dados real!');
+    }catch(err){
+      console.error('Erro ao salvar matéria no Supabase:',err);
+      toast('⚠️ Matéria criada localmente, mas falhou ao salvar no banco — pode ser perdida ao atualizar a página');
+    }
+  } else {
+    toast('⚠️ Sem conexão com o banco — esta matéria não será salva permanentemente');
+  }
+}
+
+// ═══ TRAMITAÇÃO ═══
+const FLUXO_ETAPAS=['Protocolado','Jurídico','Comissão','Parecer','Plenário','Votação','Aprovação','Sanção','Arquivamento'];
+
+// Define o que cada etapa precisa: título exibido, quem é o responsável padrão, e o tipo de ação ao avançar
+const ETAPA_INFO=[
+  {titulo:'Protocolado',metaPadrao:m=>`${m.autor} · Secretaria Legislativa`,acao:'protocolo'},
+  {titulo:'Parecer Jurídico',metaPadrao:()=>'Procuradoria Jurídica',acao:'parecer_juridico'},
+  {titulo:'Análise em Comissão',metaPadrao:()=>'Comissão responsável',acao:'comissao'},
+  {titulo:'Parecer da Comissão',metaPadrao:()=>'Relator designado',acao:'parecer_comissao'},
+  {titulo:'Incluído na Ordem do Dia',metaPadrao:()=>'Secretaria Legislativa',acao:'ordem_dia'},
+  {titulo:'Votação em Plenário',metaPadrao:()=>'Plenário',acao:'votacao'},
+  {titulo:'Aprovação/Rejeição',metaPadrao:()=>'Resultado da votação',acao:'resultado'},
+  {titulo:'Sanção/Veto',metaPadrao:()=>'Executivo Municipal',acao:'sancao'},
+  {titulo:'Arquivamento',metaPadrao:()=>'Publicação no Portal',acao:'arquivamento'},
+];
+
+function etapaIdxDaMateria(m){
+  if(m.situacao==='Aprovado')return FLUXO_ETAPAS.indexOf('Sanção');
+  if(m.situacao==='Rejeitado')return FLUXO_ETAPAS.indexOf('Aprovação');
+  if(m.situacao==='Vetado')return FLUXO_ETAPAS.indexOf('Sanção');
+  if(m.situacao==='Arquivado')return FLUXO_ETAPAS.length-1;
+  const idx=FLUXO_ETAPAS.indexOf(m.situacao);
+  return idx===-1?0:idx;
+}
+
+function renderTramitacao(){
+  if(!materiaSelecionada && materias.length)materiaSelecionada=materias[0];
+  const m=materiaSelecionada;
+  if(!m){
+    document.getElementById('tramitacaoTitulo').textContent='Nenhuma matéria selecionada';
+    document.getElementById('timelineMateria').innerHTML='<div style="font-size:12.5px;color:var(--tx3);">Volte ao Processo Legislativo e clique em uma matéria para ver o histórico.</div>';
+    document.getElementById('fluxoConfig').innerHTML='';
+    return;
+  }
+  document.getElementById('tramitacaoTitulo').textContent=`📜 ${m.num} — ${m.ementa}`;
+  document.getElementById('tramitacaoTipoFluxo').textContent=m.tipo;
+
+  const finalizada=m.situacao==='Rejeitado'||m.situacao==='Arquivado'||m.situacao==='Vetado';
+  // etapaAtualIdx = índice da etapa que ainda precisa de ação (a "situacao" da matéria É o nome dessa etapa)
+  const etapaAtualIdx=etapaIdxDaMateria(m);
+  if(!m.historico)m.historico={};
+
+  document.getElementById('timelineMateria').innerHTML=ETAPA_INFO.map((info,i)=>{
+    let dotClass='',dotContent=String(i+1);
+    // quando a matéria está finalizada (Aprovado/Rejeitado), a etapa de resultado também conta como concluída, não como "atual pendente"
+    const concluida=i<etapaAtualIdx||(finalizada&&i===etapaAtualIdx);
+    const atual=i===etapaAtualIdx&&!finalizada;
+    const proximaAcionavel=atual;
+
+    if(concluida){dotClass='done';dotContent='✓';}
+    else if(atual){dotClass='current';dotContent='●';}
+
+    let metaTxt;
+    if(concluida && m.historico[i]){
+      metaTxt=m.historico[i];
+    } else if(concluida||atual){
+      metaTxt=info.metaPadrao(m);
+    } else {
+      metaTxt='Pendente';
+    }
+
+    const prazoTxt=m.prazo&&m.prazo!=='—'&&atual?' · Prazo: '+m.prazo:'';
+    const clicavel=proximaAcionavel;
+    const estiloClicavel=clicavel?'cursor:pointer;':'';
+    const onclickAttr=clicavel?`onclick="abrirAcaoEtapa(${i})"`:'';
+    const tagAcao=clicavel?` <span class="b b-gold" style="margin-left:6px;">Clique para registrar</span>`:'';
+
+    return `<div class="tl-item" ${onclickAttr} style="${estiloClicavel}"><div class="tl-dot ${dotClass}">${dotContent}</div><div class="tl-content"><div class="tl-title">${info.titulo}${tagAcao}</div><div class="tl-meta">${metaTxt}${prazoTxt}</div></div></div>`;
+  }).join('');
+
+  document.getElementById('fluxoConfig').innerHTML=FLUXO_ETAPAS.map((f,i)=>{
+    const concluidaF=i<etapaAtualIdx||(finalizada&&i===etapaAtualIdx);
+    const atualF=i===etapaAtualIdx&&!finalizada;
+    return `<span class="b ${concluidaF?'b-emerald':atualF?'b-gold':'b-gray'}">${f}</span>${i<FLUXO_ETAPAS.length-1?'<span style="color:var(--tx3);">→</span>':''}`;
+  }).join('');
+}
+
+// Abre o formulário certo conforme a etapa pendente clicada
+function abrirAcaoEtapa(idx){
+  const m=materiaSelecionada;
+  if(!m)return;
+  const info=ETAPA_INFO[idx];
+  if(!info||!info.acao)return;
+
+  // Votação em Plenário redireciona para a tela real de Votação Eletrônica, já vinculada a esta matéria
+  if(info.acao==='votacao'){
+    fecharModal('mAcaoEtapa');
+    materiaEmVotacao=m.num;
+    sw('votacao');
+    toast(`🗳️ Votação de ${m.num} aberta — registre os votos e clique em "Encerrar Votação"`);
+    return;
+  }
+
+  const corpos={
+    protocolo:`
+      <div style="font-size:12.5px;color:var(--tx2);margin-bottom:12px;">Confirma o protocolo desta matéria e a envia para análise jurídica.</div>
+      <label class="m-lbl">Observação (opcional)</label>
+      <textarea id="aeObs" class="m-ta" placeholder="Alguma observação sobre o protocolo..."></textarea>`,
+    parecer_juridico:`
+      <label class="m-lbl">Parecer da Procuradoria</label>
+      <select id="aeResultado" class="m-sel">
+        <option value="Favorável">Favorável — constitucional</option>
+        <option value="Favorável com ressalvas">Favorável com ressalvas</option>
+        <option value="Contrário">Contrário — inconstitucional</option>
+      </select>
+      <label class="m-lbl">Observações</label>
+      <textarea id="aeObs" class="m-ta" placeholder="Fundamentação do parecer..."></textarea>`,
+    comissao:`
+      <label class="m-lbl">Comissão responsável</label>
+      <select id="aeComissao" class="m-sel">${comissoes.map(c=>`<option>${c.nome}</option>`).join('')}</select>
+      <label class="m-lbl">Relator designado</label>
+      <select id="aeRelator" class="m-sel">${vereadores.map(v=>`<option>${v.nome}</option>`).join('')}</select>`,
+    parecer_comissao:`
+      <label class="m-lbl">Resultado do parecer</label>
+      <select id="aeResultado" class="m-sel">
+        <option value="Favorável">Favorável</option>
+        <option value="Favorável com emendas">Favorável com emendas</option>
+        <option value="Contrário">Contrário</option>
+      </select>
+      <label class="m-lbl">Observações do relator</label>
+      <textarea id="aeObs" class="m-ta" placeholder="Justificativa do parecer..."></textarea>`,
+    ordem_dia:`
+      <label class="m-lbl">Sessão de destino</label>
+      <input id="aeSessao" class="m-inp" placeholder="Ex: Sessão Ordinária de 26/06/2026">
+      <div style="font-size:11.5px;color:var(--tx3);margin:-8px 0 12px;">A matéria será incluída na pauta da sessão informada.</div>`,
+    sancao:`
+      <label class="m-lbl">Decisão do Executivo</label>
+      <select id="aeResultado" class="m-sel">
+        <option value="Sancionada">Sancionada integralmente</option>
+        <option value="Sancionada com veto parcial">Sancionada com veto parcial</option>
+        <option value="Vetada">Vetada integralmente</option>
+      </select>`,
+    resultado:`
+      <label class="m-lbl">Resultado da votação em Plenário</label>
+      <select id="aeResultado" class="m-sel">
+        <option value="Aprovado">Aprovado</option>
+        <option value="Rejeitado">Rejeitado</option>
+      </select>
+      <label class="m-lbl">Placar (opcional)</label>
+      <input id="aePlacar" class="m-inp" placeholder="Ex: 12 votos a favor, 3 contra">`,
+    arquivamento:`
+      <div style="font-size:12.5px;color:var(--tx2);margin-bottom:12px;">A matéria será arquivada e publicada automaticamente no Portal da Transparência.</div>`,
+  };
+
+  document.getElementById('aeTitulo').textContent=`${info.titulo} — ${m.num}`;
+  document.getElementById('aeCorpo').innerHTML=corpos[info.acao]||'';
+  document.getElementById('mAcaoEtapa').dataset.etapaIdx=idx;
+  document.getElementById('mAcaoEtapa').dataset.acao=info.acao;
+  abrirModal('mAcaoEtapa');
+}
+
+async function confirmarAcaoEtapa(){
+  const m=materiaSelecionada;
+  if(!m)return;
+  const modal=document.getElementById('mAcaoEtapa');
+  const idx=Number(modal.dataset.etapaIdx);
+  const acao=modal.dataset.acao;
+  if(!m.historico)m.historico={};
+
+  let registro='';
+  let situacaoFinal=null; // se definido, sobrepõe o avanço padrão para a próxima etapa
+
+  if(acao==='protocolo'){
+    const obs=document.getElementById('aeObs').value.trim();
+    registro=`${m.autor} · Secretaria Legislativa${obs?' — '+obs:''}`;
+  } else if(acao==='parecer_juridico'){
+    const res=document.getElementById('aeResultado').value;
+    const obs=document.getElementById('aeObs').value.trim();
+    registro=`Procuradoria Jurídica · ${res}${obs?' — '+obs:''}`;
+  } else if(acao==='comissao'){
+    const com=document.getElementById('aeComissao').value;
+    const rel=document.getElementById('aeRelator').value;
+    registro=`${com} · Relator: ${rel}`;
+  } else if(acao==='parecer_comissao'){
+    const res=document.getElementById('aeResultado').value;
+    const obs=document.getElementById('aeObs').value.trim();
+    registro=`Parecer ${res}${obs?' — '+obs:''}`;
+  } else if(acao==='ordem_dia'){
+    const sessao=document.getElementById('aeSessao').value.trim()||'Próxima sessão';
+    registro=`Incluído na pauta: ${sessao}`;
+  } else if(acao==='resultado'){
+    const res=document.getElementById('aeResultado').value;
+    const placar=document.getElementById('aePlacar').value.trim();
+    registro=`${res}${placar?' — '+placar:''}`;
+    if(res==='Rejeitado'){
+      situacaoFinal='Rejeitado';
+    }
+  } else if(acao==='sancao'){
+    const res=document.getElementById('aeResultado').value;
+    registro=`Executivo Municipal · ${res}`;
+    if(res==='Vetada'){
+      situacaoFinal='Vetado';
+    }
+  } else if(acao==='arquivamento'){
+    registro='Arquivada e publicada no Portal da Transparência';
+  }
+
+  m.historico[idx]=registro;
+  if(situacaoFinal){
+    m.situacao=situacaoFinal;
+  } else {
+    const proximoIdx=Math.min(idx+1,FLUXO_ETAPAS.length-1);
+    m.situacao=idx===FLUXO_ETAPAS.length-1?'Arquivado':FLUXO_ETAPAS[proximoIdx];
+  }
+
+  logAuditoria(`Avançou etapa: ${ETAPA_INFO[idx].titulo}`,m.num);
+  fecharModal('mAcaoEtapa');
+  renderTramitacao();
+  renderMaterias();
+  toast(`✅ ${ETAPA_INFO[idx].titulo} registrado — matéria avançou para "${m.situacao}"`);
+
+  if(supabaseOnline){
+    try{
+      await db.atualizarMateria(m.num,{situacao:m.situacao,historico:m.historico});
+    }catch(err){
+      console.error('Erro ao salvar avanço de etapa no Supabase:',err);
+      toast('⚠️ Avanço registrado na tela, mas falhou ao salvar no banco');
+    }
+  }
+}
+
+// ═══ SESSÃO PLENÁRIA ═══
+function renderSessao(){
+  document.getElementById('listaOradores').innerHTML=['Carlos Mendes Filho','Maria Aparecida Souza','Roberto Carlos Alves'].map((n,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${i+1}º</span><span style="font-size:12px;color:var(--tx2);flex:1;">${n}</span>${i===0?'<span class="b b-gold">Falando</span>':''}</div>`).join('');
+  document.getElementById('ordemDoDia').innerHTML=materias.filter(m=>m.situacao==='Plenário').map((m,i)=>`<div class="risk-item" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:8px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${i+1}.</span><div style="flex:1;"><div style="font-size:12.5px;font-weight:700;">${m.num} — ${m.ementa}</div><div style="font-size:10.5px;color:var(--tx3);">${m.tipo} · Autor: ${m.autor}</div></div><button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="sw('votacao')">Votar</button></div>`).join('');
+}
+function toggleSessao(){
+  sessaoAberta=!sessaoAberta;
+  const btn=document.getElementById('btnAbrirSessao');
+  if(sessaoAberta){btn.textContent='⏹ Encerrar Sessão';btn.style.background='var(--red2)';document.getElementById('sessaoStatus').textContent='🔴 Sessão EM ANDAMENTO · Iniciada às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});toast('🏛️ Sessão aberta — gravação iniciada automaticamente');logAuditoria('Abertura de Sessão','Sessão Plenária');}
+  else{btn.textContent='▶ Abrir Sessão';btn.style.background='var(--emerald)';document.getElementById('sessaoStatus').textContent='Sessão Ordinária · 19/06/2026 · 14h00';toast('✅ Sessão encerrada — gravação finalizada e enviada para IA de transcrição');logAuditoria('Encerramento de Sessão','Sessão Plenária');}
+}
+function iniciarCronometro(){clearInterval(cronInterval);cronInterval=setInterval(()=>{cronSegundos--;if(cronSegundos<=0){clearInterval(cronInterval);toast('⏰ Tempo esgotado!');cronSegundos=0;}const m=String(Math.floor(cronSegundos/60)).padStart(2,'0');const s=String(cronSegundos%60).padStart(2,'0');document.getElementById('cronometro').textContent=`${m}:${s}`;},1000);}
+function pausarCronometro(){clearInterval(cronInterval);}
+
+// ═══ VOTAÇÃO ═══
+function votosAtuais(){
+  if(!materiaEmVotacao)materiaEmVotacao='045/2026';
+  if(!votosPorMateria[materiaEmVotacao])votosPorMateria[materiaEmVotacao]=[];
+  return votosPorMateria[materiaEmVotacao];
+}
+async function renderVotacao(){
+  if(!materiaEmVotacao)materiaEmVotacao='045/2026'; // fallback: acesso direto pelo menu sem vir da Tramitação
+  const m=materias.find(x=>x.num===materiaEmVotacao);
+  const sub=document.getElementById('votacaoSubtitulo');
+  if(sub)sub.textContent=m?`${m.num} — ${m.ementa}`:(materiaEmVotacao?`${materiaEmVotacao}`:'Nenhuma matéria em votação');
+
+  // busca os votos reais desta matéria no banco (se ainda não tiver em cache)
+  if(supabaseOnline && !votosPorMateria[materiaEmVotacao]){
+    try{
+      const votosDB=await db.listarVotos(materiaEmVotacao);
+      votosPorMateria[materiaEmVotacao]=votosDB.map(v=>({nome:v.nome,voto:v.voto,hora:v.hora}));
+    }catch(err){
+      console.error('Erro ao buscar votos no Supabase:',err);
+      votosPorMateria[materiaEmVotacao]=[];
+    }
+  }
+
+  votos=votosAtuais();
+  renderApuracao();renderTbVotos();
+  document.getElementById('voteSim').classList.remove('active');document.getElementById('voteNao').classList.remove('active');document.getElementById('voteAbs').classList.remove('active');
+
+  const nomeAtual=curUser?.nome||'Você';
+  const meuVoto=votos.find(v=>v.nome===nomeAtual);
+  const statusEl=document.getElementById('voteStatus');
+  if(meuVoto){
+    document.getElementById('vote'+(meuVoto.voto==='sim'?'Sim':meuVoto.voto==='nao'?'Nao':'Abs')).classList.add('active');
+    statusEl.innerHTML=`✅ Voto <strong>${meuVoto.voto.toUpperCase()}</strong> registrado e assinado digitalmente — Certificado ICP-Brasil válido · Carimbo de tempo: ${meuVoto.hora} <span style="color:var(--tx3);">(clique em outra opção para alterar)</span>`;
+  } else {
+    statusEl.innerHTML='Aguardando seu voto — será assinado digitalmente via certificado ICP-Brasil';
+  }
+}
+async function registrarVoto(tipo){
+  votos=votosAtuais();
+  document.querySelectorAll('.vote-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('vote'+(tipo==='sim'?'Sim':tipo==='nao'?'Nao':'Abs')).classList.add('active');
+  const nomeAtual=curUser?.nome||'Você';
+  const horaAtual=new Date().toLocaleTimeString('pt-BR');
+  document.getElementById('voteStatus').innerHTML=`✅ Voto <strong>${tipo.toUpperCase()}</strong> registrado e assinado digitalmente — Certificado ICP-Brasil válido · Carimbo de tempo: ${horaAtual}`;
+
+  const idxExistente=votos.findIndex(v=>v.nome===nomeAtual);
+  if(idxExistente!==-1){
+    votos[idxExistente]={nome:nomeAtual,voto:tipo,hora:horaAtual};
+    toast('🗳️ Voto atualizado — salvando no banco...');
+  } else {
+    votos.push({nome:nomeAtual,voto:tipo,hora:horaAtual});
+    toast('🗳️ Voto registrado — salvando no banco...');
+  }
+  renderApuracao();renderTbVotos();
+  logAuditoria('Assinatura de Voto',materiaEmVotacao||'—');
+
+  if(supabaseOnline && materiaEmVotacao){
+    try{
+      await db.upsertVoto(materiaEmVotacao,nomeAtual,tipo,horaAtual);
+      toast('✅ Voto salvo no banco de dados real!');
+    }catch(err){
+      console.error('Erro ao salvar voto no Supabase:',err);
+      toast('⚠️ Voto registrado na tela, mas falhou ao salvar no banco');
+    }
+  }
+}
+function renderApuracao(){
+  votos=votosAtuais();
+  const sim=votos.filter(v=>v.voto==='sim').length,nao=votos.filter(v=>v.voto==='nao').length,abs=votos.filter(v=>v.voto==='abstencao').length;
+  const total=sim+nao+abs||1;
+  document.getElementById('apuracaoVotos').innerHTML=`
+    <div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:700;color:var(--emerald);">✅ SIM</span><span style="font-weight:800;">${sim}</span></div><div class="pb"><div class="pb-fill" style="width:${(sim/total)*100}%;background:#0E7C5A;"></div></div></div>
+    <div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:700;color:var(--red);">❌ NÃO</span><span style="font-weight:800;">${nao}</span></div><div class="pb"><div class="pb-fill" style="width:${(nao/total)*100}%;background:#DC2626;"></div></div></div>
+    <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:700;color:var(--tx3);">➖ ABSTENÇÃO</span><span style="font-weight:800;">${abs}</span></div><div class="pb"><div class="pb-fill" style="width:${(abs/total)*100}%;background:#94A3B8;"></div></div></div>
+    <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--tx3);">Total de votos: ${total} de 19 vereadores</div>`;
+}
+function renderTbVotos(){votos=votosAtuais();document.getElementById('tbVotos').innerHTML=votos.map(v=>`<tr><td><strong>${v.nome}</strong></td><td><span class="b ${v.voto==='sim'?'b-emerald':v.voto==='nao'?'b-red':'b-gray'}">${v.voto==='sim'?'✅ SIM':v.voto==='nao'?'❌ NÃO':'➖ ABSTENÇÃO'}</span></td><td>${v.hora}</td><td><span class="b b-navy">🔐 ICP-Brasil válido</span></td></tr>`).join('');}
+
+// Encerra a votação, decide Aprovado/Rejeitado e avança a matéria na Tramitação automaticamente
+async function encerrarVotacaoEAvancar(){
+  if(!materiaEmVotacao){toast('⚠️ Nenhuma matéria vinculada a esta votação');return;}
+  const m=materias.find(x=>x.num===materiaEmVotacao);
+  if(!m){toast('⚠️ Matéria não encontrada');return;}
+
+  const lista=votosAtuais();
+  if(lista.length===0){toast('⚠️ Nenhum voto registrado ainda');return;}
+
+  const sim=lista.filter(v=>v.voto==='sim').length;
+  const nao=lista.filter(v=>v.voto==='nao').length;
+  const abs=lista.filter(v=>v.voto==='abstencao').length;
+  const resultado=sim>nao?'Aprovado':'Rejeitado';
+
+  if(!m.historico)m.historico={};
+  // índice 5 = "Votação em Plenário", índice 6 = "Aprovação/Rejeição" em ETAPA_INFO/FLUXO_ETAPAS
+  m.historico[5]=`Plenário · ${sim} SIM, ${nao} NÃO, ${abs} Abstenção`;
+  m.historico[6]=`${resultado} — ${sim} votos a favor, ${nao} contra`;
+  m.situacao=resultado==='Aprovado'?'Aprovado':'Rejeitado';
+
+  logAuditoria(`Votação encerrada: ${resultado}`,m.num);
+  toast(`🏁 Votação encerrada — matéria ${resultado.toLowerCase()} (${sim}x${nao})`);
+
+  if(supabaseOnline){
+    try{
+      await db.atualizarMateria(m.num,{situacao:m.situacao,historico:m.historico});
+    }catch(err){
+      console.error('Erro ao salvar resultado da votação no Supabase:',err);
+      toast('⚠️ Resultado registrado na tela, mas falhou ao salvar no banco');
+    }
+  }
+
+  // se a matéria que estava em votação é a mesma aberta na Tramitação, atualiza a tela na volta
+  if(materiaSelecionada && materiaSelecionada.num===m.num){
+    materiaSelecionada=m;
+  }
+  sw('tramitacao');
+  materiaSelecionada=m;
+  renderTramitacao();
+}
+
+// ═══ TRANSMISSÃO ═══
+function toggleLive(){
+  liveOn=!liveOn;
+  const btn=document.getElementById('btnLive');
+  const tbLive=document.getElementById('tbLive');
+  if(liveOn){
+    btn.textContent='⏹ Encerrar Transmissão';
+    ['statusYoutube','statusFacebook','statusInstagram'].forEach(id=>{document.getElementById(id).textContent='🔴 Ao Vivo';document.getElementById(id).className='b b-red';});
+    tbLive.style.display='flex';
+    toast('📡 Transmissão iniciada nas 3 plataformas!');
+    let aud=0;
+    cronInterval=setInterval(()=>{aud+=Math.floor(Math.random()*8)+2;document.getElementById('audienciaNum').textContent=aud;},1500);
+  } else {
+    btn.textContent='🔴 Iniciar Transmissão';
+    ['statusYoutube','statusFacebook','statusInstagram'].forEach(id=>{document.getElementById(id).textContent='Offline';document.getElementById(id).className='b b-gray';});
+    tbLive.style.display='none';
+    clearInterval(cronInterval);
+    toast('⏹️ Transmissão encerrada');
+  }
+}
+function renderTransmissao(){
+  document.getElementById('comentariosLive').innerHTML=[
+    {n:'Cidadão123',m:'Parabéns pela transparência!'},
+    {n:'Maria S.',m:'Quando vai votar o projeto da iluminação?'},
+    {n:'José P.',m:'Acompanhando direto do bairro Centro'},
+  ].map(c=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:11.5px;"><strong style="color:var(--navy2);">${c.n}:</strong> <span style="color:var(--tx2);">${c.m}</span></div>`).join('');
+}
+
+// ═══ CONTAS ═══
+function renderContas(){document.getElementById('tbContas').innerHTML=contasExec.map(c=>`<tr><td><strong>${c.exercicio}</strong></td><td>${c.gestor}</td><td><span class="b ${c.parecer.includes('Favorável')?'b-emerald':'b-gold'}">${c.parecer}</span></td><td><span class="b b-navy">${c.situacao}</span></td><td>${c.prazo}</td></tr>`).join('');}
+function salvarContas(){const ex=document.getElementById('ctExercicio').value;if(!ex){toast('⚠️ Informe o exercício');return;}contasExec.unshift({exercicio:ex,gestor:document.getElementById('ctGestor').value,parecer:document.getElementById('ctParecer').value,situacao:'Recebimento',prazo:'A definir'});fecharModal('mContas');renderContas();toast('✅ Processo registrado!');}
+
+// ═══ EMENDAS ═══
+function renderEmendas(){popularSelects();document.getElementById('tbEmendas').innerHTML=emendas.map(e=>`<tr><td>${e.autor}</td><td>${e.benef}</td><td style="font-weight:700;">R$ ${e.valor.toLocaleString('pt-BR')}</td><td>${e.exercicio}</td><td><span class="b ${e.status==='Paga'?'b-emerald':e.status==='Liquidada'?'b-navy':e.status==='Empenhada'?'b-gold':'b-gray'}">${e.status}</span></td></tr>`).join('');}
+function salvarEmenda(){const benef=document.getElementById('emBenef').value.trim();if(!benef){toast('⚠️ Informe o beneficiário');return;}emendas.unshift({autor:document.getElementById('emAutor').value,benef,valor:Number(document.getElementById('emValor').value)||0,exercicio:document.getElementById('emExercicio').value||2026,status:'Proposta'});fecharModal('mEmenda');renderEmendas();toast('📌 Emenda registrada!');}
+
+// ═══ TRANSPARÊNCIA ═══
+function renderTransparencia(){document.getElementById('listaTransparencia').innerHTML=[
+  {t:'PL 045/2026 publicado',d:'há 2h'},{t:'Ata da Sessão 18/06/2026 publicada',d:'há 5h'},{t:'Emenda 2026-014 atualizada para PAGA',d:'há 1 dia'},
+].map(x=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;"><span style="color:var(--tx2);">${x.t}</span><span style="color:var(--tx3);">${x.d}</span></div>`).join('');}
+
+// ═══ ATAS IA ═══
+function renderAtas(){
+  document.getElementById('ataGerada').innerHTML=`<div style="background:linear-gradient(135deg,#081B30,#0F2A4A);border-radius:10px;padding:16px;"><div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:8px;">🤖 GERADO AUTOMATICAMENTE</div><div style="font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.8;">Sessão Ordinária aberta às 14h00 com 15 vereadores presentes (quórum atingido). Aprovados: PL 045/2026 (Reforma Iluminação Pública, 12 votos a favor), Moção 038/2026. Comissão de Obras apresentou parecer favorável ao PL 029/2026. Encerrada às 17h42.</div><button class="btn-sm" style="background:rgba(255,255,255,.15);color:#fff;margin-top:10px;" onclick="toast('✏️ Abrindo editor de ata para revisão')">✏️ Revisar e Publicar</button></div>`;
+  document.getElementById('tbAtas').innerHTML=[
+    {s:'Sessão Ordinária',d:'19/06/2026',st:'Rascunho IA'},{s:'Sessão Ordinária',d:'18/06/2026',st:'Publicada'},{s:'Sessão Extraordinária',d:'12/06/2026',st:'Publicada'},
+  ].map(a=>`<tr><td>${a.s}</td><td>${a.d}</td><td><span class="b ${a.st==='Publicada'?'b-emerald':'b-gold'}">${a.st}</span></td><td><button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);" onclick="toast('📄 Abrindo ata')">Ver</button></td></tr>`).join('');
+}
+
+// ═══ ASSISTENTE IA ═══
+const iaResp={default:(q)=>`Analisando "${q}"... Com base nos documentos da Câmara, recomendo consultar o módulo correspondente para mais detalhes.`,
+local:'**PL 045/2026** está atualmente em **Plenário**, incluído na Ordem do Dia da sessão de hoje (19/06/2026, 14h). Parecer jurídico e da Comissão de Obras já foram favoráveis. Aguarda votação nominal.',
+parados:'**Projetos parados há mais de 30 dias:**\\n\\n🔴 Nenhum projeto crítico no momento.\\n🟡 PLC 012/2026 está há 12 dias em análise jurídica — dentro do prazo regimental.',
+resumo:'**Resumo da última sessão (18/06/2026):**\\n\\nQuórum atingido com 15 presentes. Aprovados: 2 matérias. Rejeitado: 1 requerimento. Destaque: parecer favorável da Comissão de Obras ao PL 029/2026 (Hortas Comunitárias).'};
+function renderAssistente(){
+  const chatEl=document.getElementById('iaChat');
+  if(chatEl&&chatEl.children.length===0)adicionarMsgIA('Olá! Sou o Assistente Legislativo do LegisGov. Posso ajudar você a localizar matérias, consultar votações ou resumir sessões. O que precisa?','ia');
+  document.getElementById('iaSugestoes').innerHTML=['Onde está o PL 045/2026?','Quais projetos estão parados?','Resuma a última sessão'].map(s=>`<button onclick="enviarMsgDireta('${s}')" style="padding:5px 12px;border-radius:20px;border:1px solid #C5D9EE;background:var(--navy-l);color:var(--navy2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${s}</button>`).join('');
+}
+function adicionarMsgIA(texto,quem){const el=document.getElementById('iaChat');if(!el)return;const wrap=document.createElement('div');wrap.style.cssText=`display:flex;${quem==='user'?'justify-content:flex-end;':''}`;const bubble=document.createElement('div');bubble.className=`chat-bubble ${quem==='ia'?'chat-ia':'chat-user'}`;bubble.innerHTML=texto.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\\n/g,'<br>');wrap.appendChild(bubble);el.appendChild(wrap);el.scrollTop=el.scrollHeight;}
+function enviarIA(){const input=document.getElementById('iaInput');const q=input?.value?.trim();if(!q)return;adicionarMsgIA(q,'user');input.value='';setTimeout(()=>{const lq=q.toLowerCase();let resp=iaResp.default(q);if(lq.includes('045'))resp=iaResp.local;else if(lq.includes('parad'))resp=iaResp.parados;else if(lq.includes('resum')||lq.includes('sessão'))resp=iaResp.resumo;adicionarMsgIA(resp,'ia');},700);}
+function enviarMsgDireta(m){const input=document.getElementById('iaInput');if(input)input.value=m;enviarIA();}
+
+// ═══ AUDITORIA ═══
+function renderAuditoria(){document.getElementById('tbAuditoria').innerHTML=auditoria.map(a=>`<tr><td>${a.user}</td><td><span class="b b-navy">${a.acao}</span></td><td>${a.recurso}</td><td style="font-family:monospace;font-size:11px;">${a.ip}</td><td>${a.data}</td></tr>`).join('');}
+function logAuditoria(acao,recurso){
+  auditoria.unshift({user:curUser?.nome||'Sistema',acao,recurso,ip:'192.168.1.'+Math.floor(Math.random()*200+1),data:new Date().toLocaleString('pt-BR')});
+  if(supabaseOnline){
+    db.logAuditoria(acao,recurso,curUser?.nome||'Sistema').catch(err=>console.error('Falha ao gravar auditoria no Supabase:',err));
+  }
+}
+
+// ═══ NOTIFICAÇÕES ═══
+function renderNotificacoes(){document.getElementById('listaNotificacoes').innerHTML=notificacoes.map(n=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span class="b b-navy">${n.tipo}</span><strong style="font-size:13px;flex:1;">${n.titulo}</strong><span style="font-size:10.5px;color:var(--tx3);">${n.quando}</span></div><div style="font-size:11.5px;color:var(--tx3);margin-top:6px;">${n.desc}</div></div>`).join('');}
+
+// ═══ MODALS / TOAST / LOADING ═══
+function abrirModal(id){popularSelects();document.getElementById(id)?.classList.add('on');}
+function fecharModal(id){document.getElementById(id)?.classList.remove('on');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('ov'))e.target.classList.remove('on');});
+function fecharDet(){document.getElementById('detPanel')?.classList.remove('on');}
+let toastTimer;function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('on'),3000);}
+window.addEventListener('load',()=>{const fill=document.getElementById('loadFill');let p=0;const t=setInterval(()=>{p+=Math.random()*20+5;if(fill)fill.style.width=Math.min(p,95)+'%';if(p>=95){clearInterval(t);setTimeout(()=>{if(fill)fill.style.width='100%';setTimeout(()=>document.getElementById('loadScreen')?.classList.add('hidden'),300);},200);}},150);});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('loginScreen').classList.contains('hidden'))doLogin();if(e.key==='Escape'){fecharDet();document.querySelectorAll('.ov.on').forEach(m=>m.classList.remove('on'));}});
+</script>
+</body>
+</html>
