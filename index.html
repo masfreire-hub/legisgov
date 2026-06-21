@@ -766,12 +766,33 @@ const auth = {
   },
 };
 
+// Pergunta diretamente ao Supabase Auth "quem é o dono deste token de sessão?" —
+// é a forma confiável de saber o user_id de quem está logado AGORA, sem depender
+// de filtros que poderiam trazer o registro errado de outra pessoa.
+let _meuUserIdCache = null;
+async function obterMeuUserId() {
+  if (_meuUserIdCache) return _meuUserIdCache;
+  if (!sessaoAuth?.access_token) return null;
+  const resp = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${sessaoAuth.access_token}` }
+  });
+  if (!resp.ok) return null;
+  const data = await resp.json();
+  _meuUserIdCache = data.id || null;
+  return _meuUserIdCache;
+}
+
 const db = {
   async listarCamaras() {
     return sbRequest('legisgov_camaras?select=*&order=nome.asc');
   },
   async buscarMeuPerfil() {
-    const lista = await sbRequest('legisgov_perfis?select=*,legisgov_camaras(nome,cidade,uf)&limit=1');
+    // IMPORTANTE: filtra explicitamente por user_id=eq.<id do usuário logado>.
+    // Sem esse filtro, quando o cargo é "Suporte" (que enxerga todos os perfis via RLS),
+    // a consulta pegava QUALQUER linha da tabela em vez da linha da própria pessoa.
+    const meuId = await obterMeuUserId();
+    if (!meuId) return null;
+    const lista = await sbRequest(`legisgov_perfis?user_id=eq.${meuId}&select=*,legisgov_camaras(nome,cidade,uf)&limit=1`);
     return lista && lista[0] ? lista[0] : null;
   },
   async cadastrarPerfilUsuario(userId, nome, cargo) {
@@ -863,6 +884,7 @@ async function doLogin(){
 
   try{
     // 1) autentica no Supabase Auth — senha sempre criptografada, nunca lida em texto puro
+    _meuUserIdCache=null; // garante que não reaproveita o ID de uma sessão anterior
     const sessao=await auth.login(emailTecnico,senha);
     sessaoAuth={access_token:sessao.access_token,refresh_token:sessao.refresh_token};
 
@@ -1031,7 +1053,17 @@ async function trocarCamaraSuporte(novoCodigo){
   const nomeCamara=camarasDisponiveisSuporte.find(c=>c.codigo===novoCodigo)?.nome||novoCodigo;
   toast(`✅ Agora visualizando: ${nomeCamara}`);
 }
-function logout(){if(!confirm('Sair do sistema?'))return;document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('mainApp').classList.remove('on');}
+function logout(){
+  if(!confirm('Sair do sistema?'))return;
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('mainApp').classList.remove('on');
+  // limpa toda a sessão para garantir que o próximo login não herde dados da pessoa anterior
+  sessaoAuth=null;
+  meuPerfil=null;
+  curUser=null;
+  camaraAtual=null;
+  _meuUserIdCache=null;
+}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('on');}
 
 function sw(page,el){
