@@ -228,16 +228,28 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-he
 
 <div id="loginScreen">
   <div class="lcard">
-    <div class="llogo"><div class="llogo-badge">🏛️</div></div>
-    <div class="ltitle" style="text-align:center;margin-bottom:4px;">LegisGov</div>
-    <div class="lsub">Câmara Municipal · Processo Legislativo Digital</div>
-    <label class="llbl">CPF</label>
-    <input class="linp" id="lcpf" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
-    <label class="llbl">Senha</label>
-    <input class="linp" id="lsenha" type="password" placeholder="••••••••">
-    <button class="lbtn" onclick="doLogin()">ENTRAR NO SISTEMA</button>
-    <div id="loginErro" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#FEF2F2;color:#B91C1C;font-size:12.5px;"></div>
-    <div class="ldemo" style="margin-top:14px;">Acesso demo (sem cadastro real): <span onclick="loginDemo()">🏛️ Entrar no modo demonstração</span></div>
+    <div id="loginEtapaCredenciais">
+      <div class="llogo"><div class="llogo-badge">🏛️</div></div>
+      <div class="ltitle" style="text-align:center;margin-bottom:4px;">LegisGov</div>
+      <div class="lsub">Câmara Municipal · Processo Legislativo Digital</div>
+      <label class="llbl">CPF</label>
+      <input class="linp" id="lcpf" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
+      <label class="llbl">Senha</label>
+      <input class="linp" id="lsenha" type="password" placeholder="••••••••">
+      <button class="lbtn" onclick="doLogin()">ENTRAR NO SISTEMA</button>
+      <div id="loginErro" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#FEF2F2;color:#B91C1C;font-size:12.5px;"></div>
+      <div class="ldemo" style="margin-top:14px;">Acesso demo (sem cadastro real): <span onclick="loginDemo()">🏛️ Entrar no modo demonstração</span></div>
+    </div>
+
+    <div id="loginEtapaCamara" style="display:none;">
+      <div class="llogo"><div class="llogo-badge">🔧</div></div>
+      <div class="ltitle" style="text-align:center;margin-bottom:4px;">Acesso de Suporte</div>
+      <div class="lsub" id="loginSuporteNome">Selecione a Câmara que deseja acessar</div>
+      <label class="llbl">Câmara Municipal</label>
+      <select class="linp" id="lcamaraSuporte"></select>
+      <button class="lbtn" onclick="confirmarEntradaSuporte()">ACESSAR ESTA CÂMARA</button>
+      <div class="ldemo" style="margin-top:14px;"><span onclick="voltarEtapaCredenciais()">← Voltar e usar outro login</span></div>
+    </div>
   </div>
 </div>
 
@@ -899,7 +911,7 @@ async function doLogin(){
     meuPerfil=perfil;
 
     if(perfil.cargo==='Suporte'){
-      // Suporte não pertence a uma Câmara fixa — carrega a lista toda e começa pela primeira
+      // Suporte escolhe a Câmara ANTES de entrar — mostra uma segunda etapa na tela de login
       let listaCamaras=[];
       try{ listaCamaras=await db.listarCamaras(); }catch(e){ console.error('Erro ao listar Câmaras para Suporte:',e); }
       if(!listaCamaras.length){
@@ -908,17 +920,45 @@ async function doLogin(){
         return;
       }
       camarasDisponiveisSuporte=listaCamaras;
-      camaraAtual=listaCamaras[0].codigo;
-    } else {
-      camaraAtual=perfil.camara_codigo;
+      mostrarEtapaSelecaoCamara(perfil);
+      return; // não entra ainda — espera a pessoa escolher a Câmara e clicar em "Acessar"
     }
 
+    camaraAtual=perfil.camara_codigo;
     const av=perfil.nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
     await entrar({nome:perfil.nome,av,cargo:perfil.cargo});
   }catch(err){
     console.error('Erro no login:',err);
     mostrarErroLogin('⚠️ E-mail ou senha incorretos, ou sem conexão com o banco.');
   }
+}
+
+// Suporte: mostra a 2ª etapa da tela de login (escolher Câmara) em vez de entrar direto
+let _perfilSuporteAguardando=null;
+function mostrarEtapaSelecaoCamara(perfil){
+  _perfilSuporteAguardando=perfil;
+  document.getElementById('loginSuporteNome').textContent=`Olá, ${perfil.nome.split(' ')[0]} — selecione a Câmara que deseja acessar`;
+  document.getElementById('lcamaraSuporte').innerHTML=camarasDisponiveisSuporte
+    .map(c=>`<option value="${c.codigo}">🏛️ ${c.nome}</option>`).join('');
+  document.getElementById('loginEtapaCredenciais').style.display='none';
+  document.getElementById('loginEtapaCamara').style.display='block';
+}
+async function confirmarEntradaSuporte(){
+  const codigoEscolhido=document.getElementById('lcamaraSuporte').value;
+  if(!codigoEscolhido||!_perfilSuporteAguardando)return;
+  camaraAtual=codigoEscolhido;
+  const perfil=_perfilSuporteAguardando;
+  const av=perfil.nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+  await entrar({nome:perfil.nome,av,cargo:perfil.cargo});
+}
+function voltarEtapaCredenciais(){
+  sessaoAuth=null;
+  meuPerfil=null;
+  _perfilSuporteAguardando=null;
+  _meuUserIdCache=null;
+  document.getElementById('lsenha').value='';
+  document.getElementById('loginEtapaCamara').style.display='none';
+  document.getElementById('loginEtapaCredenciais').style.display='block';
 }
 
 // Modo demonstração: não usa login real nem grava nada permanentemente — só para mostrar o sistema funcionando
