@@ -231,12 +231,13 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-he
     <div class="llogo"><div class="llogo-badge">🏛️</div></div>
     <div class="ltitle" style="text-align:center;margin-bottom:4px;">LegisGov</div>
     <div class="lsub">Câmara Municipal · Processo Legislativo Digital</div>
-    <label class="llbl">E-mail Institucional</label>
-    <input class="linp" id="lemail" type="email" placeholder="vereador@camara.gov.br" value="presidente@camara.gov.br">
+    <label class="llbl">E-mail</label>
+    <input class="linp" id="lemail" type="email" placeholder="seu.nome@camara.gov.br">
     <label class="llbl">Senha</label>
-    <input class="linp" id="lsenha" type="password" placeholder="••••••••" value="123456">
+    <input class="linp" id="lsenha" type="password" placeholder="••••••••">
     <button class="lbtn" onclick="doLogin()">ENTRAR NO SISTEMA</button>
-    <div class="ldemo">Acesso demo: <span onclick="loginDemo('presidente')">🏛️ Presidente</span> · <span onclick="loginDemo('vereador')">👤 Vereador</span> · <span onclick="loginDemo('secretaria')">📋 Secretaria</span></div>
+    <div id="loginErro" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#FEF2F2;color:#B91C1C;font-size:12.5px;"></div>
+    <div class="ldemo" style="margin-top:14px;">Acesso demo (sem cadastro real): <span onclick="loginDemo()">🏛️ Entrar no modo demonstração</span></div>
   </div>
 </div>
 
@@ -251,6 +252,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-he
     <div class="tb-mid">
       <div class="tb-page" id="tbPage">Dashboard</div>
       <span class="tb-badge" id="tbCamara">Câmara Municipal · 19ª Legislatura</span>
+      <select id="seletorCamaraSuporte" style="display:none;font-size:11.5px;font-weight:700;padding:4px 8px;border-radius:20px;border:1px solid #D4A017;background:#FEF9E7;color:#92660A;cursor:pointer;" onchange="trocarCamaraSuporte(this.value)"></select>
       <span class="tb-badge live" id="tbLive" style="display:none;"><span class="tb-live-dot"></span> AO VIVO</span>
     </div>
     <div class="tb-right">
@@ -347,7 +349,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-he
     <div class="page" id="p-vereadores">
       <div class="ph">
         <div><div class="ph-title">👥 Vereadores</div><div class="ph-sub">19ª Legislatura · 2025-2028</div></div>
-        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mVereador')">+ Novo Vereador</button>
+        <button class="btn-sm" id="btnNovoVereador" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mVereador')">+ Novo Usuário</button>
       </div>
       <div class="card">
         <table class="tbl"><thead><tr><th></th><th>Nome</th><th>Partido</th><th>Presença</th><th>Proposições</th><th>Status</th></tr></thead>
@@ -620,11 +622,23 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-he
 <!-- MODALS -->
 <div class="ov" id="mVereador">
   <div class="modal">
-    <div class="m-title">👤 Novo Vereador</div>
+    <div class="m-title">👤 Cadastrar Novo Usuário</div>
+    <div style="font-size:11.5px;color:var(--tx3);margin:-6px 0 12px;">Cria um login real para esta pessoa acessar o LegisGov, já vinculado à sua Câmara.</div>
     <label class="m-lbl">Nome Completo</label><input class="m-inp" id="vNome" placeholder="Nome civil">
-    <label class="m-lbl">Nome Parlamentar</label><input class="m-inp" id="vNomeParl" placeholder="Como é tratado em sessão">
-    <div class="fg"><div><label class="m-lbl">Partido</label><input class="m-inp" id="vPartido" placeholder="Sigla"></div><div><label class="m-lbl">CPF</label><input class="m-inp" id="vCpf" placeholder="000.000.000-00"></div></div>
-    <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR</button>
+    <label class="m-lbl">Cargo</label>
+    <select class="m-sel" id="vCargo">
+      <option value="Vereador">Vereador(a)</option>
+      <option value="Presidente">Presidente</option>
+      <option value="Secretaria">Secretaria Legislativa</option>
+      <option value="Procuradoria">Procuradoria Jurídica</option>
+      <option value="Comissao">Comissão</option>
+      <option value="Administrador">Administrador</option>
+    </select>
+    <div class="fg"><div><label class="m-lbl">Partido</label><input class="m-inp" id="vPartido" placeholder="Sigla (se Vereador)"></div><div><label class="m-lbl">CPF</label><input class="m-inp" id="vCpf" placeholder="000.000.000-00"></div></div>
+    <label class="m-lbl">E-mail de acesso</label><input class="m-inp" id="vEmail" type="email" placeholder="nome@camara.gov.br">
+    <label class="m-lbl">Senha provisória</label><input class="m-inp" id="vSenha" type="text" placeholder="Mínimo 6 caracteres">
+    <div style="font-size:11px;color:var(--tx3);margin:-6px 0 12px;">Combine essa senha com a pessoa por fora do sistema — ela pode trocar depois.</div>
+    <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR E CRIAR LOGIN</button>
     <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
   </div>
 </div>
@@ -691,15 +705,19 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-he
 
 <script>
 let curUser=null;
+let camaraAtual=null; // código da Câmara do usuário logado, definido pelo PERFIL dele — nunca escolhido livremente
+let meuPerfil=null; // {nome, cargo, camara_codigo}
+let sessaoAuth=null; // {access_token, refresh_token} da sessão Supabase Auth atual
 let vereadores=[],comissoes=[],materias=[],sessoes=[],votos=[],contasExec=[],emendas=[],auditoria=[],notificacoes=[];
 let sessaoAberta=false, liveOn=false, cronInterval=null, cronSegundos=180;
 let materiaSelecionada=null;
 let materiaEmVotacao=null; // número da matéria atualmente sendo votada na tela de Votação Eletrônica
+let camarasDisponiveisSuporte=[]; // lista de todas as Câmaras, usada só pelo cargo Suporte para o seletor
 let votosPorMateria={}; // { '045/2026': [{nome,voto,hora}, ...] }
 
 /* ═══════════════════════════════════════════════════════════
-   INTEGRAÇÃO COM SUPABASE — banco de dados real, compartilhado
-   entre todos os usuários, hospedado na nuvem.
+   INTEGRAÇÃO COM SUPABASE — banco de dados real, com login por
+   usuário (Supabase Auth) e isolamento de dados por Câmara via RLS.
    ═══════════════════════════════════════════════════════════ */
 const SUPABASE_URL = 'https://jxautkgxdxugfegzbssr.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_eJNWbkSaefmCkc9SEmvkCw_LJIQu3jT';
@@ -709,9 +727,12 @@ async function sbRequest(path, options = {}) {
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
   // Importante: chaves no novo formato (sb_publishable_...) NÃO são JWT.
   // Vão apenas no header "apikey" — nunca em "Authorization: Bearer", senão a API rejeita com 403.
+  // Quando há sessão de usuário logado, o token de sessão vai no Authorization — é isso que
+  // identifica QUEM está pedindo os dados, permitindo o RLS liberar só a Câmara certa.
   const headers = {
     'apikey': SUPABASE_KEY,
     'Content-Type': 'application/json',
+    ...(sessaoAuth?.access_token ? { 'Authorization': `Bearer ${sessaoAuth.access_token}` } : {}),
     ...(options.headers || {})
   };
   const resp = await fetch(url, { ...options, headers });
@@ -719,45 +740,83 @@ async function sbRequest(path, options = {}) {
     const errText = await resp.text().catch(() => '');
     throw new Error(`Supabase ${resp.status}: ${errText}`);
   }
-  // DELETE e alguns PATCH retornam corpo vazio
   const text = await resp.text();
   return text ? JSON.parse(text) : null;
 }
 
+async function authRequest(path, body) {
+  const resp = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    throw new Error(data.error_description || data.msg || data.error || `Erro ${resp.status}`);
+  }
+  return data;
+}
+
+const auth = {
+  async login(email, senha) {
+    return authRequest('token?grant_type=password', { email, password: senha });
+  },
+  async cadastrar(email, senha) {
+    return authRequest('signup', { email, password: senha });
+  },
+};
+
 const db = {
+  async listarCamaras() {
+    return sbRequest('legisgov_camaras?select=*&order=nome.asc');
+  },
+  async buscarMeuPerfil() {
+    const lista = await sbRequest('legisgov_perfis?select=*,legisgov_camaras(nome,cidade,uf)&limit=1');
+    return lista && lista[0] ? lista[0] : null;
+  },
+  async cadastrarPerfilUsuario(userId, nome, cargo) {
+    // só funciona se quem está logado tem cargo de Secretaria/Administrador/Presidente — garantido pela policy do banco
+    return sbRequest('legisgov_perfis', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({ user_id: userId, nome, cargo, camara_codigo: camaraAtual })
+    });
+  },
+  async listarColegas() {
+    return sbRequest('legisgov_perfis?select=*&order=nome.asc');
+  },
   async listarVereadores() {
-    return sbRequest('legisgov_vereadores?select=*&order=id.asc');
+    return sbRequest(`legisgov_vereadores?camara_codigo=eq.${encodeURIComponent(camaraAtual)}&select=*&order=id.asc`);
   },
   async listarMaterias() {
-    return sbRequest('legisgov_materias?select=*&order=criado_em.desc');
+    return sbRequest(`legisgov_materias?camara_codigo=eq.${encodeURIComponent(camaraAtual)}&select=*&order=criado_em.desc`);
   },
   async listarVotos(materiaNum) {
-    return sbRequest(`legisgov_votos?materia_num=eq.${encodeURIComponent(materiaNum)}&select=*`);
+    return sbRequest(`legisgov_votos?camara_codigo=eq.${encodeURIComponent(camaraAtual)}&materia_num=eq.${encodeURIComponent(materiaNum)}&select=*`);
   },
   async criarMateria(materia) {
     return sbRequest('legisgov_materias', {
       method: 'POST',
       headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify(materia)
+      body: JSON.stringify({ ...materia, camara_codigo: camaraAtual })
     });
   },
   async atualizarMateria(num, campos) {
-    return sbRequest(`legisgov_materias?num=eq.${encodeURIComponent(num)}`, {
+    return sbRequest(`legisgov_materias?camara_codigo=eq.${encodeURIComponent(camaraAtual)}&num=eq.${encodeURIComponent(num)}`, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=representation' },
       body: JSON.stringify(campos)
     });
   },
   async upsertVoto(materiaNum, nome, voto, hora) {
-    // on conflict (materia_num, nome) — substitui o voto existente em vez de duplicar
     return sbRequest('legisgov_votos', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates,return=representation' },
-      body: JSON.stringify({ materia_num: materiaNum, nome, voto, hora })
+      body: JSON.stringify({ camara_codigo: camaraAtual, materia_num: materiaNum, nome, voto, hora })
     });
   },
   async atualizarPresenca(id, presente) {
-    return sbRequest(`legisgov_vereadores?id=eq.${id}`, {
+    return sbRequest(`legisgov_vereadores?camara_codigo=eq.${encodeURIComponent(camaraAtual)}&id=eq.${id}`, {
       method: 'PATCH',
       body: JSON.stringify({ presente })
     });
@@ -765,10 +824,97 @@ const db = {
   async logAuditoria(acao, referencia, usuario) {
     return sbRequest('legisgov_auditoria', {
       method: 'POST',
-      body: JSON.stringify({ acao, referencia, usuario })
+      body: JSON.stringify({ acao, referencia, usuario, camara_codigo: camaraAtual })
     });
   },
 };
+
+// ═══ LOGIN REAL — e-mail/senha definem automaticamente a Câmara e o cargo ═══
+function mostrarErroLogin(msg){
+  const el=document.getElementById('loginErro');
+  el.textContent=msg;
+  el.style.display='block';
+}
+function esconderErroLogin(){
+  document.getElementById('loginErro').style.display='none';
+}
+
+async function doLogin(){
+  esconderErroLogin();
+  const email=document.getElementById('lemail').value.trim();
+  const senha=document.getElementById('lsenha').value;
+  if(!email||!senha){mostrarErroLogin('⚠️ Preencha e-mail e senha.');return;}
+
+  try{
+    // 1) autentica no Supabase Auth — senha sempre criptografada, nunca lida em texto puro
+    const sessao=await auth.login(email,senha);
+    sessaoAuth={access_token:sessao.access_token,refresh_token:sessao.refresh_token};
+
+    // 2) busca o perfil do usuário — é ELE quem diz a qual Câmara a pessoa pertence e seu cargo
+    //    (a pessoa nunca escolhe a Câmara; ela já vem definida pelo cadastro)
+    const perfil=await db.buscarMeuPerfil();
+    if(!perfil){
+      mostrarErroLogin('⚠️ Login válido, mas este usuário ainda não tem um perfil de Câmara cadastrado. Procure a Secretaria da sua Câmara.');
+      sessaoAuth=null;
+      return;
+    }
+    meuPerfil=perfil;
+
+    if(perfil.cargo==='Suporte'){
+      // Suporte não pertence a uma Câmara fixa — carrega a lista toda e começa pela primeira
+      let listaCamaras=[];
+      try{ listaCamaras=await db.listarCamaras(); }catch(e){ console.error('Erro ao listar Câmaras para Suporte:',e); }
+      if(!listaCamaras.length){
+        mostrarErroLogin('⚠️ Nenhuma Câmara cadastrada ainda no sistema.');
+        sessaoAuth=null;
+        return;
+      }
+      camarasDisponiveisSuporte=listaCamaras;
+      camaraAtual=listaCamaras[0].codigo;
+    } else {
+      camaraAtual=perfil.camara_codigo;
+    }
+
+    const av=perfil.nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+    await entrar({nome:perfil.nome,av,cargo:perfil.cargo});
+  }catch(err){
+    console.error('Erro no login:',err);
+    mostrarErroLogin('⚠️ E-mail ou senha incorretos, ou sem conexão com o banco.');
+  }
+}
+
+// Modo demonstração: não usa login real nem grava nada permanentemente — só para mostrar o sistema funcionando
+function loginDemo(){
+  sessaoAuth=null;
+  camaraAtual='demo';
+  meuPerfil={nome:'Usuário Demonstração',cargo:'Presidente',camara_codigo:'demo'};
+  entrar({nome:'Usuário Demonstração',av:'UD',cargo:'Presidente (demo)'});
+}
+
+function aplicarDadosOffline(){
+  vereadores=[
+    {id:1,nome:'João Ferreira Lima',partido:'PSD',presenca:96,proposicoes:14,status:'active',av:'JF',cor:'#0F2A4A',presente:true},
+    {id:2,nome:'Maria Aparecida Souza',partido:'PT',presenca:88,proposicoes:9,status:'active',av:'MA',cor:'#0E7C5A',presente:true},
+    {id:3,nome:'Carlos Mendes Filho',partido:'MDB',presenca:74,proposicoes:6,status:'active',av:'CM',cor:'#B8860B',presente:true},
+    {id:4,nome:'Ana Paula Ribeiro',partido:'PSDB',presenca:100,proposicoes:18,status:'active',av:'AP',cor:'#5B21B6',presente:true},
+    {id:5,nome:'Roberto Carlos Alves',partido:'PL',presenca:62,proposicoes:3,status:'risk',av:'RC',cor:'#DC2626',presente:false},
+  ];
+  materias=[
+    {num:'045/2026',tipo:'Projeto de Lei',ementa:'Reforma da Iluminação Pública com Energia Solar',autor:'João Ferreira Lima',situacao:'Plenário',prazo:'22/06/2026',critico:true,historico:{}},
+    {num:'046/2026',tipo:'Requerimento',ementa:'Solicita informações sobre obras na Av. Central',autor:'Maria Aparecida Souza',situacao:'Comissão',prazo:'25/06/2026',critico:false,historico:{}},
+    {num:'012/2026',tipo:'Projeto de Lei Complementar',ementa:'Altera o Código Tributário Municipal',autor:'Ana Paula Ribeiro',situacao:'Jurídico',prazo:'30/06/2026',critico:false,historico:{}},
+    {num:'038/2026',tipo:'Moção',ementa:'Moção de Aplauso aos profissionais de saúde',autor:'Carlos Mendes Filho',situacao:'Aprovado',prazo:'—',critico:false,historico:{}},
+    {num:'041/2026',tipo:'Indicação',ementa:'Indica a instalação de semáforo na Rua das Flores',autor:'Roberto Carlos Alves',situacao:'Protocolado',prazo:'28/06/2026',critico:false,historico:{}},
+    {num:'029/2026',tipo:'Projeto de Lei',ementa:'Institui o Programa Municipal de Hortas Comunitárias',autor:'Maria Aparecida Souza',situacao:'Parecer',prazo:'20/06/2026',critico:true,historico:{}},
+    {num:'008/2026',tipo:'Veto',ementa:'Veto parcial ao PL 003/2026 — Zoneamento Urbano',autor:'Executivo Municipal',situacao:'Plenário',prazo:'24/06/2026',critico:true,historico:{}},
+  ];
+  auditoria=[
+    {user:'Ana Paula Ribeiro',acao:'Assinatura de Voto',recurso:'PL 045/2026',ip:'192.168.1.42',data:'19/06/2026 14:32'},
+    {user:'Secretaria Legislativa',acao:'Publicação de Ata',recurso:'Sessão 18/06/2026',ip:'192.168.1.10',data:'19/06/2026 09:15'},
+    {user:'João Ferreira Lima',acao:'Protocolo de Matéria',recurso:'PL 045/2026',ip:'192.168.1.55',data:'15/06/2026 11:02'},
+    {user:'Presidente',acao:'Abertura de Sessão',recurso:'Sessão 18/06/2026',ip:'192.168.1.05',data:'18/06/2026 14:00'},
+  ];
+}
 
 async function initDados(){
   // dados que não mudam de Câmara para Câmara (ainda fixos, não fazem parte das tabelas Supabase desta etapa)
@@ -796,7 +942,14 @@ async function initDados(){
     {tipo:'Votação',titulo:'Votação aberta',desc:'PL 045/2026 está em votação nominal',quando:'agora'},
   ];
 
-  // tenta carregar do Supabase (banco real, compartilhado entre todos os usuários)
+  // modo demonstração: nunca tenta o Supabase (não há sessão de usuário real, o RLS bloquearia mesmo)
+  if(!sessaoAuth){
+    aplicarDadosOffline();
+    toast('🧪 Modo demonstração — os dados não são salvos permanentemente');
+    return;
+  }
+
+  // tenta carregar do Supabase (banco real, com isolamento por Câmara garantido pelo RLS)
   try {
     const [vereadoresDB, materiasDB] = await Promise.all([
       db.listarVereadores(),
@@ -818,48 +971,46 @@ async function initDados(){
   } catch (err) {
     console.error('⚠️ Não foi possível conectar ao Supabase, usando dados de exemplo locais:', err);
     supabaseOnline = false;
-    vereadores=[
-      {id:1,nome:'João Ferreira Lima',partido:'PSD',presenca:96,proposicoes:14,status:'active',av:'JF',cor:'#0F2A4A',presente:true},
-      {id:2,nome:'Maria Aparecida Souza',partido:'PT',presenca:88,proposicoes:9,status:'active',av:'MA',cor:'#0E7C5A',presente:true},
-      {id:3,nome:'Carlos Mendes Filho',partido:'MDB',presenca:74,proposicoes:6,status:'active',av:'CM',cor:'#B8860B',presente:true},
-      {id:4,nome:'Ana Paula Ribeiro',partido:'PSDB',presenca:100,proposicoes:18,status:'active',av:'AP',cor:'#5B21B6',presente:true},
-      {id:5,nome:'Roberto Carlos Alves',partido:'PL',presenca:62,proposicoes:3,status:'risk',av:'RC',cor:'#DC2626',presente:false},
-    ];
-    materias=[
-      {num:'045/2026',tipo:'Projeto de Lei',ementa:'Reforma da Iluminação Pública com Energia Solar',autor:'João Ferreira Lima',situacao:'Plenário',prazo:'22/06/2026',critico:true,historico:{}},
-      {num:'046/2026',tipo:'Requerimento',ementa:'Solicita informações sobre obras na Av. Central',autor:'Maria Aparecida Souza',situacao:'Comissão',prazo:'25/06/2026',critico:false,historico:{}},
-      {num:'012/2026',tipo:'Projeto de Lei Complementar',ementa:'Altera o Código Tributário Municipal',autor:'Ana Paula Ribeiro',situacao:'Jurídico',prazo:'30/06/2026',critico:false,historico:{}},
-      {num:'038/2026',tipo:'Moção',ementa:'Moção de Aplauso aos profissionais de saúde',autor:'Carlos Mendes Filho',situacao:'Aprovado',prazo:'—',critico:false,historico:{}},
-      {num:'041/2026',tipo:'Indicação',ementa:'Indica a instalação de semáforo na Rua das Flores',autor:'Roberto Carlos Alves',situacao:'Protocolado',prazo:'28/06/2026',critico:false,historico:{}},
-      {num:'029/2026',tipo:'Projeto de Lei',ementa:'Institui o Programa Municipal de Hortas Comunitárias',autor:'Maria Aparecida Souza',situacao:'Parecer',prazo:'20/06/2026',critico:true,historico:{}},
-      {num:'008/2026',tipo:'Veto',ementa:'Veto parcial ao PL 003/2026 — Zoneamento Urbano',autor:'Executivo Municipal',situacao:'Plenário',prazo:'24/06/2026',critico:true,historico:{}},
-    ];
-    auditoria=[
-      {user:'Ana Paula Ribeiro',acao:'Assinatura de Voto',recurso:'PL 045/2026',ip:'192.168.1.42',data:'19/06/2026 14:32'},
-      {user:'Secretaria Legislativa',acao:'Publicação de Ata',recurso:'Sessão 18/06/2026',ip:'192.168.1.10',data:'19/06/2026 09:15'},
-      {user:'João Ferreira Lima',acao:'Protocolo de Matéria',recurso:'PL 045/2026',ip:'192.168.1.55',data:'15/06/2026 11:02'},
-      {user:'Presidente',acao:'Abertura de Sessão',recurso:'Sessão 18/06/2026',ip:'192.168.1.05',data:'18/06/2026 14:00'},
-    ];
+    aplicarDadosOffline();
     toast('⚠️ Sem conexão com o banco — usando dados de demonstração (não serão salvos)');
   }
 }
 
-function doLogin(){
-  const email=document.getElementById('lemail').value.trim();
-  if(!email){toast('⚠️ Digite seu e-mail');return;}
-  const perfis={'presidente@camara.gov.br':{nome:'Ana Paula Ribeiro',av:'AP',cargo:'Presidente'},'vereador@camara.gov.br':{nome:'João Ferreira Lima',av:'JF',cargo:'Vereador'},'secretaria@camara.gov.br':{nome:'Secretaria Legislativa',av:'SL',cargo:'Secretaria'}};
-  entrar(perfis[email]||{nome:'Usuário Demo',av:'PR',cargo:'Presidente'});
-}
-function loginDemo(t){const m={presidente:'presidente@camara.gov.br',vereador:'vereador@camara.gov.br',secretaria:'secretaria@camara.gov.br'};document.getElementById('lemail').value=m[t];doLogin();}
 async function entrar(u){
   curUser=u;
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('mainApp').classList.add('on');
   document.getElementById('userAv').textContent=u.av;
+
+  const seletor=document.getElementById('seletorCamaraSuporte');
+  const badgeCamara=document.getElementById('tbCamara');
+  if(u.cargo==='Suporte'){
+    seletor.innerHTML=camarasDisponiveisSuporte.map(c=>`<option value="${c.codigo}">🔧 ${c.nome}</option>`).join('');
+    seletor.value=camaraAtual;
+    seletor.style.display='inline-block';
+    badgeCamara.style.display='none';
+  } else {
+    seletor.style.display='none';
+    badgeCamara.style.display='inline-flex';
+  }
+
   toast('⏳ Carregando dados do banco...');
   await initDados();
   renderAll();
   if(supabaseOnline)toast('✅ Conectado ao banco de dados real');
+}
+
+// Suporte trocando de Câmara no seletor — recarrega tudo sem precisar deslogar
+async function trocarCamaraSuporte(novoCodigo){
+  camaraAtual=novoCodigo;
+  votosPorMateria={}; // limpa cache de votos da Câmara anterior, para não misturar
+  materiaSelecionada=null;
+  materiaEmVotacao=null;
+  toast('🔧 Trocando para a Câmara selecionada...');
+  await initDados();
+  renderAll();
+  const nomeCamara=camarasDisponiveisSuporte.find(c=>c.codigo===novoCodigo)?.nome||novoCodigo;
+  toast(`✅ Agora visualizando: ${nomeCamara}`);
 }
 function logout(){if(!confirm('Sair do sistema?'))return;document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('mainApp').classList.remove('on');}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('on');}
@@ -906,6 +1057,10 @@ function renderDash(){
 // ═══ VEREADORES ═══
 function renderVereadores(){
   document.getElementById('tbVereadores').innerHTML=vereadores.map(v=>`<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;"><td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td><td><strong>${v.nome}</strong></td><td><span class="b b-navy">${v.partido}</span></td><td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca}%;background:${v.presenca>=80?'#0E7C5A':v.presenca>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca}%</span></div></td><td>${v.proposicoes}</td><td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td></tr>`).join('');
+  // só Secretaria/Presidente/Administrador podem cadastrar novos usuários (a tela só mostra; o banco também impede via RLS)
+  const podeCadastrar=['Secretaria','Presidente','Administrador'].includes(meuPerfil?.cargo);
+  const btn=document.getElementById('btnNovoVereador');
+  if(btn)btn.style.display=podeCadastrar?'inline-flex':'none';
 }
 function abrirDetVereador(id){
   const v=vereadores.find(x=>x.id===id);if(!v)return;
@@ -913,7 +1068,48 @@ function abrirDetVereador(id){
   document.getElementById('detBody').innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;"><div class="av" style="width:52px;height:52px;background:${v.cor};font-size:18px;">${v.av}</div><div><div style="font-size:16px;font-weight:800;">${v.nome}</div><div style="font-size:12px;color:var(--tx3);">${v.partido} · 19ª Legislatura</div></div></div><div class="det-sec">PRESENÇA</div><div class="pb" style="margin-bottom:4px;"><div class="pb-fill" style="width:${v.presenca}%;background:#0E7C5A;"></div></div><div style="font-size:11px;color:var(--tx3);">${v.presenca}% de presença nas sessões</div><div class="det-sec">PROPOSIÇÕES</div><div style="font-size:22px;font-weight:900;color:var(--navy2);">${v.proposicoes}</div>`;
   document.getElementById('detPanel').classList.add('on');
 }
-function salvarVereador(){const nome=document.getElementById('vNome').value.trim();if(!nome){toast('⚠️ Informe o nome');return;}vereadores.push({id:vereadores.length+1,nome,partido:document.getElementById('vPartido').value||'—',presenca:100,proposicoes:0,status:'active',av:nome.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase(),cor:'#0F2A4A'});fecharModal('mVereador');renderVereadores();toast('✅ Vereador cadastrado!');}
+async function salvarVereador(){
+  const nome=document.getElementById('vNome').value.trim();
+  const cargo=document.getElementById('vCargo').value;
+  const email=document.getElementById('vEmail').value.trim();
+  const senha=document.getElementById('vSenha').value;
+  const partido=document.getElementById('vPartido').value||'—';
+
+  if(!nome){toast('⚠️ Informe o nome');return;}
+  if(!email||!senha){toast('⚠️ Informe e-mail e senha de acesso');return;}
+  if(senha.length<6){toast('⚠️ A senha precisa ter pelo menos 6 caracteres');return;}
+
+  if(!supabaseOnline){
+    toast('⚠️ Sem conexão com o banco — não é possível criar login agora');
+    return;
+  }
+
+  try{
+    // 1) cria o login real no Supabase Auth (senha sempre criptografada)
+    const novoUsuario=await auth.cadastrar(email,senha);
+    const novoUserId=novoUsuario.user?.id || novoUsuario.id;
+    if(!novoUserId)throw new Error('Não foi possível obter o ID do novo usuário');
+
+    // 2) vincula o perfil dele à MESMA Câmara de quem está cadastrando, com o cargo escolhido
+    await db.cadastrarPerfilUsuario(novoUserId,nome,cargo);
+
+    // 3) se for Vereador, também aparece na lista de vereadores da Câmara
+    if(cargo==='Vereador'||cargo==='Presidente'){
+      await sbRequest('legisgov_vereadores',{
+        method:'POST',
+        body:JSON.stringify({id:vereadores.length+1,nome,partido,presente:true,eu:false,camara_codigo:camaraAtual})
+      });
+    }
+
+    fecharModal('mVereador');
+    await initDados();
+    renderAll();
+    toast(`✅ ${nome} cadastrado(a) com login próprio! Avise a senha por fora do sistema.`);
+  }catch(err){
+    console.error('Erro ao cadastrar novo usuário:',err);
+    toast('⚠️ Não foi possível cadastrar — ' + (err.message||'verifique os dados e tente novamente'));
+  }
+}
 
 // ═══ COMISSÕES ═══
 function renderComissoes(){
