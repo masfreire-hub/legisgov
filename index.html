@@ -887,7 +887,7 @@ async function doLogin(){
 function loginDemo(){
   sessaoAuth=null;
   camaraAtual='demo';
-  meuPerfil={nome:'Usuário Demonstração',cargo:'Presidente',camara_codigo:'demo'};
+  meuPerfil={nome:'Usuário Demonstração',cargo:'Presidente',camara_codigo:'demo',legisgov_camaras:{nome:'Câmara Municipal (Demonstração)'}};
   entrar({nome:'Usuário Demonstração',av:'UD',cargo:'Presidente (demo)'});
 }
 
@@ -992,6 +992,9 @@ async function entrar(u){
   } else {
     seletor.style.display='none';
     badgeCamara.style.display='inline-flex';
+    // mostra o nome real da Câmara do usuário (vindo do perfil), não mais um texto fixo genérico
+    const nomeCamara=meuPerfil?.legisgov_camaras?.nome;
+    badgeCamara.textContent=nomeCamara?`🏛️ ${nomeCamara}`:'Câmara Municipal';
   }
 
   toast('⏳ Carregando dados do banco...');
