@@ -657,10 +657,11 @@ select.linp option{color:#0F172A;background:#fff;}
 
     <!-- abas -->
     <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;" id="vTabs">
-      <button class="vtab active" onclick="mudarAbaVer(0,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;color:var(--navy2);border-bottom:2px solid var(--navy2);cursor:pointer;letter-spacing:.4px;margin-bottom:-2px;">👤 PESSOAL</button>
-      <button class="vtab" onclick="mudarAbaVer(1,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.4px;margin-bottom:-2px;">🏠 ENDEREÇO</button>
-      <button class="vtab" onclick="mudarAbaVer(2,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.4px;margin-bottom:-2px;">📱 CONTATO</button>
-      <button class="vtab" onclick="mudarAbaVer(3,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.4px;margin-bottom:-2px;">🔑 ACESSO</button>
+      <button class="vtab active" onclick="mudarAbaVer(0,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--navy2);border-bottom:2px solid var(--navy2);cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">👤 PESSOAL</button>
+      <button class="vtab" onclick="mudarAbaVer(1,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">🏠 ENDEREÇO</button>
+      <button class="vtab" onclick="mudarAbaVer(2,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">📱 CONTATO</button>
+      <button class="vtab" onclick="mudarAbaVer(3,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">🗂️ COMISSÕES</button>
+      <button class="vtab" onclick="mudarAbaVer(4,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">🔑 ACESSO</button>
     </div>
 
     <!-- aba 0 — dados pessoais -->
@@ -832,12 +833,42 @@ select.linp option{color:#0F172A;background:#fff;}
 
       <div style="display:flex;justify-content:space-between;margin-top:4px;">
         <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(1,document.querySelectorAll('.vtab')[1])">← Voltar</button>
-        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(3,document.querySelectorAll('.vtab')[3])">Próximo: Acesso →</button>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(3,document.querySelectorAll('.vtab')[3])">Próximo: Comissões →</button>
       </div>
     </div>
 
-    <!-- aba 3 — acesso ao sistema -->
+    <!-- aba 3 — comissões -->
     <div class="vaba" id="vaba3" style="display:none;">
+      <div style="padding:10px 14px;background:var(--emerald-l);border:1px solid rgba(14,124,90,.25);border-radius:9px;margin-bottom:14px;font-size:11.5px;color:var(--emerald);">
+        🗂️ Vincule o vereador às comissões de que faz parte. Ele poderá consultar essas comissões diretamente no painel.
+      </div>
+
+      <div id="vComissoesVinculadas" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
+
+      <div style="border:1.5px dashed var(--border2);border-radius:var(--rs);padding:10px 12px;background:var(--surface2);">
+        <div style="font-size:11px;font-weight:700;color:var(--tx3);letter-spacing:.6px;margin-bottom:8px;">+ VINCULAR A UMA COMISSÃO</div>
+        <div style="display:flex;gap:8px;">
+          <select id="vAddComissaoSelect" class="m-sel" style="flex:1;margin-bottom:0;">
+          </select>
+          <select id="vAddComissaoRole" class="m-sel" style="width:130px;margin-bottom:0;">
+            <option value="Membro">Membro</option>
+            <option value="Presidente">Presidente</option>
+            <option value="Vice-Presidente">Vice-Presidente</option>
+            <option value="Relator">Relator</option>
+            <option value="Secretário">Secretário(a)</option>
+          </select>
+          <button class="btn-sm" style="background:var(--navy2);color:#fff;white-space:nowrap;" onclick="vincularComissaoVereador()">+ Vincular</button>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:14px;">
+        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(2,document.querySelectorAll('.vtab')[2])">← Voltar</button>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(4,document.querySelectorAll('.vtab')[4])">Próximo: Acesso →</button>
+      </div>
+    </div>
+
+    <!-- aba 4 — acesso ao sistema -->
+    <div class="vaba" id="vaba4" style="display:none;">
       <div style="padding:10px 14px;background:var(--navy-l);border:1px solid #C5D9EE;border-radius:9px;margin-bottom:14px;font-size:11.5px;color:var(--navy2);">
         🔑 O vereador usará o <strong>CPF</strong> informado na aba Pessoal e esta senha para acessar o LegisGov.
       </div>
@@ -876,7 +907,7 @@ select.linp option{color:#0F172A;background:#fff;}
       <input type="hidden" id="vPerfilAcesso" value="total">
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(2,document.querySelectorAll('.vtab')[2])">← Voltar</button>
+        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(3,document.querySelectorAll('.vtab')[3])">← Voltar</button>
         <div style="font-size:10.5px;color:var(--tx3);">* campos obrigatórios</div>
       </div>
 
@@ -1555,6 +1586,22 @@ function abrirDetVereador(id){
     <div class="pb" style="margin-bottom:4px;"><div class="pb-fill" style="width:${v.presenca||0}%;background:#0E7C5A;"></div></div>
     <div style="font-size:11px;color:var(--tx3);margin-bottom:14px;">${v.presenca||0}% de presença nas sessões · ${v.proposicoes||0} proposições</div>
 
+    <div class="det-sec">COMISSÕES VINCULADAS</div>
+    ${(d.comissoes?.length)?
+      d.comissoes.map(cv=>{
+        const corBadge=cv.tipo==='CPI'?'b-red':cv.tipo==='Especial'?'b-purple':cv.tipo==='Temporária'?'b-gold':'b-navy';
+        const corRole=cv.role==='Presidente'?'color:var(--gold2);font-weight:800':cv.role==='Vice-Presidente'?'color:var(--emerald);font-weight:700':'color:var(--tx3)';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border-radius:7px;margin-bottom:6px;cursor:pointer;" onclick="fecharDet();sw('comissoes')">
+          <span class="b ${corBadge}" style="font-size:10px;">${cv.tipo}</span>
+          <span style="font-size:12px;font-weight:600;flex:1;color:var(--tx);">${cv.nome}</span>
+          <span style="font-size:11px;${corRole}">${cv.role}</span>
+          <span style="font-size:13px;color:var(--tx4);">›</span>
+        </div>`;
+      }).join('')
+    :`<div style="font-size:12px;color:var(--tx3);padding:10px;background:var(--surface2);border-radius:7px;margin-bottom:14px;">Nenhuma comissão vinculada.</div>`}
+
+    <div style="margin-bottom:14px;"></div>
+
     ${d.email||c.celular?`
     <div class="det-sec">CONTATO</div>
     ${d.email?`<div style="font-size:12px;color:var(--tx2);margin-bottom:5px;">📧 ${d.email}</div>`:''}
@@ -1718,18 +1765,65 @@ async function buscarCep(){
 }
 
 // ── abas do modal vereador ──────────────────────────────────────────────────
+let vComissoesTemp = []; // comissões vinculadas ao vereador sendo cadastrado/editado
+
 function mudarAbaVer(idx, el){
-  // sincroniza CPF na aba acesso
-  if(idx===3){
+  if(idx===4){
     const cpfV=document.getElementById('vCpfLogin')?.value||'';
     const disp=document.getElementById('vCpfLoginDisplay');
     if(disp) disp.value=cpfV||'(preencha na aba Pessoal)';
+  }
+  if(idx===3){
+    renderComissoesVereadorModal();
+    // preencher select de comissões disponíveis
+    const sel=document.getElementById('vAddComissaoSelect');
+    if(sel) sel.innerHTML=comissoes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
   }
   document.querySelectorAll('.vaba').forEach((a,i)=>a.style.display=i===idx?'block':'none');
   document.querySelectorAll('.vtab').forEach((t,i)=>{
     t.style.color=i===idx?'var(--navy2)':'var(--tx3)';
     t.style.borderBottomColor=i===idx?'var(--navy2)':'transparent';
   });
+}
+
+function vincularComissaoVereador(){
+  const sel=document.getElementById('vAddComissaoSelect');
+  const roleSel=document.getElementById('vAddComissaoRole');
+  const id=parseInt(sel?.value);
+  const role=roleSel?.value||'Membro';
+  if(!id){ toast('⚠️ Selecione uma comissão'); return; }
+  if(vComissoesTemp.find(c=>c.id===id)){ toast('⚠️ Vereador já vinculado a esta comissão'); return; }
+  const comissao=comissoes.find(c=>c.id===id);
+  if(!comissao){ toast('⚠️ Comissão não encontrada'); return; }
+  vComissoesTemp.push({id, nome:comissao.nome, tipo:comissao.tipo, role});
+  renderComissoesVereadorModal();
+  toast(`✅ Vinculado à ${comissao.nome}`);
+}
+
+function desvincularComissaoVereador(id){
+  vComissoesTemp=vComissoesTemp.filter(c=>c.id!==id);
+  renderComissoesVereadorModal();
+}
+
+function renderComissoesVereadorModal(){
+  const wrap=document.getElementById('vComissoesVinculadas');
+  if(!wrap) return;
+  if(!vComissoesTemp.length){
+    wrap.innerHTML=`<div style="text-align:center;padding:20px;background:var(--surface2);border-radius:var(--rs);border:1.5px dashed var(--border);">
+      <div style="font-size:22px;margin-bottom:6px;">🗂️</div>
+      <div style="font-size:12px;color:var(--tx3);">Nenhuma comissão vinculada ainda.</div>
+    </div>`;
+    return;
+  }
+  const corBadge=tipo=>tipo==='CPI'?'b-red':tipo==='Especial'?'b-purple':tipo==='Temporária'?'b-gold':'b-navy';
+  const corRole=r=>r==='Presidente'?'b-gold':r==='Vice-Presidente'?'b-emerald':'b-gray';
+  wrap.innerHTML=vComissoesTemp.map(c=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);">
+      <span class="b ${corBadge(c.tipo)}" style="font-size:10px;">${c.tipo}</span>
+      <span style="font-size:12.5px;font-weight:600;flex:1;color:var(--tx);">${c.nome}</span>
+      <span class="b ${corRole(c.role)}" style="font-size:10px;">${c.role}</span>
+      <button onclick="desvincularComissaoVereador(${c.id})" style="border:none;background:var(--red-l);color:var(--red);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:11px;font-weight:700;">✕</button>
+    </div>`).join('');
 }
 
 function selecionarPerfil(el, val){
@@ -1813,6 +1907,8 @@ function limparModalVereador(){
   document.getElementById('vGenero').value='';
   document.getElementById('vPerfilAcesso').value='total';
   document.getElementById('telegramStatus').style.display='none';
+  vComissoesTemp=[];
+  renderComissoesVereadorModal();
   // reset perfil-opt visual
   document.querySelectorAll('.perfil-opt').forEach((o,i)=>{
     o.style.borderColor=i===0?'var(--navy2)':'var(--border)';
@@ -1845,6 +1941,7 @@ async function salvarVereador(){
     email:       document.getElementById('vEmail').value.trim(),
     nascimento:  document.getElementById('vNascimento').value,
     genero:      document.getElementById('vGenero').value,
+    comissoes:   [...vComissoesTemp],
     endereco: {
       cep:         document.getElementById('vCep').value.trim(),
       logradouro:  document.getElementById('vLogradouro').value.trim(),
@@ -1866,6 +1963,18 @@ async function salvarVereador(){
     perfil_acesso: document.getElementById('vPerfilAcesso').value,
   };
 
+  // sincroniza vereador nas listas das comissões vinculadas
+  function sincComissoes(nomeVer){
+    vComissoesTemp.forEach(vc=>{
+      const com=comissoes.find(c=>c.id===vc.id);
+      if(!com) return;
+      if(!com.listaMemb) com.listaMemb=[];
+      if(!com.listaMemb.includes(nomeVer)) com.listaMemb.push(nomeVer);
+      com.membros=com.listaMemb.length;
+      if(vc.role==='Presidente') com.presidente=nomeVer;
+    });
+  }
+
   // ── Modo demonstração: cadastra localmente ──────────────────────────────
   if(!supabaseOnline){
     const cores=['#0F2A4A','#0E7C5A','#5B21B6','#B8860B','#B91C1C','#1E4470','#D4A017'];
@@ -1877,12 +1986,14 @@ async function salvarVereador(){
       presenca:100, proposicoes:0, status:'active',
       av:initials, cor:cores[vereadores.length%cores.length]
     });
+    sincComissoes(nome);
     fecharModal('mVereador');
     limparModalVereador();
     renderVereadores();
     popularSelects();
     logAuditoria('Cadastro', nome);
-    toast(`✅ ${nome} cadastrado(a)! (modo demonstração)`);
+    const nCom=vComissoesTemp.length;
+    toast(`✅ ${nome} cadastrado(a)${nCom?` · vinculado a ${nCom} comissão${nCom>1?'ões':''}`:''}! (modo demo)`);
     return;
   }
 
