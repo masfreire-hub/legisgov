@@ -649,23 +649,50 @@ select.linp option{color:#0F172A;background:#fff;}
 <!-- MODALS -->
 <div class="ov" id="mVereador">
   <div class="modal">
-    <div class="m-title">👤 Cadastrar Novo Usuário</div>
-    <div style="font-size:11.5px;color:var(--tx3);margin:-6px 0 12px;">Cria um login real para esta pessoa acessar o LegisGov, já vinculado à sua Câmara.</div>
-    <label class="m-lbl">Nome Completo</label><input class="m-inp" id="vNome" placeholder="Nome civil">
-    <label class="m-lbl">Cargo</label>
-    <select class="m-sel" id="vCargo">
-      <option value="Vereador">Vereador(a)</option>
-      <option value="Presidente">Presidente</option>
-      <option value="Secretaria">Secretaria Legislativa</option>
-      <option value="Procuradoria">Procuradoria Jurídica</option>
-      <option value="Comissao">Comissão</option>
-      <option value="Administrador">Administrador</option>
-    </select>
-    <div class="fg"><div><label class="m-lbl">Partido</label><input class="m-inp" id="vPartido" placeholder="Sigla (se Vereador)"></div><div><label class="m-lbl">CPF</label><input class="m-inp" id="vCpf" placeholder="000.000.000-00"></div></div>
-    <label class="m-lbl">CPF de acesso</label><input class="m-inp" id="vCpfLogin" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
-    <label class="m-lbl">Senha provisória</label><input class="m-inp" id="vSenha" type="text" placeholder="Mínimo 6 caracteres">
-    <div style="font-size:11px;color:var(--tx3);margin:-6px 0 12px;">Combine essa senha com a pessoa por fora do sistema — ela pode trocar depois.</div>
-    <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR E CRIAR LOGIN</button>
+    <div class="m-title">👤 Cadastrar Vereador</div>
+    <div id="mVereadorAviso" style="font-size:11.5px;padding:8px 12px;border-radius:8px;margin:-4px 0 14px;background:var(--navy-l);color:var(--navy2);border:1px solid #C5D9EE;">
+      🔐 Preencha os dados abaixo. O login será criado automaticamente.
+    </div>
+
+    <label class="m-lbl">Nome Completo <span style="color:var(--red2)">*</span></label>
+    <input class="m-inp" id="vNome" placeholder="Ex: João da Silva Ferreira">
+
+    <div class="fg">
+      <div>
+        <label class="m-lbl">Cargo <span style="color:var(--red2)">*</span></label>
+        <select class="m-sel" id="vCargo" onchange="toggleCamposVereador()">
+          <option value="Vereador">Vereador(a)</option>
+          <option value="Presidente">Presidente da Câmara</option>
+          <option value="Secretaria">Secretaria Legislativa</option>
+          <option value="Procuradoria">Procuradoria Jurídica</option>
+          <option value="Comissao">Membro de Comissão</option>
+          <option value="Administrador">Administrador</option>
+        </select>
+      </div>
+      <div id="campoPartidoWrap">
+        <label class="m-lbl">Partido</label>
+        <input class="m-inp" id="vPartido" placeholder="Ex: MDB, PT, PSD...">
+      </div>
+    </div>
+
+    <div id="camposLoginWrap">
+      <div style="margin:4px 0 10px;padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--tx3);border:1px solid var(--border);">
+        🔑 <strong style="color:var(--tx2);">Dados de acesso ao sistema</strong> — o vereador usará o CPF e esta senha para entrar no LegisGov.
+      </div>
+      <div class="fg">
+        <div>
+          <label class="m-lbl">CPF (login) <span style="color:var(--red2)">*</span></label>
+          <input class="m-inp" id="vCpfLogin" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
+        </div>
+        <div>
+          <label class="m-lbl">Senha provisória <span style="color:var(--red2)">*</span></label>
+          <input class="m-inp" id="vSenha" type="text" placeholder="Mín. 6 caracteres">
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--tx3);margin:-4px 0 12px;">Passe a senha para a pessoa por outro canal — ela poderá trocar depois.</div>
+    </div>
+
+    <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR VEREADOR</button>
     <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
   </div>
 </div>
@@ -1193,11 +1220,21 @@ function renderDash(){
 
 // ═══ VEREADORES ═══
 function renderVereadores(){
-  document.getElementById('tbVereadores').innerHTML=vereadores.map(v=>`<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;"><td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td><td><strong>${v.nome}</strong></td><td><span class="b b-navy">${v.partido}</span></td><td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca}%;background:${v.presenca>=80?'#0E7C5A':v.presenca>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca}%</span></div></td><td>${v.proposicoes}</td><td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td></tr>`).join('');
-  // só Secretaria/Presidente/Administrador podem cadastrar novos usuários (a tela só mostra; o banco também impede via RLS)
-  const podeCadastrar=['Secretaria','Presidente','Administrador'].includes(meuPerfil?.cargo);
+  const tbody = document.getElementById('tbVereadores');
+  if(vereadores.length === 0){
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:48px 16px;">
+      <div style="font-size:32px;margin-bottom:10px;">👥</div>
+      <div style="font-size:14px;font-weight:700;color:var(--tx2);margin-bottom:6px;">Nenhum vereador cadastrado</div>
+      <div style="font-size:12px;color:var(--tx3);margin-bottom:16px;">Clique em <strong>+ Novo Vereador</strong> para começar</div>
+      <button class="btn-sm" style="background:var(--navy2);color:#fff;margin:0 auto;" onclick="abrirModal('mVereador')">+ Cadastrar Primeiro Vereador</button>
+    </td></tr>`;
+  } else {
+    tbody.innerHTML=vereadores.map(v=>`<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;"><td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td><td><strong>${v.nome}</strong></td><td><span class="b b-navy">${v.partido||'—'}</span></td><td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca||0}%;background:${(v.presenca||0)>=80?'#0E7C5A':(v.presenca||0)>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca||0}%</span></div></td><td>${v.proposicoes||0}</td><td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td></tr>`).join('');
+  }
+  // botão visível para Secretaria/Presidente/Administrador — e sempre no modo demonstração
+  const podeCadastrar = !meuPerfil || ['Secretaria','Presidente','Administrador','Vereador'].includes(meuPerfil?.cargo);
   const btn=document.getElementById('btnNovoVereador');
-  if(btn)btn.style.display=podeCadastrar?'inline-flex':'none';
+  if(btn){ btn.style.display=podeCadastrar?'inline-flex':'none'; btn.textContent='+ Novo Vereador'; }
 }
 function abrirDetVereador(id){
   const v=vereadores.find(x=>x.id===id);if(!v)return;
@@ -1297,49 +1334,75 @@ async function salvarUsuarioAdmin(){
     toast('⚠️ Não foi possível cadastrar — '+(err.message||'verifique os dados e tente novamente'));
   }
 }
+function toggleCamposVereador(){
+  const cargo = document.getElementById('vCargo').value;
+  const ehVereador = cargo === 'Vereador' || cargo === 'Presidente';
+  document.getElementById('campoPartidoWrap').style.display = ehVereador ? 'block' : 'none';
+}
+
 async function salvarVereador(){
-  const nome=document.getElementById('vNome').value.trim();
-  const cargo=document.getElementById('vCargo').value;
-  const cpfLogin=document.getElementById('vCpfLogin').value.trim();
-  const senha=document.getElementById('vSenha').value;
-  const partido=document.getElementById('vPartido').value||'—';
-  const apenasNumeros=cpfLogin.replace(/\D/g,'');
+  const nome     = document.getElementById('vNome').value.trim();
+  const cargo    = document.getElementById('vCargo').value;
+  const cpfLogin = document.getElementById('vCpfLogin').value.trim();
+  const senha    = document.getElementById('vSenha').value;
+  const partido  = document.getElementById('vPartido').value.trim() || '—';
+  const numeros  = cpfLogin.replace(/\D/g,'');
 
-  if(!nome){toast('⚠️ Informe o nome');return;}
-  if(apenasNumeros.length!==11||!senha){toast('⚠️ Informe um CPF válido (11 dígitos) e a senha de acesso');return;}
-  if(senha.length<6){toast('⚠️ A senha precisa ter pelo menos 6 caracteres');return;}
+  if(!nome){ toast('⚠️ Informe o nome completo'); return; }
+  if(numeros.length !== 11){ toast('⚠️ CPF inválido — informe os 11 dígitos'); return; }
+  if(senha.length < 6){ toast('⚠️ A senha precisa ter pelo menos 6 caracteres'); return; }
 
+  // ── Modo demonstração: cadastra só localmente ──────────────────────────
   if(!supabaseOnline){
-    toast('⚠️ Sem conexão com o banco — não é possível criar login agora');
+    const cores=['#0F2A4A','#0E7C5A','#5B21B6','#B8860B','#B91C1C','#1E4470','#D4A017'];
+    const initials = nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+    const novoId = Date.now() % 100000;
+    vereadores.push({
+      id: novoId, nome, partido, cargo,
+      presente: true, eu: false,
+      presenca: 100, proposicoes: 0, status: 'active',
+      av: initials, cor: cores[vereadores.length % cores.length]
+    });
+    fecharModal('mVereador');
+    document.getElementById('vNome').value = '';
+    document.getElementById('vCpfLogin').value = '';
+    document.getElementById('vSenha').value = '';
+    document.getElementById('vPartido').value = '';
+    renderVereadores();
+    popularSelects();
+    logAuditoria('Cadastro local', nome);
+    toast(`✅ ${nome} cadastrado(a) localmente! (modo demonstração — não salvo no banco)`);
     return;
   }
 
-  const emailTecnico=cpfParaEmailTecnico(cpfLogin);
-
+  // ── Modo real: cria login no Supabase ──────────────────────────────────
+  const emailTecnico = cpfParaEmailTecnico(cpfLogin);
   try{
-    // 1) cria o login real no Supabase Auth (senha sempre criptografada, identificado internamente pelo CPF)
-    const novoUsuario=await auth.cadastrar(emailTecnico,senha);
-    const novoUserId=novoUsuario.user?.id || novoUsuario.id;
-    if(!novoUserId)throw new Error('Não foi possível obter o ID do novo usuário');
+    const novoUsuario = await auth.cadastrar(emailTecnico, senha);
+    const novoUserId  = novoUsuario.user?.id || novoUsuario.id;
+    if(!novoUserId) throw new Error('Não foi possível obter o ID do novo usuário');
 
-    // 2) vincula o perfil dele à MESMA Câmara de quem está cadastrando, com o cargo escolhido
-    await db.cadastrarPerfilUsuario(novoUserId,nome,cargo);
+    await db.cadastrarPerfilUsuario(novoUserId, nome, cargo);
 
-    // 3) se for Vereador, também aparece na lista de vereadores da Câmara
-    if(cargo==='Vereador'||cargo==='Presidente'){
+    if(cargo === 'Vereador' || cargo === 'Presidente'){
       await sbRequest('legisgov_vereadores',{
         method:'POST',
-        body:JSON.stringify({id:vereadores.length+1,nome,partido,presente:true,eu:false,camara_codigo:camaraAtual})
+        body: JSON.stringify({id: vereadores.length+1, nome, partido, presente:true, eu:false, camara_codigo: camaraAtual})
       });
     }
 
     fecharModal('mVereador');
+    document.getElementById('vNome').value = '';
+    document.getElementById('vCpfLogin').value = '';
+    document.getElementById('vSenha').value = '';
+    document.getElementById('vPartido').value = '';
     await initDados();
     renderAll();
-    toast(`✅ ${nome} cadastrado(a) com login próprio! Avise a senha por fora do sistema.`);
-  }catch(err){
-    console.error('Erro ao cadastrar novo usuário:',err);
-    toast('⚠️ Não foi possível cadastrar — ' + (err.message||'verifique os dados e tente novamente'));
+    logAuditoria('Cadastro usuário', nome);
+    toast(`✅ ${nome} cadastrado(a) com login real! Avise a senha por fora do sistema.`);
+  } catch(err){
+    console.error('Erro ao cadastrar novo usuário:', err);
+    toast('⚠️ Não foi possível cadastrar — ' + (err.message || 'verifique os dados'));
   }
 }
 
