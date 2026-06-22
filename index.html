@@ -669,6 +669,9 @@ select.linp option{color:#0F172A;background:#fff;}
       <label class="m-lbl">Nome Completo <span style="color:var(--red2)">*</span></label>
       <input class="m-inp" id="vNome" placeholder="Ex: João da Silva Ferreira">
 
+      <label class="m-lbl">Nome na Urna <span style="color:var(--tx4);font-weight:500;text-transform:none;letter-spacing:0;font-size:10px;">— como aparece no Portal da Transparência</span></label>
+      <input class="m-inp" id="vNomeUrna" placeholder="Ex: João Ferreira, Tom de Binha, Dr. Carlos...">
+
       <div class="fg">
         <div>
           <label class="m-lbl">Cargo <span style="color:var(--red2)">*</span></label>
@@ -1509,7 +1512,7 @@ function renderVereadores(){
       <button class="btn-sm" style="background:var(--navy2);color:#fff;margin:0 auto;" onclick="abrirModal('mVereador')">+ Cadastrar Primeiro Vereador</button>
     </td></tr>`;
   } else {
-    tbody.innerHTML=vereadores.map(v=>`<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;"><td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td><td><strong>${v.nome}</strong></td><td><span class="b b-navy">${v.partido||'—'}</span></td><td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca||0}%;background:${(v.presenca||0)>=80?'#0E7C5A':(v.presenca||0)>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca||0}%</span></div></td><td>${v.proposicoes||0}</td><td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td></tr>`).join('');
+    tbody.innerHTML=vereadores.map(v=>`<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;"><td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td><td><strong>${v.nome}</strong>${v.dados?.nomeUrna?`<div style="font-size:10.5px;color:var(--tx3);font-style:italic;">${v.dados.nomeUrna}</div>`:''}</td><td><span class="b b-navy">${v.partido||'—'}</span></td><td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca||0}%;background:${(v.presenca||0)>=80?'#0E7C5A':(v.presenca||0)>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca||0}%</span></div></td><td>${v.proposicoes||0}</td><td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td></tr>`).join('');
   }
   // botão visível para Secretaria/Presidente/Administrador — e sempre no modo demonstração
   const podeCadastrar = !meuPerfil || ['Secretaria','Presidente','Administrador','Vereador'].includes(meuPerfil?.cargo);
@@ -1531,6 +1534,7 @@ function abrirDetVereador(id){
       <div class="av" style="width:52px;height:52px;background:${v.cor};font-size:18px;">${v.av}</div>
       <div>
         <div style="font-size:16px;font-weight:800;">${v.nome}</div>
+        ${d.nomeUrna?`<div style="font-size:13px;font-weight:700;color:var(--navy2);margin-top:1px;">"${d.nomeUrna}"</div>`:''}
         <div style="font-size:12px;color:var(--tx3);">${v.cargo||v.partido||'—'} · ${v.partido&&v.cargo?v.partido:'19ª Legislatura'}</div>
         ${temTelegram?`<div style="display:inline-flex;align-items:center;gap:4px;background:#E3F2FD;color:#0277BD;border-radius:5px;padding:2px 8px;font-size:10px;font-weight:700;margin-top:4px;">✈️ Telegram ativo</div>`:''}
       </div>
@@ -1851,7 +1855,7 @@ async function testarTelegram(){
 
 // ── limpar modal ─────────────────────────────────────────────────────────────
 function limparModalVereador(){
-  ['vNome','vPartido','vCpfLogin','vRg','vEmail','vNascimento',
+  ['vNome','vNomeUrna','vPartido','vCpfLogin','vRg','vEmail','vNascimento',
    'vCep','vLogradouro','vNumero','vComplemento','vBairro','vCidade','vCepFinal',
    'vCelular','vTelefone','vGabinete','vTelegramUser','vTelegramChatId',
    'vInstagram','vFacebook','vSenha','vCpfLoginDisplay']
@@ -1890,6 +1894,7 @@ async function salvarVereador(){
   // monta objeto completo
   const dados = {
     nome, cargo, partido,
+    nomeUrna:    document.getElementById('vNomeUrna').value.trim(),
     cpf: cpfLogin,
     rg:          document.getElementById('vRg').value.trim(),
     email:       document.getElementById('vEmail').value.trim(),
