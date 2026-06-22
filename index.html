@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>LegisGov — Sistema Legislativo Inteligente</title>
+<title>LegisGov — Câmara Municipal de Andaraí</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -234,14 +234,14 @@ select.linp option{color:#0F172A;background:#fff;}
     <div id="loginEtapaCredenciais">
       <div class="llogo"><div class="llogo-badge">🏛️</div></div>
       <div class="ltitle" style="text-align:center;margin-bottom:4px;">LegisGov</div>
-      <div class="lsub">Câmara Municipal · Processo Legislativo Digital</div>
+      <div class="lsub">Câmara Municipal de Andaraí · Processo Legislativo Digital</div>
       <label class="llbl">CPF</label>
       <input class="linp" id="lcpf" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
       <label class="llbl">Senha</label>
       <input class="linp" id="lsenha" type="password" placeholder="••••••••">
       <button class="lbtn" onclick="doLogin()">ENTRAR NO SISTEMA</button>
       <div id="loginErro" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#FEF2F2;color:#B91C1C;font-size:12.5px;"></div>
-      <div class="ldemo" style="margin-top:14px;">Acesso demo (sem cadastro real): <span onclick="loginDemo()">🏛️ Entrar no modo demonstração</span></div>
+      <div class="ldemo" style="margin-top:14px;">Acesso demo (sem cadastro real): <span onclick="loginDemo()">🏛️ Entrar no modo visualização</span></div>
     </div>
 
     <div id="loginEtapaCamara" style="display:none;">
@@ -328,10 +328,10 @@ select.linp option{color:#0F172A;background:#fff;}
       </div>
 
       <div class="g4" style="margin-bottom:16px;">
-        <div class="kpi kc-navy" onclick="sw('materias')"><div class="kpi-ico">📜</div><div class="kpi-val">23</div><div class="kpi-label">Em Tramitação</div><div class="kpi-sub">7 com prazo crítico</div></div>
-        <div class="kpi kc-emerald" onclick="sw('sessao')"><div class="kpi-ico">🏛️</div><div class="kpi-val">2</div><div class="kpi-label">Sessões Agendadas</div><div class="kpi-sub">Próxima: hoje 14h</div></div>
-        <div class="kpi kc-gold" onclick="sw('comissoes')"><div class="kpi-ico">🗂️</div><div class="kpi-val">6</div><div class="kpi-label">Comissões Ativas</div><div class="kpi-sub">1 CPI em curso</div></div>
-        <div class="kpi kc-purple" onclick="sw('emendas')"><div class="kpi-ico">💰</div><div class="kpi-val">68%</div><div class="kpi-label">Emendas Executadas</div><div class="kpi-sub">R$ 1,8M de R$ 2,6M</div></div>
+        <div class="kpi kc-navy" onclick="sw('materias')"><div class="kpi-ico">📜</div><div class="kpi-val" id="kpiMaterias">0</div><div class="kpi-label">Em Tramitação</div><div class="kpi-sub" id="kpiMateriasSub">Nenhuma matéria</div></div>
+        <div class="kpi kc-emerald" onclick="sw('sessao')"><div class="kpi-ico">🏛️</div><div class="kpi-val" id="kpiSessoes">0</div><div class="kpi-label">Sessões Agendadas</div><div class="kpi-sub">Use Sessão Plenária</div></div>
+        <div class="kpi kc-gold" onclick="sw('comissoes')"><div class="kpi-ico">🗂️</div><div class="kpi-val" id="kpiComissoes">0</div><div class="kpi-label">Comissões Ativas</div><div class="kpi-sub" id="kpiComissoesSub">Nenhuma cadastrada</div></div>
+        <div class="kpi kc-purple" onclick="sw('emendas')"><div class="kpi-ico">💰</div><div class="kpi-val" id="kpiEmendas">—</div><div class="kpi-label">Emendas Executadas</div><div class="kpi-sub">Nenhuma registrada</div></div>
       </div>
 
       <div class="g2" style="margin-bottom:14px;">
@@ -429,7 +429,7 @@ select.linp option{color:#0F172A;background:#fff;}
     <!-- ═══ SESSÃO PLENÁRIA ═══ -->
     <div class="page" id="p-sessao">
       <div class="ph">
-        <div><div class="ph-title">🏛️ Sessão Plenária</div><div class="ph-sub" id="sessaoStatus">Sessão Ordinária · 19/06/2026 · 14h00</div></div>
+        <div><div class="ph-title">🏛️ Sessão Plenária</div><div class="ph-sub" id="sessaoStatus">Nenhuma sessão agendada</div></div>
         <div style="display:flex;gap:8px;">
           <button class="btn-sm" id="btnAbrirSessao" style="background:var(--emerald);color:#fff;" onclick="toggleSessao()">▶ Abrir Sessão</button>
         </div>
@@ -440,14 +440,14 @@ select.linp option{color:#0F172A;background:#fff;}
           <div class="quorum-ring">
             <svg viewBox="0 0 140 140">
               <circle cx="70" cy="70" r="60" fill="none" stroke="#E2E8F0" stroke-width="12"/>
-              <circle cx="70" cy="70" r="60" fill="none" stroke="#0E7C5A" stroke-width="12" stroke-dasharray="377" stroke-dashoffset="94" stroke-linecap="round" id="quorumArc"/>
+              <circle cx="70" cy="70" r="60" fill="none" stroke="#0E7C5A" stroke-width="12" stroke-dasharray="377" stroke-dashoffset="377" stroke-linecap="round" id="quorumArc"/>
             </svg>
             <div class="quorum-ring-text">
-              <div style="font-size:24px;font-weight:900;color:var(--emerald);" id="quorumNum">15/19</div>
+              <div style="font-size:24px;font-weight:900;color:var(--emerald);" id="quorumNum">0/0</div>
               <div style="font-size:10px;color:var(--tx3);font-weight:700;">PRESENTES</div>
             </div>
           </div>
-          <div style="margin-top:10px;font-size:11px;color:var(--tx3);">Quórum mínimo (simples) atingido ✅</div>
+          <div style="margin-top:10px;font-size:11px;color:var(--tx3);">Aguardando início da sessão</div>
         </div>
         <div class="card">
           <div class="card-title">🎙️ Lista de Oradores</div>
@@ -457,7 +457,7 @@ select.linp option{color:#0F172A;background:#fff;}
           <div class="card-title">⏱️ Cronômetro de Fala</div>
           <div style="text-align:center;padding:14px 0;">
             <div style="font-size:42px;font-weight:900;color:var(--navy2);font-family:monospace;" id="cronometro">03:00</div>
-            <div style="font-size:11px;color:var(--tx3);margin-top:4px;" id="cronometroOrador">Vereador Carlos Mendes — Grande Expediente</div>
+            <div style="font-size:11px;color:var(--tx3);margin-top:4px;" id="cronometroOrador">Nenhum orador na fila</div>
             <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
               <button class="btn-sm" style="background:var(--emerald);color:#fff;" onclick="iniciarCronometro()">▶ Iniciar</button>
               <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="pausarCronometro()">⏸ Pausar</button>
@@ -557,9 +557,9 @@ select.linp option{color:#0F172A;background:#fff;}
         <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mEmenda')">+ Nova Emenda</button>
       </div>
       <div class="g3" style="margin-bottom:14px;">
-        <div class="kpi kc-navy"><div class="kpi-ico">💰</div><div class="kpi-val">R$2,6M</div><div class="kpi-label">Total Proposto</div></div>
-        <div class="kpi kc-emerald"><div class="kpi-ico">✅</div><div class="kpi-val">R$1,8M</div><div class="kpi-label">Total Executado</div></div>
-        <div class="kpi kc-gold"><div class="kpi-ico">📊</div><div class="kpi-val">68%</div><div class="kpi-label">% Execução</div></div>
+        <div class="kpi kc-navy"><div class="kpi-ico">💰</div><div class="kpi-val" id="kpiEmTotalProp">R$ 0</div><div class="kpi-label">Total Proposto</div></div>
+        <div class="kpi kc-emerald"><div class="kpi-ico">✅</div><div class="kpi-val" id="kpiEmTotalExec">R$ 0</div><div class="kpi-label">Total Executado</div></div>
+        <div class="kpi kc-gold"><div class="kpi-ico">📊</div><div class="kpi-val" id="kpiEmPct">—</div><div class="kpi-label">% Execução</div></div>
       </div>
       <div class="card">
         <table class="tbl"><thead><tr><th>Autor</th><th>Beneficiário</th><th>Valor</th><th>Exercício</th><th>Status</th></tr></thead>
@@ -593,7 +593,7 @@ select.linp option{color:#0F172A;background:#fff;}
         <div><div class="ph-title">📝 Atas com Inteligência Artificial</div><div class="ph-sub">Transcrição automática e geração de ata</div></div>
       </div>
       <div class="card" style="margin-bottom:14px;">
-        <div class="card-title">🤖 Última Sessão Transcrita — 19/06/2026</div>
+        <div class="card-title">🤖 Nenhuma sessão transcrita ainda</div>
         <div id="ataGerada"></div>
       </div>
       <div class="card">
@@ -1296,132 +1296,56 @@ function voltarEtapaCredenciais(){
 // Modo demonstração: não usa login real nem grava nada permanentemente — só para mostrar o sistema funcionando
 function loginDemo(){
   sessaoAuth=null;
-  camaraAtual='demo';
-  meuPerfil={nome:'Usuário Demonstração',cargo:'Presidente',camara_codigo:'demo',legisgov_camaras:{nome:'Câmara Municipal (Demonstração)'}};
-  entrar({nome:'Usuário Demonstração',av:'UD',cargo:'Presidente (demo)'});
+  camaraAtual='andarai';
+  meuPerfil={nome:'Visitante',cargo:'Presidente',camara_codigo:'andarai',legisgov_camaras:{nome:'Câmara Municipal de Andaraí'}};
+  entrar({nome:'Visitante',av:'AN',cargo:'Visualização'});
 }
 
 function aplicarDadosOffline(){
-  vereadores=[
-    {id:1,nome:'João Ferreira Lima',partido:'PSD',presenca:96,proposicoes:14,status:'active',av:'JF',cor:'#0F2A4A',presente:true},
-    {id:2,nome:'Maria Aparecida Souza',partido:'PT',presenca:88,proposicoes:9,status:'active',av:'MA',cor:'#0E7C5A',presente:true},
-    {id:3,nome:'Carlos Mendes Filho',partido:'MDB',presenca:74,proposicoes:6,status:'active',av:'CM',cor:'#B8860B',presente:true},
-    {id:4,nome:'Ana Paula Ribeiro',partido:'PSDB',presenca:100,proposicoes:18,status:'active',av:'AP',cor:'#5B21B6',presente:true},
-    {id:5,nome:'Roberto Carlos Alves',partido:'PL',presenca:62,proposicoes:3,status:'risk',av:'RC',cor:'#DC2626',presente:false},
-  ];
-  materias=[
-    {num:'045/2026',tipo:'Projeto de Lei',ementa:'Reforma da Iluminação Pública com Energia Solar',autor:'João Ferreira Lima',situacao:'Plenário',prazo:'22/06/2026',critico:true,historico:{}},
-    {num:'046/2026',tipo:'Requerimento',ementa:'Solicita informações sobre obras na Av. Central',autor:'Maria Aparecida Souza',situacao:'Comissão',prazo:'25/06/2026',critico:false,historico:{}},
-    {num:'012/2026',tipo:'Projeto de Lei Complementar',ementa:'Altera o Código Tributário Municipal',autor:'Ana Paula Ribeiro',situacao:'Jurídico',prazo:'30/06/2026',critico:false,historico:{}},
-    {num:'038/2026',tipo:'Moção',ementa:'Moção de Aplauso aos profissionais de saúde',autor:'Carlos Mendes Filho',situacao:'Aprovado',prazo:'—',critico:false,historico:{}},
-    {num:'041/2026',tipo:'Indicação',ementa:'Indica a instalação de semáforo na Rua das Flores',autor:'Roberto Carlos Alves',situacao:'Protocolado',prazo:'28/06/2026',critico:false,historico:{}},
-    {num:'029/2026',tipo:'Projeto de Lei',ementa:'Institui o Programa Municipal de Hortas Comunitárias',autor:'Maria Aparecida Souza',situacao:'Parecer',prazo:'20/06/2026',critico:true,historico:{}},
-    {num:'008/2026',tipo:'Veto',ementa:'Veto parcial ao PL 003/2026 — Zoneamento Urbano',autor:'Executivo Municipal',situacao:'Plenário',prazo:'24/06/2026',critico:true,historico:{}},
-  ];
-  auditoria=[
-    {user:'Ana Paula Ribeiro',acao:'Assinatura de Voto',recurso:'PL 045/2026',ip:'192.168.1.42',data:'19/06/2026 14:32'},
-    {user:'Secretaria Legislativa',acao:'Publicação de Ata',recurso:'Sessão 18/06/2026',ip:'192.168.1.10',data:'19/06/2026 09:15'},
-    {user:'João Ferreira Lima',acao:'Protocolo de Matéria',recurso:'PL 045/2026',ip:'192.168.1.55',data:'15/06/2026 11:02'},
-    {user:'Presidente',acao:'Abertura de Sessão',recurso:'Sessão 18/06/2026',ip:'192.168.1.05',data:'18/06/2026 14:00'},
-  ];
+  // Câmara Municipal de Andaraí — sistema em produção, sem dados de demonstração
+  vereadores = [];
+  materias   = [];
+  auditoria  = [];
 }
 
 async function initDados(){
-  // dados que não mudam de Câmara para Câmara (ainda fixos, não fazem parte das tabelas Supabase desta etapa)
-  comissoes=[
-    {id:1, nome:'Comissão de Justiça e Redação', tipo:'Permanente', presidente:'Ana Paula Ribeiro',
-     membros:5, materias:8, ativa:true,
-     listaMemb:['Ana Paula Ribeiro','João Ferreira Lima','Maria Aparecida Souza','Carlos Mendes Filho','Roberto Carlos Alves'],
-     objetivo:'Análise constitucional, legalidade e redação final das matérias legislativas.',
-     dataInst:'10/02/2025', prazoFim:'', reuniaoFreq:'Quinzenal',
-     historicoReunioes:[
-       {data:'17/06/2026',pauta:'Parecer PL 045/2026 e PL 029/2026',resultado:'Favorável em ambos'},
-       {data:'03/06/2026',pauta:'Parecer PLC 012/2026',resultado:'Aprovado com emenda redacional'},
-     ]},
-    {id:2, nome:'Comissão de Finanças e Orçamento', tipo:'Permanente', presidente:'João Ferreira Lima',
-     membros:5, materias:6, ativa:true,
-     listaMemb:['João Ferreira Lima','Ana Paula Ribeiro','Roberto Carlos Alves','Maria Aparecida Souza','Carlos Mendes Filho'],
-     objetivo:'Análise de matérias com impacto orçamentário e financeiro.',
-     dataInst:'10/02/2025', prazoFim:'', reuniaoFreq:'Semanal',
-     historicoReunioes:[
-       {data:'18/06/2026',pauta:'LDO 2027 — análise preliminar',resultado:'Em discussão'},
-       {data:'10/06/2026',pauta:'Emendas ao Orçamento 2026',resultado:'Aprovado 3 emendas'},
-     ]},
-    {id:3, nome:'Comissão de Obras e Serviços Públicos', tipo:'Permanente', presidente:'Maria Aparecida Souza',
-     membros:4, materias:5, ativa:true,
-     listaMemb:['Maria Aparecida Souza','Carlos Mendes Filho','João Ferreira Lima','Roberto Carlos Alves'],
-     objetivo:'Análise de projetos relacionados à infraestrutura, obras e serviços municipais.',
-     dataInst:'10/02/2025', prazoFim:'', reuniaoFreq:'Quinzenal',
-     historicoReunioes:[
-       {data:'12/06/2026',pauta:'PL 029/2026 — Hortas Comunitárias',resultado:'Parecer favorável emitido'},
-     ]},
-    {id:4, nome:'CPI — Irregularidades em Licitações', tipo:'CPI', presidente:'Carlos Mendes Filho',
-     membros:5, materias:1, ativa:true,
-     listaMemb:['Carlos Mendes Filho','Ana Paula Ribeiro','João Ferreira Lima','Maria Aparecida Souza','Roberto Carlos Alves'],
-     objetivo:'Investigar possíveis irregularidades em processos licitatórios do município 2023-2024.',
-     dataInst:'15/03/2026', prazoFim:'15/09/2026', reuniaoFreq:'Semanal',
-     historicoReunioes:[
-       {data:'19/06/2026',pauta:'Oitiva de testemunhas — fase 2',resultado:'3 depoimentos colhidos'},
-       {data:'05/06/2026',pauta:'Análise de documentos — fase 1',resultado:'Diligências aprovadas'},
-     ]},
-    {id:5, nome:'Comissão Especial — Revisão Lei Orgânica', tipo:'Especial', presidente:'Ana Paula Ribeiro',
-     membros:7, materias:1, ativa:true,
-     listaMemb:['Ana Paula Ribeiro','João Ferreira Lima','Maria Aparecida Souza','Carlos Mendes Filho','Roberto Carlos Alves','Paulo Henrique Dias','Luísa Fernanda Costa'],
-     objetivo:'Revisão e atualização da Lei Orgânica Municipal conforme Constituição Federal e legislação estadual.',
-     dataInst:'20/04/2026', prazoFim:'20/10/2026', reuniaoFreq:'Semanal',
-     historicoReunioes:[
-       {data:'16/06/2026',pauta:'Capítulo III — Poderes Municipais',resultado:'Aprovado com alterações'},
-     ]},
-  ];
-  contasExec=[
-    {exercicio:2024,gestor:'Prefeito Municipal',parecer:'Favorável com ressalvas',situacao:'Julgado — Aprovado',prazo:'—'},
-    {exercicio:2025,gestor:'Prefeito Municipal',parecer:'Em análise',situacao:'Comissão',prazo:'15/07/2026'},
-  ];
-  emendas=[
-    {autor:'João Ferreira Lima',benef:'Secretaria de Saúde',valor:180000,exercicio:2026,status:'Paga'},
-    {autor:'Maria Aparecida Souza',benef:'Secretaria de Educação',valor:250000,exercicio:2026,status:'Liquidada'},
-    {autor:'Ana Paula Ribeiro',benef:'Secretaria de Obras',valor:420000,exercicio:2026,status:'Empenhada'},
-    {autor:'Carlos Mendes Filho',benef:'Assistência Social',valor:95000,exercicio:2026,status:'Aprovada'},
-    {autor:'Roberto Carlos Alves',benef:'Secretaria de Esportes',valor:60000,exercicio:2026,status:'Proposta'},
-  ];
-  notificacoes=[
-    {tipo:'Prazo',titulo:'Prazo de parecer vence em 1 dia',desc:'PL 029/2026 — Comissão de Obras',quando:'há 2h'},
-    {tipo:'Sessão',titulo:'Sessão Ordinária convocada',desc:'Hoje às 14h — Plenário Principal',quando:'há 5h'},
-    {tipo:'Votação',titulo:'Votação aberta',desc:'PL 045/2026 está em votação nominal',quando:'agora'},
-  ];
+  comissoes    = [];
+  contasExec   = [];
+  emendas      = [];
+  notificacoes = [];
 
-  // modo demonstração: nunca tenta o Supabase (não há sessão de usuário real, o RLS bloquearia mesmo)
-  if(!sessaoAuth){
-    aplicarDadosOffline();
-    toast('🧪 Modo demonstração — os dados não são salvos permanentemente');
+  // com sessão real → carrega do Supabase
+  if(sessaoAuth){
+    try {
+      const [vereadoresDB, materiasDB] = await Promise.all([
+        db.listarVereadores(),
+        db.listarMaterias(),
+      ]);
+      vereadores = vereadoresDB.map(v => ({
+        id: v.id, nome: v.nome, partido: v.partido, presente: v.presente, eu: v.eu,
+        presenca: 90, proposicoes: 0, status: 'active',
+        av: v.nome.split(' ').map(p=>p[0]).slice(0,2).join(''), cor: '#0F2A4A'
+      }));
+      materias = materiasDB.map(m => ({
+        num: m.num, tipo: m.tipo, ementa: m.ementa, justificativa: m.justificativa,
+        autor: m.autor, situacao: m.situacao, prazo: m.prazo, critico: m.critico,
+        historico: m.historico || {}
+      }));
+      supabaseOnline = true;
+      auditoria = [];
+      console.log('✅ LegisGov — Câmara de Andaraí conectada ao Supabase.');
+    } catch (err) {
+      console.error('⚠️ Erro ao conectar ao Supabase:', err);
+      supabaseOnline = false;
+      aplicarDadosOffline();
+      toast('⚠️ Sem conexão com o banco — dados não carregados');
+    }
     return;
   }
 
-  // tenta carregar do Supabase (banco real, com isolamento por Câmara garantido pelo RLS)
-  try {
-    const [vereadoresDB, materiasDB] = await Promise.all([
-      db.listarVereadores(),
-      db.listarMaterias(),
-    ]);
-    vereadores = vereadoresDB.map(v => ({
-      id: v.id, nome: v.nome, partido: v.partido, presente: v.presente, eu: v.eu,
-      // campos de exibição usados no Dashboard/Vereadores (mantidos com valor padrão por enquanto)
-      presenca: 90, proposicoes: 0, status: 'active', av: v.nome.split(' ').map(p=>p[0]).slice(0,2).join(''), cor: '#0F2A4A'
-    }));
-    materias = materiasDB.map(m => ({
-      num: m.num, tipo: m.tipo, ementa: m.ementa, justificativa: m.justificativa,
-      autor: m.autor, situacao: m.situacao, prazo: m.prazo, critico: m.critico,
-      historico: m.historico || {}
-    }));
-    supabaseOnline = true;
-    auditoria=[]; // auditoria real será carregada sob demanda na tela de Auditoria
-    console.log('✅ LegisGov conectado ao Supabase — dados carregados do banco real.');
-  } catch (err) {
-    console.error('⚠️ Não foi possível conectar ao Supabase, usando dados de exemplo locais:', err);
-    supabaseOnline = false;
-    aplicarDadosOffline();
-    toast('⚠️ Sem conexão com o banco — usando dados de demonstração (não serão salvos)');
-  }
+  // sem sessão → modo demonstração com tela limpa
+  aplicarDadosOffline();
+  toast('🏛️ Câmara Municipal de Andaraí — pronto para uso!');
 }
 
 async function entrar(u){
@@ -1526,22 +1450,52 @@ function abrirModal(id){
   document.getElementById(id)?.classList.add('on');
 }
 function renderDash(){
-  atualizarSaudacao();popularSelects();
+  atualizarSaudacao(); popularSelects();
+
+  // KPIs dinâmicos
+  const emTram=materias.filter(m=>!['Aprovado','Rejeitado','Arquivado','Vetado'].includes(m.situacao)).length;
+  const criticos=materias.filter(m=>m.critico).length;
+  const comAtivas=comissoes.filter(c=>c.ativa!==false).length;
+  const totalEm=emendas.reduce((s,e)=>s+e.valor,0);
+  const pagasEm=emendas.filter(e=>['Paga','Liquidada'].includes(e.status)).reduce((s,e)=>s+e.valor,0);
+  const pctEm=totalEm>0?Math.round(pagasEm/totalEm*100):null;
+  const elM=document.getElementById('kpiMaterias'),elMS=document.getElementById('kpiMateriasSub');
+  const elC=document.getElementById('kpiComissoes'),elCS=document.getElementById('kpiComissoesSub');
+  const elE=document.getElementById('kpiEmendas');
+  if(elM)elM.textContent=emTram;
+  if(elMS)elMS.textContent=criticos>0?`${criticos} com prazo crítico`:'Sem prazos críticos';
+  if(elC)elC.textContent=comAtivas;
+  if(elCS)elCS.textContent=comAtivas>0?`${comAtivas} ativa${comAtivas>1?'s':''}`:'Nenhuma cadastrada';
+  if(elE)elE.textContent=pctEm!==null?pctEm+'%':'—';
+
   const spEl=document.getElementById('dashStatusProj');
   if(spEl){
-    const st=[{l:'Protocolado',v:4,c:'#94A3B8'},{l:'Jurídico',v:3,c:'#5B21B6'},{l:'Comissão',v:6,c:'#B8860B'},{l:'Plenário',v:5,c:'#1E4470'},{l:'Aprovado',v:38,c:'#0E7C5A'},{l:'Rejeitado',v:6,c:'#DC2626'}];
-    spEl.innerHTML=st.map(s=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><div style="width:10px;height:10px;border-radius:3px;background:${s.c};flex-shrink:0;"></div><span style="font-size:12px;color:var(--tx2);flex:1;">${s.l}</span><span style="font-size:13px;font-weight:800;color:${s.c};">${s.v}</span></div>`).join('');
+    if(!materias.length){spEl.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhuma matéria cadastrada ainda.</div>';}
+    else{
+      const g={Protocolado:0,Jurídico:0,Comissão:0,Plenário:0,Aprovado:0,Rejeitado:0};
+      materias.forEach(m=>{if(g[m.situacao]!==undefined)g[m.situacao]++;else if(m.situacao==='Parecer')g['Comissão']++;});
+      const cor={Protocolado:'#94A3B8',Jurídico:'#5B21B6',Comissão:'#B8860B',Plenário:'#1E4470',Aprovado:'#0E7C5A',Rejeitado:'#DC2626'};
+      spEl.innerHTML=Object.entries(g).map(([l,v])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><div style="width:10px;height:10px;border-radius:3px;background:${cor[l]};flex-shrink:0;"></div><span style="font-size:12px;color:var(--tx2);flex:1;">${l}</span><span style="font-size:13px;font-weight:800;color:${cor[l]};">${v}</span></div>`).join('');
+    }
   }
   const ivEl=document.getElementById('dashIndicVereador');
-  if(ivEl)ivEl.innerHTML=vereadores.slice(0,5).map(v=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div class="av" style="width:26px;height:26px;background:${v.cor};font-size:10px;">${v.av}</div><span style="font-size:11.5px;color:var(--tx2);flex:1;">${v.nome}</span><span class="b ${v.presenca>=80?'b-emerald':v.presenca>=60?'b-gold':'b-red'}">${v.presenca}%</span></div>`).join('');
+  if(ivEl){
+    if(!vereadores.length)ivEl.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhum vereador cadastrado ainda.</div>';
+    else ivEl.innerHTML=vereadores.slice(0,5).map(v=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div class="av" style="width:26px;height:26px;background:${v.cor};font-size:10px;">${v.av}</div><span style="font-size:11.5px;color:var(--tx2);flex:1;">${v.nome}</span><span class="b ${(v.presenca||0)>=80?'b-emerald':(v.presenca||0)>=60?'b-gold':'b-red'}">${v.presenca||0}%</span></div>`).join('');
+  }
   const pzEl=document.getElementById('dashPrazos');
-  if(pzEl)pzEl.innerHTML=materias.filter(m=>m.critico).map(m=>`<div class="risk-item" style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${m.num}</span><span style="font-size:11.5px;color:var(--tx2);flex:1;">${m.ementa.substring(0,40)}...</span><span class="b b-red">${m.prazo}</span></div>`).join('');
+  if(pzEl){
+    const cl=materias.filter(m=>m.critico);
+    pzEl.innerHTML=cl.length?cl.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${m.num}</span><span style="font-size:11.5px;color:var(--tx2);flex:1;">${m.ementa.substring(0,40)}...</span><span class="b b-red">${m.prazo}</span></div>`).join(''):'<div style="text-align:center;padding:1rem;color:var(--tx3);font-size:12px;">✅ Nenhum prazo crítico.</div>';
+  }
   const paEl=document.getElementById('dashProcAdmin');
-  if(paEl)paEl.innerHTML=`<div style="font-size:12px;color:var(--tx2);line-height:2;">📁 12 processos administrativos ativos<br>📋 3 licitações em análise<br>👥 2 processos de RH em tramitação<br>🏗️ 4 prestações de contas de convênios</div>`;
+  if(paEl)paEl.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhum processo administrativo registrado.</div>';
   const caEl=document.getElementById('chartAprovacao'),clEl=document.getElementById('chartAprovacaoLabels');
-  if(caEl){const meses=['Jan','Fev','Mar','Abr','Mai','Jun'];const aprov=[5,7,4,8,6,9];const rejei=[1,0,2,1,1,1];const max=10;
-    caEl.innerHTML=meses.map((m,i)=>`<div style="flex:1;display:flex;flex-direction:column;gap:2px;height:100%;justify-content:flex-end;"><div style="background:#0E7C5A;border-radius:3px 3px 0 0;height:${(aprov[i]/max)*100}%;"></div><div style="background:#DC2626;border-radius:0 0 3px 3px;height:${(rejei[i]/max)*40}%;"></div></div>`).join('');
-    clEl.innerHTML=meses.map(m=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--tx3);font-weight:600;">${m}</div>`).join('');}
+  if(caEl){
+    const meses=['Jan','Fev','Mar','Abr','Mai','Jun'];
+    caEl.innerHTML=meses.map(()=>`<div style="flex:1;display:flex;flex-direction:column;gap:2px;height:100%;justify-content:flex-end;"><div style="background:#0E7C5A;border-radius:3px 3px 0 0;min-height:2px;opacity:.2;height:2px;"></div></div>`).join('');
+    clEl.innerHTML=meses.map(m=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--tx3);font-weight:600;">${m}</div>`).join('');
+  }
 }
 
 // ═══ VEREADORES ═══
@@ -2542,14 +2496,18 @@ async function confirmarAcaoEtapa(){
 
 // ═══ SESSÃO PLENÁRIA ═══
 function renderSessao(){
-  document.getElementById('listaOradores').innerHTML=['Carlos Mendes Filho','Maria Aparecida Souza','Roberto Carlos Alves'].map((n,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${i+1}º</span><span style="font-size:12px;color:var(--tx2);flex:1;">${n}</span>${i===0?'<span class="b b-gold">Falando</span>':''}</div>`).join('');
-  document.getElementById('ordemDoDia').innerHTML=materias.filter(m=>m.situacao==='Plenário').map((m,i)=>`<div class="risk-item" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:8px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${i+1}.</span><div style="flex:1;"><div style="font-size:12.5px;font-weight:700;">${m.num} — ${m.ementa}</div><div style="font-size:10.5px;color:var(--tx3);">${m.tipo} · Autor: ${m.autor}</div></div><button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="sw('votacao')">Votar</button></div>`).join('');
+  const oradores = document.getElementById('listaOradores');
+  if(oradores) oradores.innerHTML='<div style="text-align:center;padding:1rem;color:var(--tx3);font-size:12px;">Nenhum orador inscrito.</div>';
+  const ordem=materias.filter(m=>m.situacao==='Plenário');
+  document.getElementById('ordemDoDia').innerHTML=ordem.length
+    ? ordem.map((m,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:8px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${i+1}.</span><div style="flex:1;"><div style="font-size:12.5px;font-weight:700;">${m.num} — ${m.ementa}</div><div style="font-size:10.5px;color:var(--tx3);">${m.tipo} · Autor: ${m.autor}</div></div><button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="sw('votacao')">Votar</button></div>`).join('')
+    : '<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhuma matéria em Plenário no momento.</div>';
 }
 function toggleSessao(){
   sessaoAberta=!sessaoAberta;
   const btn=document.getElementById('btnAbrirSessao');
   if(sessaoAberta){btn.textContent='⏹ Encerrar Sessão';btn.style.background='var(--red2)';document.getElementById('sessaoStatus').textContent='🔴 Sessão EM ANDAMENTO · Iniciada às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});toast('🏛️ Sessão aberta — gravação iniciada automaticamente');logAuditoria('Abertura de Sessão','Sessão Plenária');}
-  else{btn.textContent='▶ Abrir Sessão';btn.style.background='var(--emerald)';document.getElementById('sessaoStatus').textContent='Sessão Ordinária · 19/06/2026 · 14h00';toast('✅ Sessão encerrada — gravação finalizada e enviada para IA de transcrição');logAuditoria('Encerramento de Sessão','Sessão Plenária');}
+  else{btn.textContent='▶ Abrir Sessão';btn.style.background='var(--emerald)';document.getElementById('sessaoStatus').textContent='Nenhuma sessão agendada';toast('✅ Sessão encerrada — gravação finalizada e enviada para IA de transcrição');logAuditoria('Encerramento de Sessão','Sessão Plenária');}
 }
 function iniciarCronometro(){clearInterval(cronInterval);cronInterval=setInterval(()=>{cronSegundos--;if(cronSegundos<=0){clearInterval(cronInterval);toast('⏰ Tempo esgotado!');cronSegundos=0;}const m=String(Math.floor(cronSegundos/60)).padStart(2,'0');const s=String(cronSegundos%60).padStart(2,'0');document.getElementById('cronometro').textContent=`${m}:${s}`;},1000);}
 function pausarCronometro(){clearInterval(cronInterval);}
@@ -2702,35 +2660,51 @@ function renderTransmissao(){
 }
 
 // ═══ CONTAS ═══
-function renderContas(){document.getElementById('tbContas').innerHTML=contasExec.map(c=>`<tr><td><strong>${c.exercicio}</strong></td><td>${c.gestor}</td><td><span class="b ${c.parecer.includes('Favorável')?'b-emerald':'b-gold'}">${c.parecer}</span></td><td><span class="b b-navy">${c.situacao}</span></td><td>${c.prazo}</td></tr>`).join('');}
+function renderContas(){
+  const tb=document.getElementById('tbContas');
+  tb.innerHTML=contasExec.length
+    ? contasExec.map(c=>`<tr><td><strong>${c.exercicio}</strong></td><td>${c.gestor}</td><td><span class="b ${c.parecer.includes('Favorável')?'b-emerald':'b-gold'}">${c.parecer}</span></td><td><span class="b b-navy">${c.situacao}</span></td><td>${c.prazo}</td></tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--tx3);">Nenhum processo de contas registrado ainda.</td></tr>';
+}
 function salvarContas(){const ex=document.getElementById('ctExercicio').value;if(!ex){toast('⚠️ Informe o exercício');return;}contasExec.unshift({exercicio:ex,gestor:document.getElementById('ctGestor').value,parecer:document.getElementById('ctParecer').value,situacao:'Recebimento',prazo:'A definir'});fecharModal('mContas');renderContas();toast('✅ Processo registrado!');}
 
 // ═══ EMENDAS ═══
-function renderEmendas(){popularSelects();document.getElementById('tbEmendas').innerHTML=emendas.map(e=>`<tr><td>${e.autor}</td><td>${e.benef}</td><td style="font-weight:700;">R$ ${e.valor.toLocaleString('pt-BR')}</td><td>${e.exercicio}</td><td><span class="b ${e.status==='Paga'?'b-emerald':e.status==='Liquidada'?'b-navy':e.status==='Empenhada'?'b-gold':'b-gray'}">${e.status}</span></td></tr>`).join('');}
+function renderEmendas(){
+  popularSelects();
+  const tb=document.getElementById('tbEmendas');
+  tb.innerHTML=emendas.length
+    ? emendas.map(e=>`<tr><td>${e.autor}</td><td>${e.benef}</td><td style="font-weight:700;">R$ ${e.valor.toLocaleString('pt-BR')}</td><td>${e.exercicio}</td><td><span class="b ${e.status==='Paga'?'b-emerald':e.status==='Liquidada'?'b-navy':e.status==='Empenhada'?'b-gold':'b-gray'}">${e.status}</span></td></tr>`).join('')
+    : '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--tx3);">Nenhuma emenda registrada ainda.</td></tr>';
+}
 function salvarEmenda(){const benef=document.getElementById('emBenef').value.trim();if(!benef){toast('⚠️ Informe o beneficiário');return;}emendas.unshift({autor:document.getElementById('emAutor').value,benef,valor:Number(document.getElementById('emValor').value)||0,exercicio:document.getElementById('emExercicio').value||2026,status:'Proposta'});fecharModal('mEmenda');renderEmendas();toast('📌 Emenda registrada!');}
 
 // ═══ TRANSPARÊNCIA ═══
-function renderTransparencia(){document.getElementById('listaTransparencia').innerHTML=[
-  {t:'PL 045/2026 publicado',d:'há 2h'},{t:'Ata da Sessão 18/06/2026 publicada',d:'há 5h'},{t:'Emenda 2026-014 atualizada para PAGA',d:'há 1 dia'},
-].map(x=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;"><span style="color:var(--tx2);">${x.t}</span><span style="color:var(--tx3);">${x.d}</span></div>`).join('');}
+function renderTransparencia(){
+  document.getElementById('listaTransparencia').innerHTML=
+    '<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhuma publicação registrada ainda.</div>';
+}
 
 // ═══ ATAS IA ═══
 function renderAtas(){
-  document.getElementById('ataGerada').innerHTML=`<div style="background:linear-gradient(135deg,#081B30,#0F2A4A);border-radius:10px;padding:16px;"><div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:8px;">🤖 GERADO AUTOMATICAMENTE</div><div style="font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.8;">Sessão Ordinária aberta às 14h00 com 15 vereadores presentes (quórum atingido). Aprovados: PL 045/2026 (Reforma Iluminação Pública, 12 votos a favor), Moção 038/2026. Comissão de Obras apresentou parecer favorável ao PL 029/2026. Encerrada às 17h42.</div><button class="btn-sm" style="background:rgba(255,255,255,.15);color:#fff;margin-top:10px;" onclick="toast('✏️ Abrindo editor de ata para revisão')">✏️ Revisar e Publicar</button></div>`;
-  document.getElementById('tbAtas').innerHTML=[
-    {s:'Sessão Ordinária',d:'19/06/2026',st:'Rascunho IA'},{s:'Sessão Ordinária',d:'18/06/2026',st:'Publicada'},{s:'Sessão Extraordinária',d:'12/06/2026',st:'Publicada'},
-  ].map(a=>`<tr><td>${a.s}</td><td>${a.d}</td><td><span class="b ${a.st==='Publicada'?'b-emerald':'b-gold'}">${a.st}</span></td><td><button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);" onclick="toast('📄 Abrindo ata')">Ver</button></td></tr>`).join('');
+  document.getElementById('ataGerada').innerHTML=`
+    <div style="background:linear-gradient(135deg,#081B30,#0F2A4A);border-radius:10px;padding:16px;text-align:center;">
+      <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:8px;">🤖 GERAÇÃO AUTOMÁTICA DE ATAS</div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.55);line-height:1.8;">Nenhuma sessão transcrita ainda.<br>Após encerrar uma sessão, a IA gerará a ata automaticamente.</div>
+    </div>`;
+  document.getElementById('tbAtas').innerHTML='<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--tx3);">Nenhuma ata gerada ainda.</td></tr>';
 }
 
 // ═══ ASSISTENTE IA ═══
-const iaResp={default:(q)=>`Analisando "${q}"... Com base nos documentos da Câmara, recomendo consultar o módulo correspondente para mais detalhes.`,
-local:'**PL 045/2026** está atualmente em **Plenário**, incluído na Ordem do Dia da sessão de hoje (19/06/2026, 14h). Parecer jurídico e da Comissão de Obras já foram favoráveis. Aguarda votação nominal.',
-parados:'**Projetos parados há mais de 30 dias:**\\n\\n🔴 Nenhum projeto crítico no momento.\\n🟡 PLC 012/2026 está há 12 dias em análise jurídica — dentro do prazo regimental.',
-resumo:'**Resumo da última sessão (18/06/2026):**\\n\\nQuórum atingido com 15 presentes. Aprovados: 2 matérias. Rejeitado: 1 requerimento. Destaque: parecer favorável da Comissão de Obras ao PL 029/2026 (Hortas Comunitárias).'};
+const iaResp={
+  default:(q)=>`Analisando "${q}"... Assim que a Câmara de Andaraí tiver matérias e sessões cadastradas, poderei responder com dados reais. Por enquanto, experimente cadastrar vereadores e matérias no sistema.`,
+  vereador:`Ainda não há vereadores cadastrados. Acesse **Vereadores** no menu e clique em **+ Novo Vereador** para começar.`,
+  parados:`Ainda não há matérias em tramitação. Protocole a primeira matéria em **Processo Legislativo**.`,
+  resumo:`Nenhuma sessão foi realizada ainda na Câmara de Andaraí. Após a primeira sessão, o resumo aparecerá aqui automaticamente.`
+};
 function renderAssistente(){
   const chatEl=document.getElementById('iaChat');
-  if(chatEl&&chatEl.children.length===0)adicionarMsgIA('Olá! Sou o Assistente Legislativo do LegisGov. Posso ajudar você a localizar matérias, consultar votações ou resumir sessões. O que precisa?','ia');
-  document.getElementById('iaSugestoes').innerHTML=['Onde está o PL 045/2026?','Quais projetos estão parados?','Resuma a última sessão'].map(s=>`<button onclick="enviarMsgDireta('${s}')" style="padding:5px 12px;border-radius:20px;border:1px solid #C5D9EE;background:var(--navy-l);color:var(--navy2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${s}</button>`).join('');
+  if(chatEl&&chatEl.children.length===0) adicionarMsgIA('Olá! Sou o Assistente Legislativo da **Câmara Municipal de Andaraí**. Assim que os primeiros dados forem cadastrados, poderei ajudar a localizar matérias, consultar votações e resumir sessões. Como posso ajudar?','ia');
+  document.getElementById('iaSugestoes').innerHTML=['Como cadastrar vereadores?','Como protocolar uma matéria?','Como abrir uma sessão?'].map(s=>`<button onclick="enviarMsgDireta('${s}')" style="padding:5px 12px;border-radius:20px;border:1px solid #C5D9EE;background:var(--navy-l);color:var(--navy2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${s}</button>`).join('');
 }
 function adicionarMsgIA(texto,quem){const el=document.getElementById('iaChat');if(!el)return;const wrap=document.createElement('div');wrap.style.cssText=`display:flex;${quem==='user'?'justify-content:flex-end;':''}`;const bubble=document.createElement('div');bubble.className=`chat-bubble ${quem==='ia'?'chat-ia':'chat-user'}`;bubble.innerHTML=texto.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\\n/g,'<br>');wrap.appendChild(bubble);el.appendChild(wrap);el.scrollTop=el.scrollHeight;}
 function enviarIA(){const input=document.getElementById('iaInput');const q=input?.value?.trim();if(!q)return;adicionarMsgIA(q,'user');input.value='';setTimeout(()=>{const lq=q.toLowerCase();let resp=iaResp.default(q);if(lq.includes('045'))resp=iaResp.local;else if(lq.includes('parad'))resp=iaResp.parados;else if(lq.includes('resum')||lq.includes('sessão'))resp=iaResp.resumo;adicionarMsgIA(resp,'ia');},700);}
