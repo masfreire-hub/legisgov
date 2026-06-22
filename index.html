@@ -304,6 +304,9 @@ select.linp option{color:#0F172A;background:#fff;}
     <div class="ni" onclick="sw('atas',this)" id="ni-atas"><span class="ni-ico">📝</span><span class="ni-lb">Atas (IA)</span><span class="ni-badge gold">2</span></div>
     <div class="ni" onclick="sw('assistente',this)" id="ni-assistente"><span class="ni-ico">🤖</span><span class="ni-lb">Assistente IA</span></div>
 
+    <div class="sb-section" id="sb-sec-suporte" style="display:none;">SUPORTE</div>
+    <div class="ni" onclick="sw('admin',this)" id="ni-admin" style="display:none;"><span class="ni-ico">🔧</span><span class="ni-lb">Administração</span></div>
+
     <div class="sb-section">SISTEMA</div>
     <div class="ni" onclick="sw('auditoria',this)" id="ni-auditoria"><span class="ni-ico">🛡️</span><span class="ni-lb">Auditoria</span></div>
     <div class="ni" onclick="sw('notificacoes',this)" id="ni-notificacoes"><span class="ni-ico">📲</span><span class="ni-lb">Notificações</span></div>
@@ -370,6 +373,15 @@ select.linp option{color:#0F172A;background:#fff;}
         <table class="tbl"><thead><tr><th></th><th>Nome</th><th>Partido</th><th>Presença</th><th>Proposições</th><th>Status</th></tr></thead>
         <tbody id="tbVereadores"></tbody></table>
       </div>
+    </div>
+
+    <!-- ═══ ADMINISTRAÇÃO (só Suporte) ═══ -->
+    <div class="page" id="p-admin">
+      <div class="ph">
+        <div><div class="ph-title">🔧 Administração</div><div class="ph-sub">Usuários cadastrados em todas as Câmaras</div></div>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModalAdminUsuario()">+ Novo Usuário em Qualquer Câmara</button>
+      </div>
+      <div id="listaAdminCamaras"></div>
     </div>
 
     <!-- ═══ COMISSÕES ═══ -->
@@ -655,6 +667,31 @@ select.linp option{color:#0F172A;background:#fff;}
     <div style="font-size:11px;color:var(--tx3);margin:-6px 0 12px;">Combine essa senha com a pessoa por fora do sistema — ela pode trocar depois.</div>
     <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR E CRIAR LOGIN</button>
     <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mAdminUsuario">
+  <div class="modal">
+    <div class="m-title">🔧 Cadastrar Usuário em Qualquer Câmara</div>
+    <div style="font-size:11.5px;color:var(--tx3);margin:-6px 0 12px;">Disponível só para o cargo Suporte. Cria um login real, vinculado à Câmara escolhida abaixo.</div>
+    <label class="m-lbl">Câmara</label>
+    <select class="m-sel" id="auCamara"></select>
+    <label class="m-lbl">Nome Completo</label><input class="m-inp" id="auNome" placeholder="Nome civil">
+    <label class="m-lbl">Cargo</label>
+    <select class="m-sel" id="auCargo">
+      <option value="Vereador">Vereador(a)</option>
+      <option value="Presidente">Presidente</option>
+      <option value="Secretaria">Secretaria Legislativa</option>
+      <option value="Procuradoria">Procuradoria Jurídica</option>
+      <option value="Comissao">Comissão</option>
+      <option value="Administrador">Administrador</option>
+    </select>
+    <label class="m-lbl">Partido (se Vereador)</label><input class="m-inp" id="auPartido" placeholder="Sigla">
+    <label class="m-lbl">CPF de acesso</label><input class="m-inp" id="auCpfLogin" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
+    <label class="m-lbl">Senha provisória</label><input class="m-inp" id="auSenha" type="text" placeholder="Mínimo 6 caracteres">
+    <div style="font-size:11px;color:var(--tx3);margin:-6px 0 12px;">Combine essa senha com a pessoa por fora do sistema — ela pode trocar depois.</div>
+    <button class="btn-p" onclick="salvarUsuarioAdmin()">💾 CADASTRAR E CRIAR LOGIN</button>
+    <button class="btn-c" onclick="fecharModal('mAdminUsuario')">Cancelar</button>
   </div>
 </div>
 
@@ -1065,17 +1102,23 @@ async function entrar(u){
 
   const seletor=document.getElementById('seletorCamaraSuporte');
   const badgeCamara=document.getElementById('tbCamara');
+  const itemAdmin=document.getElementById('ni-admin');
+  const secAdmin=document.getElementById('sb-sec-suporte');
   if(u.cargo==='Suporte'){
     seletor.innerHTML=camarasDisponiveisSuporte.map(c=>`<option value="${c.codigo}">🔧 ${c.nome}</option>`).join('');
     seletor.value=camaraAtual;
     seletor.style.display='inline-block';
     badgeCamara.style.display='none';
+    if(itemAdmin)itemAdmin.style.display='flex';
+    if(secAdmin)secAdmin.style.display='block';
   } else {
     seletor.style.display='none';
     badgeCamara.style.display='inline-flex';
     // mostra o nome real da Câmara do usuário (vindo do perfil), não mais um texto fixo genérico
     const nomeCamara=meuPerfil?.legisgov_camaras?.nome;
     badgeCamara.textContent=nomeCamara?`🏛️ ${nomeCamara}`:'Câmara Municipal';
+    if(itemAdmin)itemAdmin.style.display='none';
+    if(secAdmin)secAdmin.style.display='none';
   }
 
   toast('⏳ Carregando dados do banco...');
@@ -1115,9 +1158,9 @@ function sw(page,el){
   document.getElementById('p-'+page)?.classList.add('on');
   const ni=document.getElementById('ni-'+page);
   if(ni)ni.classList.add('on');else if(el)el.classList.add('on');
-  const titles={dash:'Dashboard',vereadores:'Vereadores',comissoes:'Comissões',materias:'Processo Legislativo',tramitacao:'Controle de Tramitação',sessao:'Sessão Plenária',votacao:'Votação Eletrônica',transmissao:'Transmissão ao Vivo',contas:'Julgamento de Contas',emendas:'Emendas Parlamentares',transparencia:'Portal da Transparência',atas:'Atas com IA',assistente:'Assistente IA',auditoria:'Auditoria',notificacoes:'Notificações'};
+  const titles={dash:'Dashboard',vereadores:'Vereadores',comissoes:'Comissões',materias:'Processo Legislativo',tramitacao:'Controle de Tramitação',sessao:'Sessão Plenária',votacao:'Votação Eletrônica',transmissao:'Transmissão ao Vivo',contas:'Julgamento de Contas',emendas:'Emendas Parlamentares',transparencia:'Portal da Transparência',atas:'Atas com IA',assistente:'Assistente IA',auditoria:'Auditoria',notificacoes:'Notificações',admin:'Administração'};
   document.getElementById('tbPage').textContent=titles[page]||page;
-  const r={dash:renderDash,vereadores:renderVereadores,comissoes:renderComissoes,materias:renderMaterias,tramitacao:renderTramitacao,sessao:renderSessao,votacao:renderVotacao,transmissao:renderTransmissao,contas:renderContas,emendas:renderEmendas,transparencia:renderTransparencia,atas:renderAtas,assistente:renderAssistente,auditoria:renderAuditoria,notificacoes:renderNotificacoes};
+  const r={dash:renderDash,vereadores:renderVereadores,comissoes:renderComissoes,materias:renderMaterias,tramitacao:renderTramitacao,sessao:renderSessao,votacao:renderVotacao,transmissao:renderTransmissao,contas:renderContas,emendas:renderEmendas,transparencia:renderTransparencia,atas:renderAtas,assistente:renderAssistente,auditoria:renderAuditoria,notificacoes:renderNotificacoes,admin:renderAdmin};
   if(r[page])setTimeout(r[page],30);
   fecharDet();document.getElementById('sidebar').classList.remove('on');
 }
@@ -1161,6 +1204,98 @@ function abrirDetVereador(id){
   document.getElementById('detTitle').textContent=v.nome;
   document.getElementById('detBody').innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;"><div class="av" style="width:52px;height:52px;background:${v.cor};font-size:18px;">${v.av}</div><div><div style="font-size:16px;font-weight:800;">${v.nome}</div><div style="font-size:12px;color:var(--tx3);">${v.partido} · 19ª Legislatura</div></div></div><div class="det-sec">PRESENÇA</div><div class="pb" style="margin-bottom:4px;"><div class="pb-fill" style="width:${v.presenca}%;background:#0E7C5A;"></div></div><div style="font-size:11px;color:var(--tx3);">${v.presenca}% de presença nas sessões</div><div class="det-sec">PROPOSIÇÕES</div><div style="font-size:22px;font-weight:900;color:var(--navy2);">${v.proposicoes}</div>`;
   document.getElementById('detPanel').classList.add('on');
+}
+
+// ═══ ADMINISTRAÇÃO (só Suporte) — usuários de todas as Câmaras ═══
+async function renderAdmin(){
+  const cont=document.getElementById('listaAdminCamaras');
+  if(meuPerfil?.cargo!=='Suporte'){
+    cont.innerHTML='<div class="card">⚠️ Esta área é exclusiva para o cargo Suporte.</div>';
+    return;
+  }
+  cont.innerHTML='<div class="card">⏳ Carregando usuários de todas as Câmaras...</div>';
+  try{
+    const [todosPerfis,todasCamaras]=await Promise.all([db.listarColegas(),db.listarCamaras()]);
+    const cargoCor={Suporte:'b-gold',Administrador:'b-purple',Presidente:'b-navy',Secretaria:'b-emerald',Procuradoria:'b-navy',Vereador:'b-gray',Comissao:'b-gray'};
+    cont.innerHTML=todasCamaras.map(cam=>{
+      const usuariosDaCamara=todosPerfis.filter(p=>p.camara_codigo===cam.codigo);
+      return `<div class="card" style="margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:800;color:var(--navy2);margin-bottom:10px;">🏛️ ${cam.nome} <span style="font-weight:500;color:var(--tx3);font-size:12px;">(${usuariosDaCamara.length} usuário${usuariosDaCamara.length===1?'':'s'})</span></div>
+        ${usuariosDaCamara.length?`<table class="tbl"><thead><tr><th>Nome</th><th>Cargo</th></tr></thead><tbody>
+          ${usuariosDaCamara.map(u=>`<tr><td><strong>${u.nome}</strong></td><td><span class="b ${cargoCor[u.cargo]||'b-gray'}">${u.cargo}</span></td></tr>`).join('')}
+        </tbody></table>`:`<div style="font-size:12.5px;color:var(--tx3);">Nenhum usuário cadastrado ainda nesta Câmara.</div>`}
+      </div>`;
+    }).join('');
+
+    const usuariosSemCamara=todosPerfis.filter(p=>!p.camara_codigo);
+    if(usuariosSemCamara.length){
+      cont.innerHTML+=`<div class="card">
+        <div style="font-size:14px;font-weight:800;color:var(--gold2);margin-bottom:10px;">🔧 Equipe de Suporte (acesso master, sem Câmara fixa)</div>
+        <table class="tbl"><thead><tr><th>Nome</th><th>Cargo</th></tr></thead><tbody>
+          ${usuariosSemCamara.map(u=>`<tr><td><strong>${u.nome}</strong></td><td><span class="b b-gold">${u.cargo}</span></td></tr>`).join('')}
+        </tbody></table>
+      </div>`;
+    }
+  }catch(err){
+    console.error('Erro ao carregar painel de Administração:',err);
+    cont.innerHTML='<div class="card">⚠️ Não foi possível carregar os dados — verifique a conexão.</div>';
+  }
+}
+
+async function abrirModalAdminUsuario(){
+  try{
+    const camaras=await db.listarCamaras();
+    document.getElementById('auCamara').innerHTML=camaras.map(c=>`<option value="${c.codigo}">${c.nome}</option>`).join('');
+  }catch(err){
+    console.error('Erro ao carregar Câmaras para o modal:',err);
+  }
+  abrirModal('mAdminUsuario');
+}
+
+async function salvarUsuarioAdmin(){
+  const camaraEscolhida=document.getElementById('auCamara').value;
+  const nome=document.getElementById('auNome').value.trim();
+  const cargo=document.getElementById('auCargo').value;
+  const cpfLogin=document.getElementById('auCpfLogin').value.trim();
+  const senha=document.getElementById('auSenha').value;
+  const partido=document.getElementById('auPartido').value||'—';
+  const apenasNumeros=cpfLogin.replace(/\D/g,'');
+
+  if(!camaraEscolhida){toast('⚠️ Escolha a Câmara de destino');return;}
+  if(!nome){toast('⚠️ Informe o nome');return;}
+  if(apenasNumeros.length!==11||!senha){toast('⚠️ Informe um CPF válido (11 dígitos) e a senha de acesso');return;}
+  if(senha.length<6){toast('⚠️ A senha precisa ter pelo menos 6 caracteres');return;}
+
+  const emailTecnico=cpfParaEmailTecnico(cpfLogin);
+
+  try{
+    const novoUsuario=await auth.cadastrar(emailTecnico,senha);
+    const novoUserId=novoUsuario.user?.id || novoUsuario.id;
+    if(!novoUserId)throw new Error('Não foi possível obter o ID do novo usuário');
+
+    // cadastra o perfil diretamente na Câmara ESCOLHIDA no modal (não na do usuário logado, como o cadastro normal faz)
+    await sbRequest('legisgov_perfis',{
+      method:'POST',
+      body:JSON.stringify({user_id:novoUserId,nome,cargo,camara_codigo:camaraEscolhida})
+    });
+
+    if(cargo==='Vereador'||cargo==='Presidente'){
+      await sbRequest('legisgov_vereadores',{
+        method:'POST',
+        body:JSON.stringify({id:Date.now()%100000,nome,partido,presente:true,eu:false,camara_codigo:camaraEscolhida})
+      });
+    }
+
+    fecharModal('mAdminUsuario');
+    document.getElementById('auNome').value='';
+    document.getElementById('auCpfLogin').value='';
+    document.getElementById('auSenha').value='';
+    await renderAdmin();
+    toast(`✅ ${nome} cadastrado(a) com login próprio na Câmara escolhida!`);
+  }catch(err){
+    console.error('Erro ao cadastrar usuário via Administração:',err);
+    toast('⚠️ Não foi possível cadastrar — '+(err.message||'verifique os dados e tente novamente'));
+  }
 }
 async function salvarVereador(){
   const nome=document.getElementById('vNome').value.trim();
