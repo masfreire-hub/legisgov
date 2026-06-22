@@ -648,52 +648,242 @@ select.linp option{color:#0F172A;background:#fff;}
 
 <!-- MODALS -->
 <div class="ov" id="mVereador">
-  <div class="modal">
-    <div class="m-title">👤 Cadastrar Vereador</div>
-    <div id="mVereadorAviso" style="font-size:11.5px;padding:8px 12px;border-radius:8px;margin:-4px 0 14px;background:var(--navy-l);color:var(--navy2);border:1px solid #C5D9EE;">
-      🔐 Preencha os dados abaixo. O login será criado automaticamente.
+  <div class="modal" style="max-width:660px;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="m-title" style="margin-bottom:0;">👤 Cadastrar Vereador</div>
+      <button onclick="fecharModal('mVereador')" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;color:var(--tx3);display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
 
-    <label class="m-lbl">Nome Completo <span style="color:var(--red2)">*</span></label>
-    <input class="m-inp" id="vNome" placeholder="Ex: João da Silva Ferreira">
-
-    <div class="fg">
-      <div>
-        <label class="m-lbl">Cargo <span style="color:var(--red2)">*</span></label>
-        <select class="m-sel" id="vCargo" onchange="toggleCamposVereador()">
-          <option value="Vereador">Vereador(a)</option>
-          <option value="Presidente">Presidente da Câmara</option>
-          <option value="Secretaria">Secretaria Legislativa</option>
-          <option value="Procuradoria">Procuradoria Jurídica</option>
-          <option value="Comissao">Membro de Comissão</option>
-          <option value="Administrador">Administrador</option>
-        </select>
-      </div>
-      <div id="campoPartidoWrap">
-        <label class="m-lbl">Partido</label>
-        <input class="m-inp" id="vPartido" placeholder="Ex: MDB, PT, PSD...">
-      </div>
+    <!-- abas -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;" id="vTabs">
+      <button class="vtab active" onclick="mudarAbaVer(0,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;color:var(--navy2);border-bottom:2px solid var(--navy2);cursor:pointer;letter-spacing:.4px;margin-bottom:-2px;">👤 PESSOAL</button>
+      <button class="vtab" onclick="mudarAbaVer(1,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.4px;margin-bottom:-2px;">🏠 ENDEREÇO</button>
+      <button class="vtab" onclick="mudarAbaVer(2,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.4px;margin-bottom:-2px;">📱 CONTATO</button>
+      <button class="vtab" onclick="mudarAbaVer(3,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:11px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.4px;margin-bottom:-2px;">🔑 ACESSO</button>
     </div>
 
-    <div id="camposLoginWrap">
-      <div style="margin:4px 0 10px;padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--tx3);border:1px solid var(--border);">
-        🔑 <strong style="color:var(--tx2);">Dados de acesso ao sistema</strong> — o vereador usará o CPF e esta senha para entrar no LegisGov.
-      </div>
+    <!-- aba 0 — dados pessoais -->
+    <div class="vaba" id="vaba0">
+      <label class="m-lbl">Nome Completo <span style="color:var(--red2)">*</span></label>
+      <input class="m-inp" id="vNome" placeholder="Ex: João da Silva Ferreira">
+
       <div class="fg">
         <div>
-          <label class="m-lbl">CPF (login) <span style="color:var(--red2)">*</span></label>
+          <label class="m-lbl">Cargo <span style="color:var(--red2)">*</span></label>
+          <select class="m-sel" id="vCargo" onchange="toggleCamposVereador()">
+            <option value="Vereador">Vereador(a)</option>
+            <option value="Presidente">Presidente da Câmara</option>
+            <option value="Secretaria">Secretaria Legislativa</option>
+            <option value="Procuradoria">Procuradoria Jurídica</option>
+            <option value="Comissao">Membro de Comissão</option>
+            <option value="Administrador">Administrador</option>
+          </select>
+        </div>
+        <div id="campoPartidoWrap">
+          <label class="m-lbl">Partido</label>
+          <input class="m-inp" id="vPartido" placeholder="Ex: MDB, PT, PSD...">
+        </div>
+      </div>
+
+      <div class="fg">
+        <div>
+          <label class="m-lbl">CPF <span style="color:var(--red2)">*</span></label>
           <input class="m-inp" id="vCpfLogin" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
+        </div>
+        <div>
+          <label class="m-lbl">RG</label>
+          <input class="m-inp" id="vRg" placeholder="0000000-0">
+        </div>
+      </div>
+
+      <div class="fg">
+        <div>
+          <label class="m-lbl">Data de Nascimento</label>
+          <input class="m-inp" id="vNascimento" type="date">
+        </div>
+        <div>
+          <label class="m-lbl">Gênero</label>
+          <select class="m-sel" id="vGenero">
+            <option value="">— selecione —</option>
+            <option>Masculino</option><option>Feminino</option><option>Não-binário</option><option>Prefiro não informar</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="m-lbl">E-mail institucional</label>
+      <input class="m-inp" id="vEmail" type="email" placeholder="vereador@camara.ba.gov.br">
+
+      <div style="display:flex;justify-content:flex-end;margin-top:4px;">
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(1,document.querySelectorAll('.vtab')[1])">Próximo: Endereço →</button>
+      </div>
+    </div>
+
+    <!-- aba 1 — endereço -->
+    <div class="vaba" id="vaba1" style="display:none;">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input class="m-inp" id="vCep" placeholder="CEP (00000-000)" style="flex:1;margin-bottom:0;" maxlength="9" oninput="mascaraCep(this)" onblur="buscarCep()">
+        <button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);border:1px solid #C5D9EE;white-space:nowrap;" onclick="buscarCep()">🔍 Buscar CEP</button>
+      </div>
+
+      <label class="m-lbl">Logradouro</label>
+      <input class="m-inp" id="vLogradouro" placeholder="Rua, Avenida, Praça...">
+
+      <div class="fg">
+        <div>
+          <label class="m-lbl">Número</label>
+          <input class="m-inp" id="vNumero" placeholder="123">
+        </div>
+        <div>
+          <label class="m-lbl">Complemento</label>
+          <input class="m-inp" id="vComplemento" placeholder="Apto, Bloco...">
+        </div>
+      </div>
+
+      <div class="fg">
+        <div>
+          <label class="m-lbl">Bairro</label>
+          <input class="m-inp" id="vBairro" placeholder="Bairro">
+        </div>
+        <div>
+          <label class="m-lbl">Cidade</label>
+          <input class="m-inp" id="vCidade" placeholder="Município">
+        </div>
+      </div>
+
+      <div class="fg">
+        <div>
+          <label class="m-lbl">Estado</label>
+          <select class="m-sel" id="vEstado">
+            <option value="BA" selected>BA — Bahia</option>
+            <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option><option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option><option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+          </select>
+        </div>
+        <div>
+          <label class="m-lbl">CEP</label>
+          <input class="m-inp" id="vCepFinal" placeholder="00000-000" readonly style="background:var(--surface3);color:var(--tx3);">
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(0,document.querySelectorAll('.vtab')[0])">← Voltar</button>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(2,document.querySelectorAll('.vtab')[2])">Próximo: Contato →</button>
+      </div>
+    </div>
+
+    <!-- aba 2 — contato & telegram -->
+    <div class="vaba" id="vaba2" style="display:none;">
+      <div class="fg">
+        <div>
+          <label class="m-lbl">Celular / WhatsApp</label>
+          <input class="m-inp" id="vCelular" type="tel" placeholder="(00) 00000-0000" maxlength="15" oninput="mascaraTelefone(this)">
+        </div>
+        <div>
+          <label class="m-lbl">Telefone fixo</label>
+          <input class="m-inp" id="vTelefone" type="tel" placeholder="(00) 0000-0000" maxlength="14" oninput="mascaraTelefoneFixo(this)">
+        </div>
+      </div>
+
+      <label class="m-lbl">Gabinete / Ramal</label>
+      <input class="m-inp" id="vGabinete" placeholder="Ex: Gabinete 3 · Ramal 215">
+
+      <!-- bloco telegram -->
+      <div style="background:linear-gradient(135deg,#E8F4FD,#EFF8FF);border:1.5px solid #90CAF9;border-radius:10px;padding:14px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:#0088CC;display:flex;align-items:center;justify-content:center;font-size:18px;">✈️</div>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#01579B;">Integração Telegram</div>
+            <div style="font-size:11px;color:#0277BD;">Notificações automáticas de sessões, votações e prazos</div>
+          </div>
+        </div>
+
+        <label class="m-lbl" style="color:#01579B;">Username do Telegram</label>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;">
+          <span style="font-size:13px;color:#01579B;font-weight:700;">@</span>
+          <input class="m-inp" id="vTelegramUser" placeholder="username_sem_arroba" style="margin-bottom:0;flex:1;border-color:#90CAF9;">
+        </div>
+
+        <label class="m-lbl" style="color:#01579B;">Chat ID (necessário para envio)</label>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <input class="m-inp" id="vTelegramChatId" placeholder="Ex: 123456789" style="margin-bottom:0;flex:1;border-color:#90CAF9;">
+          <button class="btn-sm" id="btnTestarTelegram" onclick="testarTelegram()" style="background:#0088CC;color:#fff;white-space:nowrap;">📨 Testar</button>
+        </div>
+
+        <div style="background:rgba(1,87,155,.08);border-radius:7px;padding:10px 12px;font-size:11px;color:#01579B;line-height:1.7;">
+          <strong>Como obter o Chat ID:</strong><br>
+          1. O vereador abre o Telegram e busca <strong>@userinfobot</strong><br>
+          2. Envia qualquer mensagem<br>
+          3. O bot responde com o ID (número). Cole aqui.<br>
+          <span style="color:#0277BD;cursor:pointer;text-decoration:underline;" onclick="toast('🤖 Bot configurado: @LegisGovBot — peça ao admin para ativar')">ℹ️ Ver bot oficial do LegisGov</span>
+        </div>
+
+        <div id="telegramStatus" style="display:none;margin-top:8px;padding:7px 10px;border-radius:7px;font-size:11.5px;font-weight:600;"></div>
+      </div>
+
+      <label class="m-lbl">Redes sociais (opcional)</label>
+      <div class="fg">
+        <div>
+          <input class="m-inp" id="vInstagram" placeholder="Instagram (@usuario)">
+        </div>
+        <div>
+          <input class="m-inp" id="vFacebook" placeholder="Facebook (perfil)">
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(1,document.querySelectorAll('.vtab')[1])">← Voltar</button>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(3,document.querySelectorAll('.vtab')[3])">Próximo: Acesso →</button>
+      </div>
+    </div>
+
+    <!-- aba 3 — acesso ao sistema -->
+    <div class="vaba" id="vaba3" style="display:none;">
+      <div style="padding:10px 14px;background:var(--navy-l);border:1px solid #C5D9EE;border-radius:9px;margin-bottom:14px;font-size:11.5px;color:var(--navy2);">
+        🔑 O vereador usará o <strong>CPF</strong> informado na aba Pessoal e esta senha para acessar o LegisGov.
+      </div>
+
+      <div class="fg">
+        <div>
+          <label class="m-lbl">CPF de acesso</label>
+          <input class="m-inp" id="vCpfLoginDisplay" readonly style="background:var(--surface3);color:var(--tx2);" placeholder="Preenchido na aba Pessoal">
         </div>
         <div>
           <label class="m-lbl">Senha provisória <span style="color:var(--red2)">*</span></label>
           <input class="m-inp" id="vSenha" type="text" placeholder="Mín. 6 caracteres">
         </div>
       </div>
-      <div style="font-size:11px;color:var(--tx3);margin:-4px 0 12px;">Passe a senha para a pessoa por outro canal — ela poderá trocar depois.</div>
+      <div style="font-size:11px;color:var(--tx3);margin:-4px 0 14px;">Passe a senha para a pessoa por outro canal (ex: WhatsApp) — ela poderá trocar depois.</div>
+
+      <label class="m-lbl">Perfil de acesso</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;" id="perfilAcessoGrid">
+        <div class="perfil-opt active" onclick="selecionarPerfil(this,'total')" style="border:2px solid var(--navy2);border-radius:9px;padding:10px 12px;cursor:pointer;background:var(--navy-l);">
+          <div style="font-size:12px;font-weight:800;color:var(--navy2);">🏛️ Acesso Total</div>
+          <div style="font-size:10.5px;color:var(--tx3);margin-top:3px;">Vê todas as telas do sistema</div>
+        </div>
+        <div class="perfil-opt" onclick="selecionarPerfil(this,'leitura')" style="border:2px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;">
+          <div style="font-size:12px;font-weight:800;color:var(--tx2);">👁️ Somente Leitura</div>
+          <div style="font-size:10.5px;color:var(--tx3);margin-top:3px;">Consulta sem editar</div>
+        </div>
+        <div class="perfil-opt" onclick="selecionarPerfil(this,'votacao')" style="border:2px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;">
+          <div style="font-size:12px;font-weight:800;color:var(--tx2);">🗳️ Votação + Leitura</div>
+          <div style="font-size:10.5px;color:var(--tx3);margin-top:3px;">Vota e consulta</div>
+        </div>
+        <div class="perfil-opt" onclick="selecionarPerfil(this,'admin')" style="border:2px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;">
+          <div style="font-size:12px;font-weight:800;color:var(--tx2);">⚙️ Administrador</div>
+          <div style="font-size:10.5px;color:var(--tx3);margin-top:3px;">Gerencia usuários</div>
+        </div>
+      </div>
+      <input type="hidden" id="vPerfilAcesso" value="total">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(2,document.querySelectorAll('.vtab')[2])">← Voltar</button>
+        <div style="font-size:10.5px;color:var(--tx3);">* campos obrigatórios</div>
+      </div>
+
+      <button class="btn-p" onclick="salvarVereador()" style="font-size:14px;padding:14px;">💾 CADASTRAR VEREADOR</button>
+      <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
     </div>
 
-    <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR VEREADOR</button>
-    <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
   </div>
 </div>
 
@@ -1238,8 +1428,57 @@ function renderVereadores(){
 }
 function abrirDetVereador(id){
   const v=vereadores.find(x=>x.id===id);if(!v)return;
+  const d=v.dados||{};
+  const c=d.contato||{};
+  const e=d.endereco||{};
+
+  const temTelegram=c.telegram_chat_id||c.telegram_user;
+  const temEndereco=e.logradouro||e.cidade;
+
   document.getElementById('detTitle').textContent=v.nome;
-  document.getElementById('detBody').innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;"><div class="av" style="width:52px;height:52px;background:${v.cor};font-size:18px;">${v.av}</div><div><div style="font-size:16px;font-weight:800;">${v.nome}</div><div style="font-size:12px;color:var(--tx3);">${v.partido} · 19ª Legislatura</div></div></div><div class="det-sec">PRESENÇA</div><div class="pb" style="margin-bottom:4px;"><div class="pb-fill" style="width:${v.presenca}%;background:#0E7C5A;"></div></div><div style="font-size:11px;color:var(--tx3);">${v.presenca}% de presença nas sessões</div><div class="det-sec">PROPOSIÇÕES</div><div style="font-size:22px;font-weight:900;color:var(--navy2);">${v.proposicoes}</div>`;
+  document.getElementById('detBody').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div class="av" style="width:52px;height:52px;background:${v.cor};font-size:18px;">${v.av}</div>
+      <div>
+        <div style="font-size:16px;font-weight:800;">${v.nome}</div>
+        <div style="font-size:12px;color:var(--tx3);">${v.cargo||v.partido||'—'} · ${v.partido&&v.cargo?v.partido:'19ª Legislatura'}</div>
+        ${temTelegram?`<div style="display:inline-flex;align-items:center;gap:4px;background:#E3F2FD;color:#0277BD;border-radius:5px;padding:2px 8px;font-size:10px;font-weight:700;margin-top:4px;">✈️ Telegram ativo</div>`:''}
+      </div>
+    </div>
+
+    <div class="det-sec">PRESENÇA E ATIVIDADE</div>
+    <div class="pb" style="margin-bottom:4px;"><div class="pb-fill" style="width:${v.presenca||0}%;background:#0E7C5A;"></div></div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:14px;">${v.presenca||0}% de presença nas sessões · ${v.proposicoes||0} proposições</div>
+
+    ${d.email||c.celular?`
+    <div class="det-sec">CONTATO</div>
+    ${d.email?`<div style="font-size:12px;color:var(--tx2);margin-bottom:5px;">📧 ${d.email}</div>`:''}
+    ${c.celular?`<div style="font-size:12px;color:var(--tx2);margin-bottom:5px;">📱 ${c.celular}</div>`:''}
+    ${c.telefone?`<div style="font-size:12px;color:var(--tx2);margin-bottom:5px;">☎️ ${c.telefone}</div>`:''}
+    ${c.gabinete?`<div style="font-size:12px;color:var(--tx2);margin-bottom:5px;">🏛️ ${c.gabinete}</div>`:''}
+    `:''}
+
+    ${temTelegram?`
+    <div class="det-sec">TELEGRAM</div>
+    <div style="background:#E3F2FD;border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+      ${c.telegram_user?`<div style="font-size:12px;color:#01579B;margin-bottom:3px;">✈️ @${c.telegram_user}</div>`:''}
+      ${c.telegram_chat_id?`<div style="font-size:11px;color:#0277BD;">Chat ID: <code style="background:#fff;padding:2px 5px;border-radius:4px;">${c.telegram_chat_id}</code></div>`:''}
+    </div>`:''}
+
+    ${temEndereco?`
+    <div class="det-sec">ENDEREÇO</div>
+    <div style="font-size:12px;color:var(--tx2);line-height:1.8;">
+      ${e.logradouro?`${e.logradouro}${e.numero?', '+e.numero:''}${e.complemento?' — '+e.complemento:''}<br>`:''}
+      ${e.bairro?`${e.bairro} · `:''}${e.cidade||''}${e.estado?' — '+e.estado:''}${e.cep?'<br>CEP: '+e.cep:''}
+    </div>`:''}
+
+    <div class="det-sec">AÇÕES</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);" onclick="toast('✏️ Edição em breve')">✏️ Editar</button>
+      ${temTelegram?`<button class="btn-sm" style="background:#E3F2FD;color:#0277BD;" onclick="toast('📨 Enviando mensagem de teste...')">📨 Enviar teste Telegram</button>`:''}
+      <button class="btn-sm" style="background:var(--red-l);color:var(--red);" onclick="toast('⚠️ Confirmação necessária')">🚫 Desativar</button>
+    </div>`;
+
   document.getElementById('detPanel').classList.add('on');
 }
 
@@ -1334,75 +1573,247 @@ async function salvarUsuarioAdmin(){
     toast('⚠️ Não foi possível cadastrar — '+(err.message||'verifique os dados e tente novamente'));
   }
 }
-function toggleCamposVereador(){
-  const cargo = document.getElementById('vCargo').value;
-  const ehVereador = cargo === 'Vereador' || cargo === 'Presidente';
-  document.getElementById('campoPartidoWrap').style.display = ehVereador ? 'block' : 'none';
+// ── máscaras ──────────────────────────────────────────────────────────────
+function mascaraTelefone(el){
+  let v=el.value.replace(/\D/g,'').substring(0,11);
+  if(v.length>=7) v=`(${v.substring(0,2)}) ${v.substring(2,7)}-${v.substring(7)}`;
+  else if(v.length>=3) v=`(${v.substring(0,2)}) ${v.substring(2)}`;
+  else if(v.length>0) v=`(${v}`;
+  el.value=v;
+}
+function mascaraTelefoneFixo(el){
+  let v=el.value.replace(/\D/g,'').substring(0,10);
+  if(v.length>=6) v=`(${v.substring(0,2)}) ${v.substring(2,6)}-${v.substring(6)}`;
+  else if(v.length>=3) v=`(${v.substring(0,2)}) ${v.substring(2)}`;
+  else if(v.length>0) v=`(${v}`;
+  el.value=v;
+}
+function mascaraCep(el){
+  let v=el.value.replace(/\D/g,'').substring(0,8);
+  if(v.length>5) v=`${v.substring(0,5)}-${v.substring(5)}`;
+  el.value=v;
 }
 
-async function salvarVereador(){
-  const nome     = document.getElementById('vNome').value.trim();
-  const cargo    = document.getElementById('vCargo').value;
-  const cpfLogin = document.getElementById('vCpfLogin').value.trim();
-  const senha    = document.getElementById('vSenha').value;
-  const partido  = document.getElementById('vPartido').value.trim() || '—';
-  const numeros  = cpfLogin.replace(/\D/g,'');
+// ── busca CEP via ViaCEP ────────────────────────────────────────────────────
+async function buscarCep(){
+  const cep=(document.getElementById('vCep').value||'').replace(/\D/g,'');
+  if(cep.length!==8){toast('⚠️ CEP inválido (precisa ter 8 dígitos)');return;}
+  try{
+    const r=await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d=await r.json();
+    if(d.erro){toast('⚠️ CEP não encontrado');return;}
+    document.getElementById('vLogradouro').value=d.logradouro||'';
+    document.getElementById('vBairro').value=d.bairro||'';
+    document.getElementById('vCidade').value=d.localidade||'';
+    document.getElementById('vEstado').value=d.uf||'BA';
+    document.getElementById('vCepFinal').value=document.getElementById('vCep').value;
+    document.getElementById('vNumero').focus();
+    toast('✅ Endereço preenchido automaticamente!');
+  }catch(e){toast('⚠️ Não foi possível buscar o CEP');}
+}
 
-  if(!nome){ toast('⚠️ Informe o nome completo'); return; }
-  if(numeros.length !== 11){ toast('⚠️ CPF inválido — informe os 11 dígitos'); return; }
-  if(senha.length < 6){ toast('⚠️ A senha precisa ter pelo menos 6 caracteres'); return; }
+// ── abas do modal vereador ──────────────────────────────────────────────────
+function mudarAbaVer(idx, el){
+  // sincroniza CPF na aba acesso
+  if(idx===3){
+    const cpfV=document.getElementById('vCpfLogin')?.value||'';
+    const disp=document.getElementById('vCpfLoginDisplay');
+    if(disp) disp.value=cpfV||'(preencha na aba Pessoal)';
+  }
+  document.querySelectorAll('.vaba').forEach((a,i)=>a.style.display=i===idx?'block':'none');
+  document.querySelectorAll('.vtab').forEach((t,i)=>{
+    t.style.color=i===idx?'var(--navy2)':'var(--tx3)';
+    t.style.borderBottomColor=i===idx?'var(--navy2)':'transparent';
+  });
+}
 
-  // ── Modo demonstração: cadastra só localmente ──────────────────────────
-  if(!supabaseOnline){
-    const cores=['#0F2A4A','#0E7C5A','#5B21B6','#B8860B','#B91C1C','#1E4470','#D4A017'];
-    const initials = nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
-    const novoId = Date.now() % 100000;
-    vereadores.push({
-      id: novoId, nome, partido, cargo,
-      presente: true, eu: false,
-      presenca: 100, proposicoes: 0, status: 'active',
-      av: initials, cor: cores[vereadores.length % cores.length]
-    });
-    fecharModal('mVereador');
-    document.getElementById('vNome').value = '';
-    document.getElementById('vCpfLogin').value = '';
-    document.getElementById('vSenha').value = '';
-    document.getElementById('vPartido').value = '';
-    renderVereadores();
-    popularSelects();
-    logAuditoria('Cadastro local', nome);
-    toast(`✅ ${nome} cadastrado(a) localmente! (modo demonstração — não salvo no banco)`);
+function selecionarPerfil(el, val){
+  document.querySelectorAll('.perfil-opt').forEach(o=>{
+    o.style.borderColor='var(--border)';
+    o.style.background='transparent';
+    o.querySelector('div').style.color='var(--tx2)';
+  });
+  el.style.borderColor='var(--navy2)';
+  el.style.background='var(--navy-l)';
+  el.querySelector('div').style.color='var(--navy2)';
+  document.getElementById('vPerfilAcesso').value=val;
+}
+
+function toggleCamposVereador(){
+  const cargo=document.getElementById('vCargo').value;
+  const ehVer=cargo==='Vereador'||cargo==='Presidente';
+  document.getElementById('campoPartidoWrap').style.display=ehVer?'block':'none';
+}
+
+// ── testar Telegram ─────────────────────────────────────────────────────────
+async function testarTelegram(){
+  const chatId=(document.getElementById('vTelegramChatId').value||'').trim();
+  const nome=(document.getElementById('vNome').value||'Vereador(a)').trim();
+  const statusEl=document.getElementById('telegramStatus');
+  const btn=document.getElementById('btnTestarTelegram');
+
+  if(!chatId){toast('⚠️ Informe o Chat ID do Telegram');return;}
+
+  btn.textContent='⏳ Enviando...';
+  btn.disabled=true;
+  statusEl.style.display='none';
+
+  // A chave do bot deve estar configurada no backend / variável de ambiente.
+  // Para demonstração, simulamos o envio e orientamos o operador.
+  const TELEGRAM_BOT_TOKEN = window.LEGISGOV_TELEGRAM_TOKEN || '';
+
+  if(!TELEGRAM_BOT_TOKEN){
+    // modo demonstração — simula ok
+    await new Promise(r=>setTimeout(r,1200));
+    statusEl.style.display='block';
+    statusEl.style.background='#E8F5E9';
+    statusEl.style.color='#1B5E20';
+    statusEl.innerHTML='✅ <strong>Simulação OK</strong> — em produção, configure o token do bot nas variáveis de ambiente (<code>LEGISGOV_TELEGRAM_TOKEN</code>).';
+    btn.textContent='📨 Testar';
+    btn.disabled=false;
     return;
   }
 
-  // ── Modo real: cria login no Supabase ──────────────────────────────────
-  const emailTecnico = cpfParaEmailTecnico(cpfLogin);
   try{
-    const novoUsuario = await auth.cadastrar(emailTecnico, senha);
-    const novoUserId  = novoUsuario.user?.id || novoUsuario.id;
-    if(!novoUserId) throw new Error('Não foi possível obter o ID do novo usuário');
+    const msg=encodeURIComponent(`🏛️ *LegisGov — Teste de Notificação*\n\nOlá, *${nome}*! Sua integração com o Telegram foi configurada com sucesso.\n\nVocê receberá avisos de:\n• 📅 Sessões plenárias agendadas\n• 🗳️ Votações abertas\n• ⏰ Prazos legislativos\n• 📜 Novas matérias protocoladas`);
+    const resp=await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${chatId}&text=${msg}&parse_mode=Markdown`);
+    const d=await resp.json();
+    if(d.ok){
+      statusEl.style.display='block';
+      statusEl.style.background='#E8F5E9';
+      statusEl.style.color='#1B5E20';
+      statusEl.innerHTML='✅ <strong>Mensagem enviada!</strong> O vereador recebeu a notificação de boas-vindas.';
+    } else {
+      throw new Error(d.description||'Erro desconhecido');
+    }
+  }catch(e){
+    statusEl.style.display='block';
+    statusEl.style.background='#FEEFEF';
+    statusEl.style.color='#B71C1C';
+    statusEl.innerHTML=`❌ <strong>Falha:</strong> ${e.message}. Verifique o Chat ID e o token do bot.`;
+  }
+  btn.textContent='📨 Testar';
+  btn.disabled=false;
+}
 
+// ── limpar modal ─────────────────────────────────────────────────────────────
+function limparModalVereador(){
+  ['vNome','vPartido','vCpfLogin','vRg','vEmail','vNascimento',
+   'vCep','vLogradouro','vNumero','vComplemento','vBairro','vCidade','vCepFinal',
+   'vCelular','vTelefone','vGabinete','vTelegramUser','vTelegramChatId',
+   'vInstagram','vFacebook','vSenha','vCpfLoginDisplay']
+  .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('vCargo').value='Vereador';
+  document.getElementById('vEstado').value='BA';
+  document.getElementById('vGenero').value='';
+  document.getElementById('vPerfilAcesso').value='total';
+  document.getElementById('telegramStatus').style.display='none';
+  // reset perfil-opt visual
+  document.querySelectorAll('.perfil-opt').forEach((o,i)=>{
+    o.style.borderColor=i===0?'var(--navy2)':'var(--border)';
+    o.style.background=i===0?'var(--navy-l)':'transparent';
+    o.querySelector('div').style.color=i===0?'var(--navy2)':'var(--tx2)';
+  });
+  mudarAbaVer(0, document.querySelectorAll('.vtab')[0]);
+  toggleCamposVereador();
+}
+
+// ── salvar vereador ───────────────────────────────────────────────────────────
+async function salvarVereador(){
+  const nome      = document.getElementById('vNome').value.trim();
+  const cargo     = document.getElementById('vCargo').value;
+  const cpfLogin  = document.getElementById('vCpfLogin').value.trim();
+  const senha     = document.getElementById('vSenha').value;
+  const partido   = document.getElementById('vPartido').value.trim() || '—';
+  const numeros   = cpfLogin.replace(/\D/g,'');
+
+  // validação
+  if(!nome){ mudarAbaVer(0,document.querySelectorAll('.vtab')[0]); toast('⚠️ Informe o nome completo'); return; }
+  if(numeros.length!==11){ mudarAbaVer(0,document.querySelectorAll('.vtab')[0]); toast('⚠️ CPF inválido (11 dígitos)'); return; }
+  if(senha.length<6){ mudarAbaVer(3,document.querySelectorAll('.vtab')[3]); toast('⚠️ Senha precisa ter pelo menos 6 caracteres'); return; }
+
+  // monta objeto completo
+  const dados = {
+    nome, cargo, partido,
+    cpf: cpfLogin,
+    rg:          document.getElementById('vRg').value.trim(),
+    email:       document.getElementById('vEmail').value.trim(),
+    nascimento:  document.getElementById('vNascimento').value,
+    genero:      document.getElementById('vGenero').value,
+    endereco: {
+      cep:         document.getElementById('vCep').value.trim(),
+      logradouro:  document.getElementById('vLogradouro').value.trim(),
+      numero:      document.getElementById('vNumero').value.trim(),
+      complemento: document.getElementById('vComplemento').value.trim(),
+      bairro:      document.getElementById('vBairro').value.trim(),
+      cidade:      document.getElementById('vCidade').value.trim(),
+      estado:      document.getElementById('vEstado').value,
+    },
+    contato: {
+      celular:   document.getElementById('vCelular').value.trim(),
+      telefone:  document.getElementById('vTelefone').value.trim(),
+      gabinete:  document.getElementById('vGabinete').value.trim(),
+      telegram_user:    document.getElementById('vTelegramUser').value.trim(),
+      telegram_chat_id: document.getElementById('vTelegramChatId').value.trim(),
+      instagram: document.getElementById('vInstagram').value.trim(),
+      facebook:  document.getElementById('vFacebook').value.trim(),
+    },
+    perfil_acesso: document.getElementById('vPerfilAcesso').value,
+  };
+
+  // ── Modo demonstração: cadastra localmente ──────────────────────────────
+  if(!supabaseOnline){
+    const cores=['#0F2A4A','#0E7C5A','#5B21B6','#B8860B','#B91C1C','#1E4470','#D4A017'];
+    const initials=nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+    const novoId=Date.now()%100000;
+    vereadores.push({
+      id:novoId, nome, partido, cargo, dados,
+      presente:true, eu:false,
+      presenca:100, proposicoes:0, status:'active',
+      av:initials, cor:cores[vereadores.length%cores.length]
+    });
+    fecharModal('mVereador');
+    limparModalVereador();
+    renderVereadores();
+    popularSelects();
+    logAuditoria('Cadastro', nome);
+    toast(`✅ ${nome} cadastrado(a)! (modo demonstração)`);
+    return;
+  }
+
+  // ── Modo real: cria login no Supabase ───────────────────────────────────
+  const emailTecnico=cpfParaEmailTecnico(cpfLogin);
+  try{
+    const novoUsuario=await auth.cadastrar(emailTecnico,senha);
+    const novoUserId=novoUsuario.user?.id||novoUsuario.id;
+    if(!novoUserId)throw new Error('Não foi possível obter o ID do novo usuário');
+
+    // salva perfil (com dados extras no campo jsonb, se a tabela suportar)
     await db.cadastrarPerfilUsuario(novoUserId, nome, cargo);
 
-    if(cargo === 'Vereador' || cargo === 'Presidente'){
+    if(cargo==='Vereador'||cargo==='Presidente'){
       await sbRequest('legisgov_vereadores',{
         method:'POST',
-        body: JSON.stringify({id: vereadores.length+1, nome, partido, presente:true, eu:false, camara_codigo: camaraAtual})
+        body:JSON.stringify({
+          id:vereadores.length+1, nome, partido,
+          presente:true, eu:false,
+          camara_codigo:camaraAtual,
+          telegram_chat_id:dados.contato.telegram_chat_id||null,
+          celular:dados.contato.celular||null,
+          email:dados.email||null,
+        })
       });
     }
 
     fecharModal('mVereador');
-    document.getElementById('vNome').value = '';
-    document.getElementById('vCpfLogin').value = '';
-    document.getElementById('vSenha').value = '';
-    document.getElementById('vPartido').value = '';
+    limparModalVereador();
     await initDados();
     renderAll();
     logAuditoria('Cadastro usuário', nome);
-    toast(`✅ ${nome} cadastrado(a) com login real! Avise a senha por fora do sistema.`);
-  } catch(err){
-    console.error('Erro ao cadastrar novo usuário:', err);
-    toast('⚠️ Não foi possível cadastrar — ' + (err.message || 'verifique os dados'));
+    toast(`✅ ${nome} cadastrado(a) com login real!`);
+  }catch(err){
+    console.error('Erro ao cadastrar:',err);
+    toast('⚠️ Erro: '+(err.message||'verifique os dados'));
   }
 }
 
@@ -1887,8 +2298,15 @@ function logAuditoria(acao,recurso){
 function renderNotificacoes(){document.getElementById('listaNotificacoes').innerHTML=notificacoes.map(n=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span class="b b-navy">${n.tipo}</span><strong style="font-size:13px;flex:1;">${n.titulo}</strong><span style="font-size:10.5px;color:var(--tx3);">${n.quando}</span></div><div style="font-size:11.5px;color:var(--tx3);margin-top:6px;">${n.desc}</div></div>`).join('');}
 
 // ═══ MODALS / TOAST / LOADING ═══
-function abrirModal(id){popularSelects();document.getElementById(id)?.classList.add('on');}
-function fecharModal(id){document.getElementById(id)?.classList.remove('on');}
+function abrirModal(id){
+  popularSelects();
+  if(id==='mVereador') limparModalVereador();
+  document.getElementById(id)?.classList.add('on');
+}
+function fecharModal(id){
+  document.getElementById(id)?.classList.remove('on');
+  if(id==='mVereador') limparModalVereador();
+}
 document.addEventListener('click',e=>{if(e.target.classList.contains('ov'))e.target.classList.remove('on');});
 function fecharDet(){document.getElementById('detPanel')?.classList.remove('on');}
 let toastTimer;function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('on'),3000);}
