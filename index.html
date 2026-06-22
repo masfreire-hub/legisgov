@@ -913,12 +913,56 @@ select.linp option{color:#0F172A;background:#fff;}
 </div>
 
 <div class="ov" id="mComissao">
-  <div class="modal">
-    <div class="m-title">🗂️ Nova Comissão</div>
-    <label class="m-lbl">Nome</label><input class="m-inp" id="cNome" placeholder="Ex: Comissão de Justiça e Redação">
-    <label class="m-lbl">Tipo</label><select class="m-sel" id="cTipo"><option>Permanente</option><option>Temporária</option><option>Especial</option><option>CPI</option></select>
-    <label class="m-lbl">Presidente</label><select class="m-sel" id="cPresidente"></select>
-    <button class="btn-p" onclick="salvarComissao()">💾 CRIAR COMISSÃO</button>
+  <div class="modal" style="max-width:600px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="m-title" style="margin-bottom:0;" id="mComissaoTitulo">🗂️ Nova Comissão</div>
+      <button onclick="fecharModal('mComissao')" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;color:var(--tx3);display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <input type="hidden" id="cEditId" value="">
+
+    <label class="m-lbl">Nome da Comissão <span style="color:var(--red2)">*</span></label>
+    <input class="m-inp" id="cNome" placeholder="Ex: Comissão de Justiça e Redação">
+
+    <div class="fg">
+      <div>
+        <label class="m-lbl">Tipo <span style="color:var(--red2)">*</span></label>
+        <select class="m-sel" id="cTipo" onchange="toggleCpiFields()">
+          <option>Permanente</option><option>Temporária</option><option>Especial</option><option>CPI</option>
+        </select>
+      </div>
+      <div>
+        <label class="m-lbl">Frequência de Reuniões</label>
+        <select class="m-sel" id="cFreq">
+          <option>Semanal</option><option>Quinzenal</option><option>Mensal</option><option>Sob demanda</option>
+        </select>
+      </div>
+    </div>
+
+    <label class="m-lbl">Presidente <span style="color:var(--red2)">*</span></label>
+    <select class="m-sel" id="cPresidente"></select>
+
+    <label class="m-lbl">Membros</label>
+    <div id="cMembrosWrap" style="border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;max-height:160px;overflow-y:auto;background:var(--surface2);">
+      <div style="font-size:11.5px;color:var(--tx3);">Nenhum membro adicionado ainda.</div>
+    </div>
+    <select class="m-sel" id="cAddMembroSelect" style="margin-bottom:6px;"></select>
+    <button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);border:1px solid #C5D9EE;margin-bottom:12px;" onclick="adicionarMembroComissao()">+ Adicionar membro</button>
+
+    <label class="m-lbl">Objetivo / Atribuições</label>
+    <textarea class="m-ta" id="cObjetivo" placeholder="Descreva as atribuições desta comissão..." style="min-height:70px;"></textarea>
+
+    <div class="fg" id="cDatasWrap">
+      <div>
+        <label class="m-lbl">Data de Instalação</label>
+        <input class="m-inp" id="cDataInst" type="date">
+      </div>
+      <div id="cPrazoFimWrap">
+        <label class="m-lbl">Prazo Final <span style="font-size:10px;color:var(--tx4)">(CPI/Especial)</span></label>
+        <input class="m-inp" id="cPrazoFim" type="date">
+      </div>
+    </div>
+
+    <button class="btn-p" id="btnSalvarComissao" onclick="salvarComissao()">💾 CRIAR COMISSÃO</button>
     <button class="btn-c" onclick="fecharModal('mComissao')">Cancelar</button>
   </div>
 </div>
@@ -1254,11 +1298,49 @@ function aplicarDadosOffline(){
 async function initDados(){
   // dados que não mudam de Câmara para Câmara (ainda fixos, não fazem parte das tabelas Supabase desta etapa)
   comissoes=[
-    {nome:'Comissão de Justiça e Redação',tipo:'Permanente',presidente:'Ana Paula Ribeiro',membros:5,materias:8},
-    {nome:'Comissão de Finanças e Orçamento',tipo:'Permanente',presidente:'João Ferreira Lima',membros:5,materias:6},
-    {nome:'Comissão de Obras e Serviços Públicos',tipo:'Permanente',presidente:'Maria Aparecida Souza',membros:4,materias:5},
-    {nome:'CPI — Irregularidades em Licitações',tipo:'CPI',presidente:'Carlos Mendes Filho',membros:5,materias:1},
-    {nome:'Comissão Especial — Revisão Lei Orgânica',tipo:'Especial',presidente:'Ana Paula Ribeiro',membros:7,materias:1},
+    {id:1, nome:'Comissão de Justiça e Redação', tipo:'Permanente', presidente:'Ana Paula Ribeiro',
+     membros:5, materias:8, ativa:true,
+     listaMemb:['Ana Paula Ribeiro','João Ferreira Lima','Maria Aparecida Souza','Carlos Mendes Filho','Roberto Carlos Alves'],
+     objetivo:'Análise constitucional, legalidade e redação final das matérias legislativas.',
+     dataInst:'10/02/2025', prazoFim:'', reuniaoFreq:'Quinzenal',
+     historicoReunioes:[
+       {data:'17/06/2026',pauta:'Parecer PL 045/2026 e PL 029/2026',resultado:'Favorável em ambos'},
+       {data:'03/06/2026',pauta:'Parecer PLC 012/2026',resultado:'Aprovado com emenda redacional'},
+     ]},
+    {id:2, nome:'Comissão de Finanças e Orçamento', tipo:'Permanente', presidente:'João Ferreira Lima',
+     membros:5, materias:6, ativa:true,
+     listaMemb:['João Ferreira Lima','Ana Paula Ribeiro','Roberto Carlos Alves','Maria Aparecida Souza','Carlos Mendes Filho'],
+     objetivo:'Análise de matérias com impacto orçamentário e financeiro.',
+     dataInst:'10/02/2025', prazoFim:'', reuniaoFreq:'Semanal',
+     historicoReunioes:[
+       {data:'18/06/2026',pauta:'LDO 2027 — análise preliminar',resultado:'Em discussão'},
+       {data:'10/06/2026',pauta:'Emendas ao Orçamento 2026',resultado:'Aprovado 3 emendas'},
+     ]},
+    {id:3, nome:'Comissão de Obras e Serviços Públicos', tipo:'Permanente', presidente:'Maria Aparecida Souza',
+     membros:4, materias:5, ativa:true,
+     listaMemb:['Maria Aparecida Souza','Carlos Mendes Filho','João Ferreira Lima','Roberto Carlos Alves'],
+     objetivo:'Análise de projetos relacionados à infraestrutura, obras e serviços municipais.',
+     dataInst:'10/02/2025', prazoFim:'', reuniaoFreq:'Quinzenal',
+     historicoReunioes:[
+       {data:'12/06/2026',pauta:'PL 029/2026 — Hortas Comunitárias',resultado:'Parecer favorável emitido'},
+     ]},
+    {id:4, nome:'CPI — Irregularidades em Licitações', tipo:'CPI', presidente:'Carlos Mendes Filho',
+     membros:5, materias:1, ativa:true,
+     listaMemb:['Carlos Mendes Filho','Ana Paula Ribeiro','João Ferreira Lima','Maria Aparecida Souza','Roberto Carlos Alves'],
+     objetivo:'Investigar possíveis irregularidades em processos licitatórios do município 2023-2024.',
+     dataInst:'15/03/2026', prazoFim:'15/09/2026', reuniaoFreq:'Semanal',
+     historicoReunioes:[
+       {data:'19/06/2026',pauta:'Oitiva de testemunhas — fase 2',resultado:'3 depoimentos colhidos'},
+       {data:'05/06/2026',pauta:'Análise de documentos — fase 1',resultado:'Diligências aprovadas'},
+     ]},
+    {id:5, nome:'Comissão Especial — Revisão Lei Orgânica', tipo:'Especial', presidente:'Ana Paula Ribeiro',
+     membros:7, materias:1, ativa:true,
+     listaMemb:['Ana Paula Ribeiro','João Ferreira Lima','Maria Aparecida Souza','Carlos Mendes Filho','Roberto Carlos Alves','Paulo Henrique Dias','Luísa Fernanda Costa'],
+     objetivo:'Revisão e atualização da Lei Orgânica Municipal conforme Constituição Federal e legislação estadual.',
+     dataInst:'20/04/2026', prazoFim:'20/10/2026', reuniaoFreq:'Semanal',
+     historicoReunioes:[
+       {data:'16/06/2026',pauta:'Capítulo III — Poderes Municipais',resultado:'Aprovado com alterações'},
+     ]},
   ];
   contasExec=[
     {exercicio:2024,gestor:'Prefeito Municipal',parecer:'Favorável com ressalvas',situacao:'Julgado — Aprovado',prazo:'—'},
@@ -1385,10 +1467,33 @@ function renderAll(){renderDash();}
 function atualizarSaudacao(){const h=new Date().getHours();const s=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';document.getElementById('dashGreeting').textContent=`${s}, ${curUser?.nome?.split(' ')[0]||'Presidente'}!`;document.getElementById('dashDate').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
 
 function popularSelects(){
-  ['cPresidente','mtAutor','emAutor'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=vereadores.map(v=>`<option>${v.nome}</option>`).join('');});
+  ['cPresidente','mtAutor','emAutor'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=vereadores.map(v=>`<option>${v.nome}</option>`).join('');
+  });
+  const addMemb=document.getElementById('cAddMembroSelect');
+  if(addMemb) addMemb.innerHTML=vereadores.map(v=>`<option>${v.nome}</option>`).join('');
 }
 
-// ═══ DASHBOARD ═══
+function abrirModal(id){
+  popularSelects();
+  if(id==='mVereador') limparModalVereador();
+  if(id==='mComissao'){
+    document.getElementById('cEditId').value='';
+    document.getElementById('mComissaoTitulo').textContent='🗂️ Nova Comissão';
+    document.getElementById('btnSalvarComissao').textContent='💾 CRIAR COMISSÃO';
+    document.getElementById('cNome').value='';
+    document.getElementById('cTipo').value='Permanente';
+    document.getElementById('cFreq').value='Quinzenal';
+    document.getElementById('cObjetivo').value='';
+    document.getElementById('cDataInst').value='';
+    document.getElementById('cPrazoFim').value='';
+    cMembrosTemp=[];
+    renderMembrosModal();
+    toggleCpiFields();
+  }
+  document.getElementById(id)?.classList.add('on');
+}
 function renderDash(){
   atualizarSaudacao();popularSelects();
   const spEl=document.getElementById('dashStatusProj');
@@ -1818,11 +1923,246 @@ async function salvarVereador(){
 }
 
 // ═══ COMISSÕES ═══
+// ═══ COMISSÕES ═══
+let cMembrosTemp = []; // membros em edição no modal
+
+function toggleCpiFields(){
+  const tipo = document.getElementById('cTipo').value;
+  const prazoWrap = document.getElementById('cPrazoFimWrap');
+  if(prazoWrap) prazoWrap.style.opacity = (tipo==='CPI'||tipo==='Especial'||tipo==='Temporária') ? '1' : '0.4';
+}
+
 function renderComissoes(){
   popularSelects();
-  document.getElementById('listaComissoes').innerHTML=comissoes.map(c=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span class="b ${c.tipo==='CPI'?'b-red':c.tipo==='Especial'?'b-purple':c.tipo==='Temporária'?'b-gold':'b-navy'}">${c.tipo}</span><strong style="font-size:13px;flex:1;">${c.nome}</strong><span style="font-size:11px;color:var(--tx3);">${c.materias} matérias</span></div><div style="font-size:11.5px;color:var(--tx3);margin-top:8px;">👤 Presidente: ${c.presidente} · 👥 ${c.membros} membros</div></div>`).join('');
+  const lista = document.getElementById('listaComissoes');
+  if(!comissoes.length){
+    lista.innerHTML=`<div class="card" style="text-align:center;padding:3rem;">
+      <div style="font-size:32px;margin-bottom:8px;">🗂️</div>
+      <div style="font-size:14px;font-weight:700;color:var(--tx2);margin-bottom:6px;">Nenhuma comissão cadastrada</div>
+      <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mComissao')">+ Criar primeira comissão</button>
+    </div>`;
+    return;
+  }
+  lista.innerHTML = comissoes.map(c=>{
+    const corBadge = c.tipo==='CPI'?'b-red':c.tipo==='Especial'?'b-purple':c.tipo==='Temporária'?'b-gold':'b-navy';
+    const corBorda = c.tipo==='CPI'?'var(--red)':c.tipo==='Especial'?'var(--purple)':c.tipo==='Temporária'?'var(--gold)':'var(--navy3)';
+    const diasRestantes = c.prazoFim ? Math.ceil((new Date(c.prazoFim)-new Date())/86400000) : null;
+    const alerta = diasRestantes!==null && diasRestantes<=30 && diasRestantes>0;
+    return `
+    <div class="card" style="margin-bottom:10px;cursor:pointer;border-left:3px solid ${corBorda};transition:box-shadow .15s;"
+         onclick="abrirDetComissao(${c.id})"
+         onmouseover="this.style.boxShadow='var(--sh2)'"
+         onmouseout="this.style.boxShadow='var(--sh1)'">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="b ${corBadge}">${c.tipo}</span>
+        <strong style="font-size:13px;flex:1;">${c.nome}</strong>
+        ${alerta?`<span class="b b-red" style="font-size:10px;">⏰ ${diasRestantes}d restantes</span>`:''}
+        <span style="font-size:11px;color:var(--tx3);">${c.materias} matéria${c.materias!==1?'s':''}</span>
+        <span style="font-size:16px;color:var(--tx4);">›</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;font-size:11.5px;color:var(--tx3);margin-top:8px;flex-wrap:wrap;">
+        <span>👤 Presidente: <strong style="color:var(--tx2);">${c.presidente}</strong></span>
+        <span>👥 ${c.membros} membros</span>
+        ${c.reuniaoFreq?`<span>📅 ${c.reuniaoFreq}</span>`:''}
+        ${c.dataInst?`<span>📋 Instalada em ${c.dataInst}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
 }
-function salvarComissao(){const nome=document.getElementById('cNome').value.trim();if(!nome){toast('⚠️ Informe o nome');return;}comissoes.push({nome,tipo:document.getElementById('cTipo').value,presidente:document.getElementById('cPresidente').value,membros:1,materias:0});fecharModal('mComissao');renderComissoes();toast('✅ Comissão criada!');}
+
+function abrirDetComissao(id){
+  const c = comissoes.find(x=>x.id===id);
+  if(!c) return;
+  const corBadge = c.tipo==='CPI'?'b-red':c.tipo==='Especial'?'b-purple':c.tipo==='Temporária'?'b-gold':'b-navy';
+  const diasRestantes = c.prazoFim ? Math.ceil((new Date(c.prazoFim)-new Date())/86400000) : null;
+
+  document.getElementById('detTitle').textContent = c.nome;
+  document.getElementById('detBody').innerHTML = `
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <span class="b ${corBadge}">${c.tipo}</span>
+      ${diasRestantes!==null ? `<span class="b ${diasRestantes<=30?'b-red':'b-gold'}" style="font-size:10px;">Prazo: ${diasRestantes}d restantes</span>` : ''}
+      <span class="b ${c.ativa?'b-emerald':'b-gray'}" style="font-size:10px;">${c.ativa?'Ativa':'Encerrada'}</span>
+    </div>
+
+    ${c.objetivo?`<div style="font-size:12px;color:var(--tx2);line-height:1.7;margin:10px 0 14px;padding:10px 12px;background:var(--surface2);border-radius:8px;">${c.objetivo}</div>`:''}
+
+    <div class="det-sec">COMPOSIÇÃO</div>
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 10px;background:var(--gold-l);border-radius:7px;">
+        <div class="av" style="width:28px;height:28px;background:var(--gold);font-size:10px;">${c.presidente.split(' ').map(p=>p[0]).slice(0,2).join('')}</div>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:var(--tx);">${c.presidente}</div>
+          <div style="font-size:10px;color:var(--tx3);">Presidente</div>
+        </div>
+      </div>
+      ${(c.listaMemb||[]).filter(m=>m!==c.presidente).map(m=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);">
+          <div class="av" style="width:24px;height:24px;background:var(--navy2);font-size:9px;">${m.split(' ').map(p=>p[0]).slice(0,2).join('')}</div>
+          <span style="font-size:12px;color:var(--tx2);">${m}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="det-sec">INFORMAÇÕES</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;font-size:11.5px;color:var(--tx2);">
+      <div>📋 <strong>Instalação:</strong> ${c.dataInst||'—'}</div>
+      <div>⏳ <strong>Prazo Final:</strong> ${c.prazoFim||'—'}</div>
+      <div>📅 <strong>Reuniões:</strong> ${c.reuniaoFreq||'—'}</div>
+      <div>📜 <strong>Matérias:</strong> ${c.materias}</div>
+    </div>
+
+    ${c.historicoReunioes?.length ? `
+    <div class="det-sec">HISTÓRICO DE REUNIÕES</div>
+    <div style="margin-bottom:14px;">
+      ${c.historicoReunioes.map(r=>`
+        <div style="padding:8px 10px;border-left:2px solid var(--navy3);margin-bottom:8px;background:var(--surface2);border-radius:0 7px 7px 0;">
+          <div style="font-size:11px;font-weight:700;color:var(--navy2);">${r.data}</div>
+          <div style="font-size:11.5px;color:var(--tx2);margin-top:2px;">${r.pauta}</div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:2px;">→ ${r.resultado}</div>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <div class="det-sec">AÇÕES</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="editarComissao(${c.id})">✏️ Editar</button>
+      <button class="btn-sm" style="background:var(--emerald-l);color:var(--emerald);" onclick="registrarReuniaoComissao(${c.id})">📅 Registrar Reunião</button>
+      <button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);" onclick="toast('📜 Filtrando matérias desta comissão...');sw('materias')">📜 Ver Matérias</button>
+      <button class="btn-sm" style="background:var(--red-l);color:var(--red);" onclick="encerrarComissao(${c.id})">🚫 Encerrar</button>
+    </div>`;
+
+  document.getElementById('detPanel').classList.add('on');
+}
+
+function editarComissao(id){
+  const c = comissoes.find(x=>x.id===id);
+  if(!c) return;
+  fecharDet();
+  // preenche modal
+  document.getElementById('cEditId').value = id;
+  document.getElementById('mComissaoTitulo').textContent = '✏️ Editar Comissão';
+  document.getElementById('btnSalvarComissao').textContent = '💾 SALVAR ALTERAÇÕES';
+  document.getElementById('cNome').value = c.nome;
+  document.getElementById('cTipo').value = c.tipo;
+  document.getElementById('cFreq').value = c.reuniaoFreq || 'Quinzenal';
+  document.getElementById('cObjetivo').value = c.objetivo || '';
+  document.getElementById('cDataInst').value = c.dataInst ? converterDataParaInput(c.dataInst) : '';
+  document.getElementById('cPrazoFim').value = c.prazoFim || '';
+  popularSelects();
+  document.getElementById('cPresidente').value = c.presidente;
+  cMembrosTemp = [...(c.listaMemb || [c.presidente])];
+  renderMembrosModal();
+  toggleCpiFields();
+  document.getElementById('mComissao').classList.add('on');
+}
+
+function converterDataParaInput(str){
+  // converte dd/mm/yyyy → yyyy-mm-dd
+  if(!str || str.includes('-')) return str;
+  const [d,m,y] = str.split('/');
+  return `${y}-${m}-${d}`;
+}
+
+function adicionarMembroComissao(){
+  const sel = document.getElementById('cAddMembroSelect');
+  const nome = sel?.value;
+  if(!nome) return;
+  if(cMembrosTemp.includes(nome)){ toast('⚠️ Este membro já foi adicionado'); return; }
+  cMembrosTemp.push(nome);
+  renderMembrosModal();
+}
+
+function removerMembroComissao(nome){
+  cMembrosTemp = cMembrosTemp.filter(m=>m!==nome);
+  renderMembrosModal();
+}
+
+function renderMembrosModal(){
+  const wrap = document.getElementById('cMembrosWrap');
+  if(!wrap) return;
+  if(!cMembrosTemp.length){
+    wrap.innerHTML = '<div style="font-size:11.5px;color:var(--tx3);">Nenhum membro adicionado.</div>';
+    return;
+  }
+  const presidente = document.getElementById('cPresidente')?.value || '';
+  wrap.innerHTML = cMembrosTemp.map(m=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">
+      <div class="av" style="width:22px;height:22px;background:var(--navy2);font-size:8px;">${m.split(' ').map(p=>p[0]).slice(0,2).join('')}</div>
+      <span style="font-size:12px;flex:1;color:var(--tx2);">${m}</span>
+      ${m===presidente?`<span class="b b-gold" style="font-size:9px;">Presidente</span>`:''}
+      <button onclick="removerMembroComissao('${m}')" style="border:none;background:none;color:var(--tx4);cursor:pointer;font-size:14px;line-height:1;">✕</button>
+    </div>`).join('');
+}
+
+function popularSelectsMembros(){
+  const sel = document.getElementById('cAddMembroSelect');
+  if(sel) sel.innerHTML = vereadores.map(v=>`<option>${v.nome}</option>`).join('');
+}
+
+function salvarComissao(){
+  const nome = document.getElementById('cNome').value.trim();
+  const tipo = document.getElementById('cTipo').value;
+  const presidente = document.getElementById('cPresidente').value;
+  const freq = document.getElementById('cFreq').value;
+  const objetivo = document.getElementById('cObjetivo').value.trim();
+  const dataInst = document.getElementById('cDataInst').value;
+  const prazoFim = document.getElementById('cPrazoFim').value;
+  const editId = parseInt(document.getElementById('cEditId').value) || 0;
+
+  if(!nome){ toast('⚠️ Informe o nome da comissão'); return; }
+  if(!presidente){ toast('⚠️ Selecione o presidente'); return; }
+
+  // garante presidente na lista
+  if(!cMembrosTemp.includes(presidente)) cMembrosTemp.unshift(presidente);
+
+  const dataInstFormatada = dataInst ? dataInst.split('-').reverse().join('/') : '';
+
+  if(editId){
+    // edição
+    const idx = comissoes.findIndex(c=>c.id===editId);
+    if(idx>=0){
+      comissoes[idx] = {...comissoes[idx], nome, tipo, presidente, reuniaoFreq:freq,
+        objetivo, dataInst:dataInstFormatada, prazoFim,
+        membros:cMembrosTemp.length, listaMemb:[...cMembrosTemp]};
+    }
+    toast(`✅ "${nome}" atualizada!`);
+  } else {
+    // criação
+    const novoId = Math.max(0,...comissoes.map(c=>c.id||0))+1;
+    comissoes.push({id:novoId, nome, tipo, presidente, reuniaoFreq:freq,
+      objetivo, dataInst:dataInstFormatada, prazoFim,
+      membros:cMembrosTemp.length, listaMemb:[...cMembrosTemp],
+      materias:0, ativa:true, historicoReunioes:[]});
+    toast(`✅ Comissão "${nome}" criada!`);
+  }
+
+  fecharModal('mComissao');
+  renderComissoes();
+  logAuditoria(editId?'Edição comissão':'Criação comissão', nome);
+}
+
+function encerrarComissao(id){
+  const c = comissoes.find(x=>x.id===id);
+  if(!c) return;
+  if(!confirm(`Encerrar a comissão "${c.nome}"? Esta ação não pode ser desfeita.`)) return;
+  c.ativa = false;
+  fecharDet();
+  renderComissoes();
+  toast(`⏹️ Comissão "${c.nome}" encerrada.`);
+}
+
+function registrarReuniaoComissao(id){
+  const c = comissoes.find(x=>x.id===id);
+  if(!c) return;
+  const pauta = prompt(`Pauta da reunião — ${c.nome}:`);
+  if(!pauta) return;
+  const resultado = prompt('Resultado / deliberação:') || 'Em discussão';
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  if(!c.historicoReunioes) c.historicoReunioes = [];
+  c.historicoReunioes.unshift({data:hoje, pauta, resultado});
+  fecharDet();
+  abrirDetComissao(id);
+  toast('✅ Reunião registrada!');
+}
 
 // ═══ MATÉRIAS ═══
 function abrirTramitacao(num){
@@ -2298,11 +2638,6 @@ function logAuditoria(acao,recurso){
 function renderNotificacoes(){document.getElementById('listaNotificacoes').innerHTML=notificacoes.map(n=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span class="b b-navy">${n.tipo}</span><strong style="font-size:13px;flex:1;">${n.titulo}</strong><span style="font-size:10.5px;color:var(--tx3);">${n.quando}</span></div><div style="font-size:11.5px;color:var(--tx3);margin-top:6px;">${n.desc}</div></div>`).join('');}
 
 // ═══ MODALS / TOAST / LOADING ═══
-function abrirModal(id){
-  popularSelects();
-  if(id==='mVereador') limparModalVereador();
-  document.getElementById(id)?.classList.add('on');
-}
 function fecharModal(id){
   document.getElementById(id)?.classList.remove('on');
   if(id==='mVereador') limparModalVereador();
