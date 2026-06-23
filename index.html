@@ -255,6 +255,13 @@ select.linp option{color:#0F172A;background:#fff;}
   .tb-logo{width:auto;}
   #detPanel{width:100%;}
 }
+/* ── Fases da Sessão ── */
+.fase-btn{flex:1;padding:9px 6px;text-align:center;font-size:11.5px;font-weight:700;color:var(--tx3);cursor:pointer;background:var(--surface2);border-right:1px solid var(--border);transition:all .15s;}
+.fase-btn:last-child{border-right:none;}
+.fase-btn:hover{background:var(--border);color:var(--tx);}
+.fase-btn.on{background:var(--navy2);color:#fff;}
+.chamada-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.chamada-item:last-child{border-bottom:none;}
 </style>
 </head>
 <body>
@@ -459,6 +466,14 @@ select.linp option{color:#0F172A;background:#fff;}
       </div>
       <div id="listaComissoes"></div>
     </div>
+    <!-- Painel de reunião da comissão selecionada -->
+    <div id="pComissaoDetalhe" style="display:none;margin-top:0;">
+      <div class="card">
+        <div class="card-title" id="comissaoDetTitulo">📋 Reuniões da Comissão</div>
+        <div id="listaReunioesComissao"></div>
+        <button class="btn-sm" style="margin-top:10px;background:var(--navy2);color:#fff;" onclick="abrirModal('mReuniaoComissao')">+ Registrar Reunião</button>
+      </div>
+    </div>
 
     <!-- ═══ PROCESSO LEGISLATIVO ═══ -->
     <div class="page" id="p-materias">
@@ -469,7 +484,7 @@ select.linp option{color:#0F172A;background:#fff;}
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
         <input id="buscaMateria" onkeyup="renderMaterias()" placeholder="🔍 Buscar por número ou ementa..." style="flex:1;min-width:200px;padding:9px 14px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;outline:none;">
         <select id="filtroTipoMateria" onchange="renderMaterias()" style="padding:9px 14px;border:1px solid var(--border);border-radius:10px;font-size:13px;background:var(--surface);">
-          <option value="">Todos os tipos</option><option>Projeto de Lei</option><option>Requerimento</option><option>Moção</option><option>Indicação</option>
+          <option value="">Todos os tipos</option><option>Projeto de Lei</option><option>Projeto de Lei Complementar</option><option>Resolução</option><option>Decreto Legislativo</option><option>Portaria da Mesa</option><option>Requerimento</option><option>Moção</option><option>Indicação</option><option>Veto do Executivo</option>
         </select>
       </div>
       <div class="card">
@@ -496,10 +511,20 @@ select.linp option{color:#0F172A;background:#fff;}
     <!-- ═══ SESSÃO PLENÁRIA ═══ -->
     <div class="page" id="p-sessao">
       <div class="ph">
-        <div><div class="ph-title">🏛️ Sessão Plenária</div><div class="ph-sub" id="sessaoStatus">Sessão Ordinária · 19/06/2026 · 14h00</div></div>
+        <div><div class="ph-title">🏛️ Sessão Plenária</div><div class="ph-sub" id="sessaoStatus">Nenhuma sessão aberta</div></div>
         <div style="display:flex;gap:8px;">
+          <button class="btn-sm" style="background:var(--surface);color:var(--tx2);border:1px solid var(--border);" onclick="abrirModal('mAgendarSessao')">📅 Agendar</button>
+          <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirChamada()">📣 Chamada</button>
           <button class="btn-sm" id="btnAbrirSessao" style="background:var(--emerald);color:#fff;" onclick="toggleSessao()">▶ Abrir Sessão</button>
+          <button class="btn-sm" style="background:var(--red2,#DC2626);color:#fff;" onclick="encerrarSessaoFormal()">🔒 Encerrar</button>
         </div>
+      </div>
+      <!-- Fases da sessão -->
+      <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;" id="fasesBar">
+        <div class="fase-btn on" id="fase0" onclick="mudarFase(0)">📋 Expediente</div>
+        <div class="fase-btn" id="fase1" onclick="mudarFase(1)">⚖️ Ordem do Dia</div>
+        <div class="fase-btn" id="fase2" onclick="mudarFase(2)">💬 Explicações Pessoais</div>
+        <div class="fase-btn" id="fase3" onclick="mudarFase(3)">🔒 Encerramento</div>
       </div>
       <div class="g3" style="margin-bottom:14px;">
         <div class="card" style="text-align:center;">
@@ -612,7 +637,7 @@ select.linp option{color:#0F172A;background:#fff;}
         <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mContas')">+ Novo Processo</button>
       </div>
       <div class="card">
-        <table class="tbl"><thead><tr><th>Exercício</th><th>Gestor</th><th>Parecer TC</th><th>Situação</th><th>Prazo</th></tr></thead>
+        <table class="tbl"><thead><tr><th>Exercício</th><th>Gestor</th><th>Nº TCM</th><th>Parecer TC</th><th>Resultado Câmara</th><th>Votos</th><th>Publicação</th></tr></thead>
         <tbody id="tbContas"></tbody></table>
       </div>
     </div>
@@ -629,7 +654,7 @@ select.linp option{color:#0F172A;background:#fff;}
         <div class="kpi kc-gold"><div class="kpi-ico">📊</div><div class="kpi-val">68%</div><div class="kpi-label">% Execução</div></div>
       </div>
       <div class="card">
-        <table class="tbl"><thead><tr><th>Autor</th><th>Beneficiário</th><th>Valor</th><th>Exercício</th><th>Status</th></tr></thead>
+        <table class="tbl"><thead><tr><th>Autor</th><th>Beneficiário</th><th>Valor</th><th>Função</th><th>Exercício</th><th>Status</th><th>LOA/LDO</th></tr></thead>
         <tbody id="tbEmendas"></tbody></table>
       </div>
     </div>
@@ -642,13 +667,30 @@ select.linp option{color:#0F172A;background:#fff;}
       <div class="card" style="margin-bottom:14px;">
         <input placeholder="🔍 Buscar projetos, leis, votações, atas..." style="width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;outline:none;">
       </div>
-      <div class="g4">
-        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('📜 23 projetos publicados')"><div style="font-size:24px;margin-bottom:6px;">📜</div><div style="font-size:11px;font-weight:700;">Projetos</div></div>
-        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('⚖️ 142 leis publicadas')"><div style="font-size:24px;margin-bottom:6px;">⚖️</div><div style="font-size:11px;font-weight:700;">Leis</div></div>
-        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('🏛️ 48 sessões publicadas')"><div style="font-size:24px;margin-bottom:6px;">🏛️</div><div style="font-size:11px;font-weight:700;">Sessões</div></div>
-        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('🗳️ 312 votações publicadas')"><div style="font-size:24px;margin-bottom:6px;">🗳️</div><div style="font-size:11px;font-weight:700;">Votações</div></div>
+      <div class="g4" style="margin-bottom:14px;">
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('📜 Projetos publicados')"><div style="font-size:24px;margin-bottom:6px;">📜</div><div style="font-size:11px;font-weight:700;">Projetos</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('⚖️ Leis publicadas')"><div style="font-size:24px;margin-bottom:6px;">⚖️</div><div style="font-size:11px;font-weight:700;">Leis</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('🏛️ Sessões publicadas')"><div style="font-size:24px;margin-bottom:6px;">🏛️</div><div style="font-size:11px;font-weight:700;">Sessões</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('🗳️ Votações publicadas')"><div style="font-size:24px;margin-bottom:6px;">🗳️</div><div style="font-size:11px;font-weight:700;">Votações</div></div>
       </div>
-      <div class="card" style="margin-top:14px;">
+      <!-- Galeria de Vereadores -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">👥 Vereadores — Galeria Pública</div>
+        <div id="galVereadores" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:4px;"></div>
+      </div>
+      <!-- Emendas publicadas -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">📌 Emendas Parlamentares Publicadas</div>
+        <table class="tbl"><thead><tr><th>Autor</th><th>Beneficiário</th><th>Valor</th><th>Função</th><th>Status</th></tr></thead>
+        <tbody id="tbTranspEmendas"></tbody></table>
+      </div>
+      <!-- Remuneração -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">💰 Remuneração dos Vereadores (Subsídios)</div>
+        <table class="tbl"><thead><tr><th>Cargo</th><th>Subsídio Mensal Bruto</th><th>Descontos</th><th>Líquido</th><th>Ref. Legal</th></tr></thead>
+        <tbody id="tbTranspRemun"></tbody></table>
+      </div>
+      <div class="card">
         <div class="card-title">📋 Publicações Recentes</div>
         <div id="listaTransparencia"></div>
       </div>
@@ -972,7 +1014,7 @@ select.linp option{color:#0F172A;background:#fff;}
 <div class="ov" id="mMateria">
   <div class="modal">
     <div class="m-title">📜 Protocolar Matéria</div>
-    <label class="m-lbl">Tipo</label><select class="m-sel" id="mtTipo"><option>Projeto de Lei</option><option>Projeto de Lei Complementar</option><option>Requerimento</option><option>Moção</option><option>Indicação</option></select>
+    <label class="m-lbl">Tipo</label><select class="m-sel" id="mtTipo"><option>Projeto de Lei</option><option>Projeto de Lei Complementar</option><option>Resolução</option><option>Decreto Legislativo</option><option>Portaria da Mesa</option><option>Requerimento</option><option>Moção</option><option>Indicação</option><option>Veto do Executivo</option></select>
     <label class="m-lbl">Autor</label><select class="m-sel" id="mtAutor"></select>
     <label class="m-lbl">Ementa</label><textarea class="m-ta" id="mtEmenta" placeholder="Resumo oficial da matéria..."></textarea>
     <label class="m-lbl">Justificativa</label><textarea class="m-ta" id="mtJustif" placeholder="Fundamentação..."></textarea>
@@ -992,11 +1034,40 @@ select.linp option{color:#0F172A;background:#fff;}
 
 <div class="ov" id="mContas">
   <div class="modal">
-    <div class="m-title">💰 Novo Processo de Contas</div>
-    <label class="m-lbl">Exercício</label><input class="m-inp" id="ctExercicio" type="number" placeholder="2026">
-    <label class="m-lbl">Gestor</label><input class="m-inp" id="ctGestor" placeholder="Nome do Prefeito">
-    <label class="m-lbl">Parecer do Tribunal de Contas</label><select class="m-sel" id="ctParecer"><option>Favorável</option><option>Favorável com ressalvas</option><option>Contrário</option></select>
-    <button class="btn-p" onclick="salvarContas()">💾 REGISTRAR</button>
+    <div class="m-title">💰 Processo de Julgamento de Contas</div>
+    <div class="fg">
+      <div><label class="m-lbl">Exercício *</label><input class="m-inp" id="ctExercicio" type="number" placeholder="2026"></div>
+      <div><label class="m-lbl">Gestor *</label><input class="m-inp" id="ctGestor" placeholder="Nome do Prefeito"></div>
+    </div>
+    <div class="fg">
+      <div><label class="m-lbl">Nº do Processo no TCM *</label><input class="m-inp" id="ctNumTCM" placeholder="Ex: 0001234-2024"></div>
+      <div><label class="m-lbl">Data do Parecer TCM</label><input class="m-inp" id="ctDataParecer" type="date"></div>
+    </div>
+    <label class="m-lbl">Parecer do Tribunal de Contas</label>
+    <select class="m-sel" id="ctParecer">
+      <option>Favorável</option><option>Favorável com ressalvas</option><option>Contrário</option><option>Aguardando</option>
+    </select>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:12px;">
+      <div style="font-size:11.5px;font-weight:700;color:var(--tx2);margin-bottom:8px;">🏛️ Resultado na Câmara Municipal</div>
+      <div class="fg">
+        <div><label class="m-lbl">Data da Votação</label><input class="m-inp" id="ctDataVotacao" type="date" style="margin-bottom:0;"></div>
+        <div><label class="m-lbl">Resultado</label><select class="m-sel" id="ctResultado" style="margin-bottom:0;">
+          <option value="">Aguardando</option><option>Aprovado</option><option>Aprovado com ressalvas</option><option>Rejeitado</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="fg">
+      <div><label class="m-lbl">Votos SIM</label><input class="m-inp" id="ctVotosSim" type="number" placeholder="0" style="margin-bottom:0;"></div>
+      <div><label class="m-lbl">Votos NÃO</label><input class="m-inp" id="ctVotosNao" type="number" placeholder="0" style="margin-bottom:0;"></div>
+    </div>
+    <div style="margin-top:10px;">
+      <label class="m-lbl">Publicação</label>
+      <div class="fg">
+        <div><input class="m-inp" id="ctNumPublicacao" placeholder="Nº Ato Publicado (ex: 0234/2026)" style="margin-bottom:0;"></div>
+        <div><input class="m-inp" id="ctDataPublicacao" type="date" style="margin-bottom:0;"></div>
+      </div>
+    </div>
+    <button class="btn-p" onclick="salvarContas()" style="margin-top:14px;">💾 REGISTRAR PROCESSO</button>
     <button class="btn-c" onclick="fecharModal('mContas')">Cancelar</button>
   </div>
 </div>
@@ -1004,14 +1075,104 @@ select.linp option{color:#0F172A;background:#fff;}
 <div class="ov" id="mEmenda">
   <div class="modal">
     <div class="m-title">📌 Nova Emenda Parlamentar</div>
-    <label class="m-lbl">Autor</label><select class="m-sel" id="emAutor"></select>
-    <label class="m-lbl">Beneficiário</label><input class="m-inp" id="emBenef" placeholder="Secretaria ou entidade">
-    <div class="fg"><div><label class="m-lbl">Valor (R$)</label><input class="m-inp" id="emValor" type="number" placeholder="50000"></div><div><label class="m-lbl">Exercício</label><input class="m-inp" id="emExercicio" type="number" placeholder="2026"></div></div>
-    <button class="btn-p" onclick="salvarEmenda()">📌 REGISTRAR EMENDA</button>
+    <div class="fg">
+      <div><label class="m-lbl">Autor *</label><select class="m-sel" id="emAutor"></select></div>
+      <div><label class="m-lbl">Exercício *</label><input class="m-inp" id="emExercicio" type="number" placeholder="2026"></div>
+    </div>
+    <label class="m-lbl">Beneficiário *</label><input class="m-inp" id="emBenef" placeholder="Secretaria ou entidade">
+    <div class="fg">
+      <div><label class="m-lbl">Valor Proposto (R$) *</label><input class="m-inp" id="emValor" type="number" placeholder="50000"></div>
+      <div><label class="m-lbl">Status de execução</label><select class="m-sel" id="emStatus">
+        <option>Proposta</option><option>Aprovada</option><option>Empenhada</option><option>Liquidada</option><option>Paga</option><option>Cancelada</option>
+      </select></div>
+    </div>
+    <!-- Classificação orçamentária -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:12px;">
+      <div style="font-size:11.5px;font-weight:700;color:var(--tx2);margin-bottom:8px;">📊 Classificação Orçamentária</div>
+      <div class="fg">
+        <div><label class="m-lbl">Função</label><select class="m-sel" id="emFuncao" style="margin-bottom:0;">
+          <option value="">Selecione...</option>
+          <option>Saúde</option><option>Educação</option><option>Assistência Social</option>
+          <option>Infraestrutura</option><option>Esporte e Lazer</option><option>Cultura</option>
+          <option>Segurança Pública</option><option>Habitação</option><option>Saneamento</option>
+          <option>Gestão Ambiental</option><option>Agricultura</option><option>Administração</option>
+        </select></div>
+        <div><label class="m-lbl">Subfunção</label><input class="m-inp" id="emSubfuncao" placeholder="Ex: Atenção Básica" style="margin-bottom:0;"></div>
+      </div>
+      <div class="fg" style="margin-top:8px;">
+        <div><label class="m-lbl">Programa</label><input class="m-inp" id="emPrograma" placeholder="Ex: 0012" style="margin-bottom:0;"></div>
+        <div><label class="m-lbl">Ação</label><input class="m-inp" id="emAcao" placeholder="Ex: 2045" style="margin-bottom:0;"></div>
+      </div>
+    </div>
+    <!-- Vínculo LOA/LDO -->
+    <div class="fg">
+      <div><label class="m-lbl">Vínculo LOA</label><input class="m-inp" id="emLOA" placeholder="Nº da LOA" style="margin-bottom:0;"></div>
+      <div><label class="m-lbl">Vínculo LDO</label><input class="m-inp" id="emLDO" placeholder="Nº da LDO" style="margin-bottom:0;"></div>
+    </div>
+    <button class="btn-p" onclick="salvarEmenda()" style="margin-top:14px;">📌 REGISTRAR EMENDA</button>
     <button class="btn-c" onclick="fecharModal('mEmenda')">Cancelar</button>
   </div>
 </div>
 
+
+<div class="ov" id="mAgendarSessao">
+  <div class="modal">
+    <div class="m-title">📅 Agendar Sessão Plenária</div>
+    <div class="fg">
+      <div><label class="m-lbl">Tipo de Sessão *</label>
+        <select class="m-sel" id="agTipo">
+          <option value="Ordinária">Ordinária</option>
+          <option value="Extraordinária">Extraordinária</option>
+          <option value="Solene">Solene</option>
+          <option value="Especial">Especial</option>
+        </select></div>
+      <div><label class="m-lbl">Data *</label><input class="m-inp" id="agData" type="date"></div>
+    </div>
+    <div class="fg">
+      <div><label class="m-lbl">Hora de início *</label><input class="m-inp" id="agHora" type="time" value="14:00"></div>
+      <div><label class="m-lbl">Local</label><input class="m-inp" id="agLocal" placeholder="Ex: Plenário Principal" value="Plenário Principal"></div>
+    </div>
+    <label class="m-lbl">Pauta da Sessão</label>
+    <textarea class="m-ta" id="agPauta" placeholder="1. Grande Expediente&#10;2. Ordem do Dia&#10;   - PL 001/2026&#10;3. Explicações Pessoais"></textarea>
+    <label class="m-lbl">Observações</label>
+    <textarea class="m-ta" id="agObs" placeholder="Ex: Sessão Solene em homenagem ao Dia do Município..."></textarea>
+    <button class="btn-p" onclick="agendarSessao()">📅 AGENDAR SESSÃO</button>
+    <button class="btn-c" onclick="fecharModal('mAgendarSessao')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mReuniaoComissao">
+  <div class="modal">
+    <div class="m-title">📋 Registrar Reunião de Comissão</div>
+    <div class="fg">
+      <div><label class="m-lbl">Data *</label><input class="m-inp" id="rcData" type="date"></div>
+      <div><label class="m-lbl">Hora</label><input class="m-inp" id="rcHora" type="time" value="09:00"></div>
+    </div>
+    <label class="m-lbl">Pauta</label>
+    <textarea class="m-ta" id="rcPauta" placeholder="Matérias em análise, ordem do dia..."></textarea>
+    <label class="m-lbl">Vereadores presentes</label>
+    <div id="rcPresencaList" style="display:flex;flex-direction:column;gap:6px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:12px;"></div>
+    <label class="m-lbl">Resultado / Ata resumida</label>
+    <textarea class="m-ta" id="rcAta" placeholder="Decisões tomadas, pareceres emitidos..."></textarea>
+    <button class="btn-p" onclick="salvarReuniaoComissao()">📋 REGISTRAR REUNIÃO</button>
+    <button class="btn-c" onclick="fecharModal('mReuniaoComissao')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mChamada">
+  <div class="modal">
+    <div class="m-title">📣 Chamada Nominal — Registro de Presença</div>
+    <div style="font-size:12px;color:var(--tx3);margin-bottom:12px;">Registre a presença de cada vereador na sessão atual.</div>
+    <div id="chamadaList" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px;"></div>
+    <div style="background:var(--surface2);border-radius:var(--rs);padding:10px;margin-bottom:12px;display:flex;gap:16px;font-size:12px;">
+      <span>✅ Presentes: <strong id="chamadaPresentes">0</strong></span>
+      <span>❌ Ausentes: <strong id="chamadaAusentes">0</strong></span>
+      <span>📊 Quórum: <strong id="chamadaPct">0%</strong></span>
+    </div>
+    <button class="btn-p" onclick="confirmarChamada()">✅ CONFIRMAR CHAMADA</button>
+    <button class="btn-c" onclick="fecharModal('mChamada')">Cancelar</button>
+  </div>
+</div>
 <div id="toast"></div>
 <div id="detPanel">
   <div class="det-hdr"><span id="detTitle" style="font-size:15px;font-weight:800;color:var(--tx);">Detalhe</span><div class="det-close" onclick="fecharDet()">✕</div></div>
@@ -2060,7 +2221,58 @@ async function salvarVereador(){
 // ═══ COMISSÕES ═══
 function renderComissoes(){
   popularSelects();
-  document.getElementById('listaComissoes').innerHTML=comissoes.map(c=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span class="b ${c.tipo==='CPI'?'b-red':c.tipo==='Especial'?'b-purple':c.tipo==='Temporária'?'b-gold':'b-navy'}">${c.tipo}</span><strong style="font-size:13px;flex:1;">${c.nome}</strong><span style="font-size:11px;color:var(--tx3);">${c.materias} matérias</span></div><div style="font-size:11.5px;color:var(--tx3);margin-top:8px;">👤 Presidente: ${c.presidente} · 👥 ${c.membros} membros</div></div>`).join('');
+  // popular select de comissões no modal de matéria
+  const selCom=document.getElementById('mtComissaoParecer');
+  if(selCom) selCom.innerHTML='<option value="">Nenhuma</option>'+comissoes.map(cc=>`<option value="${cc.nome}">${cc.nome}</option>`).join('');
+  const el=document.getElementById('listaComissoes');
+  if(!el) return;
+  if(!comissoes.length){
+    el.innerHTML='<div class="card" style="text-align:center;padding:32px;color:var(--tx3);">Nenhuma comissão cadastrada ainda.</div>';
+    document.getElementById('pComissaoDetalhe').style.display='none';
+    return;
+  }
+  el.innerHTML=comissoes.map((cc,i)=>`
+    <div class="card" style="margin-bottom:10px;cursor:pointer;" onclick="abrirDetalheComissao(${i})">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="b ${cc.tipo==='CPI'?'b-red':cc.tipo==='Especial'?'b-purple':cc.tipo==='Temporária'?'b-gold':'b-navy'}">${cc.tipo}</span>
+        <strong style="font-size:13px;flex:1;">${cc.nome}</strong>
+        <span style="font-size:11px;color:var(--tx3);">${cc.materias||0} matérias</span>
+        <span style="font-size:11px;color:var(--tx3);">${(cc.reunioes||[]).length} reuniões</span>
+      </div>
+      <div style="font-size:11.5px;color:var(--tx3);margin-top:8px;">👤 Presidente: ${cc.presidente||'—'} · 👥 ${cc.membros||0} membros</div>
+    </div>`).join('');
+}
+let comissaoSelecionada=null;
+function abrirDetalheComissao(idx){
+  comissaoSelecionada=comissoes[idx];
+  const cc=comissaoSelecionada;
+  document.getElementById('comissaoDetTitulo').textContent=`📋 Reuniões — ${cc.nome}`;
+  const rd=document.getElementById('listaReunioesComissao');
+  const reunioes=cc.reunioes||[];
+  rd.innerHTML=reunioes.length===0
+    ?'<div style="font-size:12.5px;color:var(--tx3);padding:8px 0;">Nenhuma reunião registrada.</div>'
+    :reunioes.map(r=>`<div style="padding:10px;background:var(--surface2);border-radius:var(--rs);margin-bottom:8px;">
+        <div style="font-size:12.5px;font-weight:700;">${r.data} às ${r.hora||'—'}</div>
+        <div style="font-size:11.5px;color:var(--tx3);margin-top:4px;">📋 ${r.pauta||'Sem pauta'}</div>
+        ${r.ata?`<div style="font-size:11px;color:var(--tx2);margin-top:4px;font-style:italic;">${r.ata}</div>`:''}
+      </div>`).join('');
+  document.getElementById('pComissaoDetalhe').style.display='block';
+  document.getElementById('pComissaoDetalhe').scrollIntoView({behavior:'smooth'});
+}
+function salvarReuniaoComissao(){
+  if(!comissaoSelecionada){toast('⚠️ Selecione uma comissão primeiro');return;}
+  const data=document.getElementById('rcData').value;
+  if(!data){toast('⚠️ Informe a data da reunião');return;}
+  if(!comissaoSelecionada.reunioes)comissaoSelecionada.reunioes=[];
+  comissaoSelecionada.reunioes.push({
+    data:data.split('-').reverse().join('/'),
+    hora:document.getElementById('rcHora').value,
+    pauta:document.getElementById('rcPauta').value,
+    ata:document.getElementById('rcAta').value,
+  });
+  fecharModal('mReuniaoComissao');
+  abrirDetalheComissao(comissoes.indexOf(comissaoSelecionada));
+  toast('✅ Reunião registrada!');
 }
 function salvarComissao(){const nome=document.getElementById('cNome').value.trim();if(!nome){toast('⚠️ Informe o nome');return;}comissoes.push({nome,tipo:document.getElementById('cTipo').value,presidente:document.getElementById('cPresidente').value,membros:1,materias:0});fecharModal('mComissao');renderComissoes();toast('✅ Comissão criada!');}
 
@@ -2491,12 +2703,86 @@ function renderTransmissao(){
 }
 
 // ═══ CONTAS ═══
-function renderContas(){document.getElementById('tbContas').innerHTML=contasExec.map(c=>`<tr><td><strong>${c.exercicio}</strong></td><td>${c.gestor}</td><td><span class="b ${c.parecer.includes('Favorável')?'b-emerald':'b-gold'}">${c.parecer}</span></td><td><span class="b b-navy">${c.situacao}</span></td><td>${c.prazo}</td></tr>`).join('');}
-function salvarContas(){const ex=document.getElementById('ctExercicio').value;if(!ex){toast('⚠️ Informe o exercício');return;}contasExec.unshift({exercicio:ex,gestor:document.getElementById('ctGestor').value,parecer:document.getElementById('ctParecer').value,situacao:'Recebimento',prazo:'A definir'});fecharModal('mContas');renderContas();toast('✅ Processo registrado!');}
+function renderContas(){
+  const el=document.getElementById('tbContas');
+  if(!contasExec.length){el.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--tx3);">Nenhum processo de contas registrado.</td></tr>';return;}
+  el.innerHTML=contasExec.map(cc=>`<tr>
+    <td><strong>${cc.exercicio}</strong></td>
+    <td>${cc.gestor}</td>
+    <td style="font-size:11px;">${cc.numTCM||'—'}</td>
+    <td><span class="b ${cc.parecer&&cc.parecer.includes('Favorável')?'b-emerald':cc.parecer==='Contrário'?'b-red':'b-gold'}">${cc.parecer||'Aguardando'}</span></td>
+    <td><span class="b b-navy">${cc.resultado||'Aguardando'}</span></td>
+    <td style="font-size:11px;">${cc.votosSim||0}✅ ${cc.votosNao||0}❌</td>
+    <td style="font-size:11px;">${cc.numPublicacao||'—'}</td>
+  </tr>`).join('');
+}
+function salvarContas(){
+  const ex=document.getElementById('ctExercicio').value;
+  if(!ex){toast('⚠️ Informe o exercício');return;}
+  const numTCM=document.getElementById('ctNumTCM').value.trim();
+  if(!numTCM){toast('⚠️ Informe o número do processo no TCM');return;}
+  const resultado=document.getElementById('ctResultado').value;
+  contasExec.unshift({
+    exercicio:ex,
+    gestor:document.getElementById('ctGestor').value,
+    numTCM,
+    dataParecer:document.getElementById('ctDataParecer').value,
+    parecer:document.getElementById('ctParecer').value,
+    dataVotacao:document.getElementById('ctDataVotacao').value,
+    resultado:resultado||'Aguardando',
+    votosSim:document.getElementById('ctVotosSim').value||0,
+    votosNao:document.getElementById('ctVotosNao').value||0,
+    numPublicacao:document.getElementById('ctNumPublicacao').value,
+    dataPublicacao:document.getElementById('ctDataPublicacao').value,
+    situacao:resultado||'Recebimento',
+    prazo:'A definir'
+  });
+  fecharModal('mContas');renderContas();toast('✅ Processo registrado!');
+}
 
 // ═══ EMENDAS ═══
-function renderEmendas(){popularSelects();document.getElementById('tbEmendas').innerHTML=emendas.map(e=>`<tr><td>${e.autor}</td><td>${e.benef}</td><td style="font-weight:700;">R$ ${e.valor.toLocaleString('pt-BR')}</td><td>${e.exercicio}</td><td><span class="b ${e.status==='Paga'?'b-emerald':e.status==='Liquidada'?'b-navy':e.status==='Empenhada'?'b-gold':'b-gray'}">${e.status}</span></td></tr>`).join('');}
-function salvarEmenda(){const benef=document.getElementById('emBenef').value.trim();if(!benef){toast('⚠️ Informe o beneficiário');return;}emendas.unshift({autor:document.getElementById('emAutor').value,benef,valor:Number(document.getElementById('emValor').value)||0,exercicio:document.getElementById('emExercicio').value||2026,status:'Proposta'});fecharModal('mEmenda');renderEmendas();toast('📌 Emenda registrada!');}
+function renderEmendas(){
+  popularSelects();
+  const el=document.getElementById('tbEmendas');
+  if(!emendas.length){el.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--tx3);">Nenhuma emenda registrada.</td></tr>';
+    // zerar KPIs
+    document.querySelectorAll('.kpi-val').forEach((k,i)=>{if(i<3){k.textContent=i===2?'0%':'R$ 0';}});
+    return;}
+  const total=emendas.reduce((s,e)=>s+(e.valor||0),0);
+  const exec=emendas.filter(e=>['Empenhada','Liquidada','Paga'].includes(e.status)).reduce((s,e)=>s+(e.valor||0),0);
+  const pct=total>0?Math.round(exec/total*100):0;
+  const kvals=document.querySelectorAll('.kpi-val');
+  if(kvals[0])kvals[0].textContent='R$ '+(total/1e6).toFixed(1)+'M';
+  if(kvals[1])kvals[1].textContent='R$ '+(exec/1e6).toFixed(1)+'M';
+  if(kvals[2])kvals[2].textContent=pct+'%';
+  el.innerHTML=emendas.map(e=>`<tr>
+    <td>${e.autor}</td>
+    <td>${e.benef}</td>
+    <td style="font-weight:700;">R$ ${(e.valor||0).toLocaleString('pt-BR')}</td>
+    <td style="font-size:11px;">${e.funcao||'—'}</td>
+    <td>${e.exercicio}</td>
+    <td><span class="b ${e.status==='Paga'?'b-emerald':e.status==='Liquidada'?'b-navy':e.status==='Empenhada'||e.status==='Aprovada'?'b-gold':'b-gray'}">${e.status}</span></td>
+    <td style="font-size:11px;">${[e.loa?'LOA '+e.loa:'',e.ldo?'LDO '+e.ldo:''].filter(Boolean).join(' / ')||'—'}</td>
+  </tr>`).join('');
+}
+function salvarEmenda(){
+  const benef=document.getElementById('emBenef').value.trim();
+  if(!benef){toast('⚠️ Informe o beneficiário');return;}
+  emendas.unshift({
+    autor:document.getElementById('emAutor').value,
+    benef,
+    valor:Number(document.getElementById('emValor').value)||0,
+    exercicio:document.getElementById('emExercicio').value||2026,
+    status:document.getElementById('emStatus').value||'Proposta',
+    funcao:document.getElementById('emFuncao').value||'',
+    subfuncao:document.getElementById('emSubfuncao').value||'',
+    programa:document.getElementById('emPrograma').value||'',
+    acao:document.getElementById('emAcao').value||'',
+    loa:document.getElementById('emLOA').value||'',
+    ldo:document.getElementById('emLDO').value||''
+  });
+  fecharModal('mEmenda');renderEmendas();toast('📌 Emenda registrada!');
+}
 
 // ═══ TRANSPARÊNCIA ═══
 function renderTransparencia(){document.getElementById('listaTransparencia').innerHTML=[
@@ -2545,6 +2831,169 @@ function fecharDet(){document.getElementById('detPanel')?.classList.remove('on')
 let toastTimer;function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('on'),3000);}
 window.addEventListener('load',()=>{const fill=document.getElementById('loadFill');let p=0;const t=setInterval(()=>{p+=Math.random()*20+5;if(fill)fill.style.width=Math.min(p,95)+'%';if(p>=95){clearInterval(t);setTimeout(()=>{if(fill)fill.style.width='100%';setTimeout(()=>document.getElementById('loadScreen')?.classList.add('hidden'),300);},200);}},150);});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!document.getElementById('loginScreen').classList.contains('hidden'))doLogin();if(e.key==='Escape'){fecharDet();document.querySelectorAll('.ov.on').forEach(m=>m.classList.remove('on'));}});
+
+// ══ SESSÃO — fases, agendamento, chamada, encerramento ══════════════════
+
+let faseSessaoAtual=0;
+let sessaoAgendada=null;
+let chamadaState={};
+
+function mudarFase(n){
+  faseSessaoAtual=n;
+  for(let i=0;i<4;i++){
+    document.getElementById('fase'+i)?.classList.toggle('on',i===n);
+  }
+  const labels=['📋 Expediente','⚖️ Ordem do Dia','💬 Explicações Pessoais','🔒 Encerramento'];
+  toast('📋 Fase: '+labels[n]);
+}
+
+function agendarSessao(){
+  const tipo=document.getElementById('agTipo')?.value;
+  const data=document.getElementById('agData')?.value;
+  const hora=document.getElementById('agHora')?.value||'14:00';
+  const local=document.getElementById('agLocal')?.value||'Plenário Principal';
+  const pauta=document.getElementById('agPauta')?.value||'';
+  if(!data){toast('⚠️ Informe a data da sessão');return;}
+  const dataFmt=data.split('-').reverse().join('/');
+  sessaoAgendada={tipo,data:dataFmt,hora,local,pauta};
+  fecharModal('mAgendarSessao');
+  document.getElementById('sessaoStatus').textContent=`${tipo} agendada · ${dataFmt} · ${hora}`;
+  toast(`✅ Sessão ${tipo} agendada para ${dataFmt} às ${hora}`);
+}
+
+function abrirChamada(){
+  const lista=document.getElementById('chamadaList');
+  if(!lista)return;
+  chamadaState={};
+  vereadores.forEach(v=>{chamadaState[v.id]=v.presente||false;});
+  lista.innerHTML=vereadores.map(v=>`
+    <div class="chamada-item">
+      <div class="av" style="width:26px;height:26px;background:${v.cor};font-size:10px;">${v.av}</div>
+      <span style="flex:1;font-size:13px;">${v.nome}</span>
+      <span style="font-size:11px;color:var(--tx3);margin-right:8px;">${v.partido}</span>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="checkbox" ${chamadaState[v.id]?'checked':''} onchange="toggleChamada(${v.id},this.checked)" style="width:15px;height:15px;">
+        <span style="font-size:11px;font-weight:700;" id="chamLabel${v.id}">${chamadaState[v.id]?'✅ Presente':'❌ Ausente'}</span>
+      </label>
+    </div>`).join('');
+  atualizarContadorChamada();
+  abrirModal('mChamada');
+}
+
+function toggleChamada(id,val){
+  chamadaState[id]=val;
+  const el=document.getElementById('chamLabel'+id);
+  if(el)el.textContent=val?'✅ Presente':'❌ Ausente';
+  atualizarContadorChamada();
+}
+
+function atualizarContadorChamada(){
+  const pres=Object.values(chamadaState).filter(Boolean).length;
+  const aus=vereadores.length-pres;
+  const pct=vereadores.length>0?Math.round(pres/vereadores.length*100):0;
+  document.getElementById('chamadaPresentes').textContent=pres;
+  document.getElementById('chamadaAusentes').textContent=aus;
+  document.getElementById('chamadaPct').textContent=pct+'%';
+}
+
+function confirmarChamada(){
+  vereadores.forEach(v=>{v.presente=chamadaState[v.id]||false;});
+  const pres=Object.values(chamadaState).filter(Boolean).length;
+  fecharModal('mChamada');
+  // atualiza quórum visual
+  const qEl=document.getElementById('quorumNum');
+  if(qEl)qEl.textContent=pres+'/'+vereadores.length;
+  toast(`✅ Chamada confirmada — ${pres} de ${vereadores.length} presentes`);
+  logAuditoria('Chamada Nominal','Sessão Plenária');
+}
+
+function encerrarSessaoFormal(){
+  if(!sessaoAberta){toast('⚠️ Nenhuma sessão está aberta');return;}
+  const tipo=sessaoAgendada?.tipo||'Ordinária';
+  const hora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  sessaoAberta=false;
+  const btn=document.getElementById('btnAbrirSessao');
+  if(btn){btn.textContent='▶ Abrir Sessão';btn.style.background='var(--emerald)';}
+  document.getElementById('sessaoStatus').textContent='Sessão encerrada às '+hora;
+  mudarFase(3);
+  toast('🔒 Sessão encerrada formalmente às '+hora+' — ata enviada para geração por IA');
+  logAuditoria('Encerramento Formal de Sessão','Sessão '+tipo);
+  // Redireciona para geração de ata
+  setTimeout(()=>{sw('atas');toast('📝 Gerando ata da sessão com IA...');},1500);
+}
+
+// ══ MATÉRIA — novos campos ════════════════════════════════════════════
+function mtAtualizarTipo(){
+  const tipo=document.getElementById('mtTipo')?.value;
+  const vetoWrap=document.getElementById('mtVetoWrap');
+  if(vetoWrap)vetoWrap.style.display=tipo==='Veto do Executivo'?'block':'none';
+  // Popular relator com vereadores
+  const selRel=document.getElementById('mtRelator');
+  if(selRel) selRel.innerHTML='<option value="">Nenhum designado</option>'+
+    vereadores.map(v=>`<option value="${v.nome}">${v.nome}</option>`).join('');
+}
+
+// ══ TRANSPARÊNCIA — galeria, emendas e remuneração ════════════════════
+function renderTransparencia(){
+  // Galeria de vereadores
+  const gal=document.getElementById('galVereadores');
+  if(gal){
+    if(!vereadores.length){
+      gal.innerHTML='<div style="font-size:12px;color:var(--tx3);">Nenhum vereador cadastrado.</div>';
+    } else {
+      gal.innerHTML=vereadores.map(v=>`
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;text-align:center;">
+          <div class="av" style="width:48px;height:48px;background:${v.cor};font-size:16px;margin:0 auto 8px;">${v.av}</div>
+          <div style="font-size:12px;font-weight:800;">${v.nomeUrna||v.nome.split(' ')[0]}</div>
+          <div style="font-size:11px;color:var(--tx3);">${v.nome}</div>
+          <span class="b b-navy" style="margin-top:6px;display:inline-block;">${v.partido}</span>
+        </div>`).join('');
+    }
+  }
+  // Emendas publicadas
+  const te=document.getElementById('tbTranspEmendas');
+  if(te){
+    te.innerHTML=emendas.length===0
+      ?'<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--tx3);">Nenhuma emenda publicada.</td></tr>'
+      :emendas.map(e=>`<tr>
+          <td>${e.autor}</td><td>${e.benef}</td>
+          <td style="font-weight:700;">R$ ${(e.valor||0).toLocaleString('pt-BR')}</td>
+          <td style="font-size:11px;">${e.funcao||'—'}</td>
+          <td><span class="b ${e.status==='Paga'?'b-emerald':e.status==='Empenhada'||e.status==='Aprovada'?'b-gold':'b-gray'}">${e.status}</span></td>
+        </tr>`).join('');
+  }
+  // Remuneração
+  const tr=document.getElementById('tbTranspRemun');
+  if(tr){
+    const subsidios=[
+      {cargo:'Presidente da Câmara',bruto:'R$ 8.400,00',desc:'R$ 945,00',liq:'R$ 7.455,00',ref:'Lei Municipal nº 045/2024'},
+      {cargo:'Vereador(a)',bruto:'R$ 7.200,00',desc:'R$ 810,00',liq:'R$ 6.390,00',ref:'Lei Municipal nº 045/2024'},
+    ];
+    tr.innerHTML=subsidios.map(s=>`<tr>
+      <td><strong>${s.cargo}</strong></td><td>${s.bruto}</td><td>${s.desc}</td>
+      <td><strong>${s.liq}</strong></td><td style="font-size:11px;">${s.ref}</td>
+    </tr>`).join('');
+  }
+  // Publicações recentes
+  const lp=document.getElementById('listaTransparencia');
+  if(lp) lp.innerHTML=materias.slice(0,5).map(m=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
+      <span class="b b-navy">${m.tipo}</span>
+      <span style="font-size:12.5px;flex:1;">${m.num} — ${m.ementa.substring(0,60)}${m.ementa.length>60?'…':''}</span>
+      <span class="b ${m.situacao==='Aprovado'?'b-emerald':m.situacao==='Rejeitado'?'b-red':'b-gray'}">${m.situacao}</span>
+    </div>`).join('')||'<div style="font-size:12px;color:var(--tx3);padding:8px 0;">Nenhuma matéria publicada ainda.</div>';
+}
+
+// ══ FLUXOS DE TRAMITAÇÃO por tipo ════════════════════════════════════
+const FLUXO_POR_TIPO={
+  'Requerimento':    ['Protocolado','Secretaria','Deliberação','Arquivado'],
+  'Moção':           ['Protocolado','Secretaria','Plenário','Aprovado','Arquivado'],
+  'Indicação':       ['Protocolado','Secretaria','Executivo','Arquivado'],
+  'Veto do Executivo':['Protocolado','Comissão','Plenário','Votação','Aprovado','Arquivado'],
+  '_default':        ['Protocolado','Jurídico','Comissão','Parecer','Plenário','Votação','Aprovação','Sanção','Arquivamento'],
+};
+function obterFluxoTipo(tipo){ return FLUXO_POR_TIPO[tipo]||FLUXO_POR_TIPO['_default']; }
+
 </script>
 </body>
 </html>
