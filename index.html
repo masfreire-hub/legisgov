@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>LegisGov — Câmara Municipal de Andaraí</title>
+<title>LegisGov — Sistema Legislativo Inteligente</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -170,6 +170,21 @@ select.linp option{color:#0F172A;background:#fff;}
 .det-close{width:30px;height:30px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:auto;font-size:16px;color:var(--tx3);}
 .det-body{flex:1;overflow-y:auto;padding:16px;}
 .det-sec{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 7px;}
+/* ── Histórico de Legislaturas ── */
+.leg-row{display:grid;grid-template-columns:110px 1fr 1fr 64px 28px;gap:6px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--border);font-size:12px;}
+.leg-row:last-child{border-bottom:none;}
+.leg-row.header{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.04em;background:var(--surface2);border-radius:6px 6px 0 0;padding:5px 10px;}
+.leg-inp{width:100%;padding:4px 7px;border:1px solid var(--border2);border-radius:6px;font-size:11.5px;font-family:inherit;color:var(--tx);background:var(--surface);outline:none;}
+.leg-inp:focus{border-color:var(--navy2);box-shadow:0 0 0 2px rgba(15,42,74,.1);}
+.leg-del{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--tx4);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.leg-del:hover{background:var(--red-l,#FEF2F2);color:#DC2626;border-color:#EF4444;}
+.leg-badge-atual{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#EEF4FF;color:#1E40AF;white-space:nowrap;}
+.leg-badge-pass{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--surface2);color:var(--tx3);white-space:nowrap;}
+.leg-badge-parc{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FFFBEB;color:#92400E;white-space:nowrap;}
+.leg-resumo{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.leg-stat{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--tx2);}
+.leg-add-btn{width:100%;padding:7px 10px;border:1.5px dashed var(--border2);border-radius:6px;background:none;color:var(--tx3);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;}
+.leg-add-btn:hover{background:var(--surface2);color:var(--navy2);border-color:var(--navy2);}
 
 /* TIMELINE */
 .tl-item{display:flex;gap:12px;padding-bottom:18px;position:relative;}
@@ -234,14 +249,14 @@ select.linp option{color:#0F172A;background:#fff;}
     <div id="loginEtapaCredenciais">
       <div class="llogo"><div class="llogo-badge">🏛️</div></div>
       <div class="ltitle" style="text-align:center;margin-bottom:4px;">LegisGov</div>
-      <div class="lsub">Câmara Municipal de Andaraí · Processo Legislativo Digital</div>
+      <div class="lsub">Câmara Municipal · Processo Legislativo Digital</div>
       <label class="llbl">CPF</label>
       <input class="linp" id="lcpf" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
       <label class="llbl">Senha</label>
       <input class="linp" id="lsenha" type="password" placeholder="••••••••">
       <button class="lbtn" onclick="doLogin()">ENTRAR NO SISTEMA</button>
       <div id="loginErro" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:#FEF2F2;color:#B91C1C;font-size:12.5px;"></div>
-      <div class="ldemo" style="margin-top:14px;">Acesso demo (sem cadastro real): <span onclick="loginDemo()">🏛️ Entrar no modo visualização</span></div>
+      <div class="ldemo" style="margin-top:14px;">Acesso demo (sem cadastro real): <span onclick="loginDemo()">🏛️ Entrar no modo demonstração</span></div>
     </div>
 
     <div id="loginEtapaCamara" style="display:none;">
@@ -273,7 +288,7 @@ select.linp option{color:#0F172A;background:#fff;}
     <div class="tb-right">
       <div class="tb-btn" onclick="sw('sessao')" title="Sessão Plenária">🏛️</div>
       <div class="tb-btn" onclick="toast('🔔 3 alertas: 1 prazo vencendo, 2 pareceres pendentes')" title="Alertas">
-        🔔
+        🔔<div class="tb-notif-dot">3</div>
       </div>
       <div class="tb-btn" onclick="sw('assistente')" title="Assistente IA">🤖</div>
       <div class="tb-av" id="userAv" onclick="logout()">PR</div>
@@ -287,7 +302,7 @@ select.linp option{color:#0F172A;background:#fff;}
     <div class="ni" onclick="sw('comissoes',this)" id="ni-comissoes"><span class="ni-ico">🗂️</span><span class="ni-lb">Comissões</span></div>
 
     <div class="sb-section">LEGISLATIVO</div>
-    <div class="ni" onclick="sw('materias',this)" id="ni-materias"><span class="ni-ico">📜</span><span class="ni-lb">Processo Legislativo</span></div>
+    <div class="ni" onclick="sw('materias',this)" id="ni-materias"><span class="ni-ico">📜</span><span class="ni-lb">Processo Legislativo</span><span class="ni-badge">7</span></div>
     <div class="ni" onclick="sw('tramitacao',this)" id="ni-tramitacao"><span class="ni-ico">🔀</span><span class="ni-lb">Tramitação</span></div>
 
     <div class="sb-section">PLENÁRIO</div>
@@ -301,7 +316,7 @@ select.linp option{color:#0F172A;background:#fff;}
     <div class="ni" onclick="sw('transparencia',this)" id="ni-transparencia"><span class="ni-ico">🔍</span><span class="ni-lb">Portal Transparência</span></div>
 
     <div class="sb-section">INTELIGÊNCIA</div>
-    <div class="ni" onclick="sw('atas',this)" id="ni-atas"><span class="ni-ico">📝</span><span class="ni-lb">Atas (IA)</span></div>
+    <div class="ni" onclick="sw('atas',this)" id="ni-atas"><span class="ni-ico">📝</span><span class="ni-lb">Atas (IA)</span><span class="ni-badge gold">2</span></div>
     <div class="ni" onclick="sw('assistente',this)" id="ni-assistente"><span class="ni-ico">🤖</span><span class="ni-lb">Assistente IA</span></div>
 
     <div class="sb-section" id="sb-sec-suporte" style="display:none;">SUPORTE</div>
@@ -328,10 +343,10 @@ select.linp option{color:#0F172A;background:#fff;}
       </div>
 
       <div class="g4" style="margin-bottom:16px;">
-        <div class="kpi kc-navy" onclick="sw('materias')"><div class="kpi-ico">📜</div><div class="kpi-val" id="kpiMaterias">0</div><div class="kpi-label">Em Tramitação</div><div class="kpi-sub" id="kpiMateriasSub">Nenhuma matéria</div></div>
-        <div class="kpi kc-emerald" onclick="sw('sessao')"><div class="kpi-ico">🏛️</div><div class="kpi-val" id="kpiSessoes">0</div><div class="kpi-label">Sessões Agendadas</div><div class="kpi-sub">Use Sessão Plenária</div></div>
-        <div class="kpi kc-gold" onclick="sw('comissoes')"><div class="kpi-ico">🗂️</div><div class="kpi-val" id="kpiComissoes">0</div><div class="kpi-label">Comissões Ativas</div><div class="kpi-sub" id="kpiComissoesSub">Nenhuma cadastrada</div></div>
-        <div class="kpi kc-purple" onclick="sw('emendas')"><div class="kpi-ico">💰</div><div class="kpi-val" id="kpiEmendas">—</div><div class="kpi-label">Emendas Executadas</div><div class="kpi-sub">Nenhuma registrada</div></div>
+        <div class="kpi kc-navy" onclick="sw('materias')"><div class="kpi-ico">📜</div><div class="kpi-val">23</div><div class="kpi-label">Em Tramitação</div><div class="kpi-sub">7 com prazo crítico</div></div>
+        <div class="kpi kc-emerald" onclick="sw('sessao')"><div class="kpi-ico">🏛️</div><div class="kpi-val">2</div><div class="kpi-label">Sessões Agendadas</div><div class="kpi-sub">Próxima: hoje 14h</div></div>
+        <div class="kpi kc-gold" onclick="sw('comissoes')"><div class="kpi-ico">🗂️</div><div class="kpi-val">6</div><div class="kpi-label">Comissões Ativas</div><div class="kpi-sub">1 CPI em curso</div></div>
+        <div class="kpi kc-purple" onclick="sw('emendas')"><div class="kpi-ico">💰</div><div class="kpi-val">68%</div><div class="kpi-label">Emendas Executadas</div><div class="kpi-sub">R$ 1,8M de R$ 2,6M</div></div>
       </div>
 
       <div class="g2" style="margin-bottom:14px;">
@@ -429,7 +444,7 @@ select.linp option{color:#0F172A;background:#fff;}
     <!-- ═══ SESSÃO PLENÁRIA ═══ -->
     <div class="page" id="p-sessao">
       <div class="ph">
-        <div><div class="ph-title">🏛️ Sessão Plenária</div><div class="ph-sub" id="sessaoStatus">Nenhuma sessão agendada</div></div>
+        <div><div class="ph-title">🏛️ Sessão Plenária</div><div class="ph-sub" id="sessaoStatus">Sessão Ordinária · 19/06/2026 · 14h00</div></div>
         <div style="display:flex;gap:8px;">
           <button class="btn-sm" id="btnAbrirSessao" style="background:var(--emerald);color:#fff;" onclick="toggleSessao()">▶ Abrir Sessão</button>
         </div>
@@ -440,14 +455,14 @@ select.linp option{color:#0F172A;background:#fff;}
           <div class="quorum-ring">
             <svg viewBox="0 0 140 140">
               <circle cx="70" cy="70" r="60" fill="none" stroke="#E2E8F0" stroke-width="12"/>
-              <circle cx="70" cy="70" r="60" fill="none" stroke="#0E7C5A" stroke-width="12" stroke-dasharray="377" stroke-dashoffset="377" stroke-linecap="round" id="quorumArc"/>
+              <circle cx="70" cy="70" r="60" fill="none" stroke="#0E7C5A" stroke-width="12" stroke-dasharray="377" stroke-dashoffset="94" stroke-linecap="round" id="quorumArc"/>
             </svg>
             <div class="quorum-ring-text">
-              <div style="font-size:24px;font-weight:900;color:var(--emerald);" id="quorumNum">0/0</div>
+              <div style="font-size:24px;font-weight:900;color:var(--emerald);" id="quorumNum">15/19</div>
               <div style="font-size:10px;color:var(--tx3);font-weight:700;">PRESENTES</div>
             </div>
           </div>
-          <div style="margin-top:10px;font-size:11px;color:var(--tx3);">Aguardando início da sessão</div>
+          <div style="margin-top:10px;font-size:11px;color:var(--tx3);">Quórum mínimo (simples) atingido ✅</div>
         </div>
         <div class="card">
           <div class="card-title">🎙️ Lista de Oradores</div>
@@ -457,7 +472,7 @@ select.linp option{color:#0F172A;background:#fff;}
           <div class="card-title">⏱️ Cronômetro de Fala</div>
           <div style="text-align:center;padding:14px 0;">
             <div style="font-size:42px;font-weight:900;color:var(--navy2);font-family:monospace;" id="cronometro">03:00</div>
-            <div style="font-size:11px;color:var(--tx3);margin-top:4px;" id="cronometroOrador">Nenhum orador na fila</div>
+            <div style="font-size:11px;color:var(--tx3);margin-top:4px;" id="cronometroOrador">Vereador Carlos Mendes — Grande Expediente</div>
             <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
               <button class="btn-sm" style="background:var(--emerald);color:#fff;" onclick="iniciarCronometro()">▶ Iniciar</button>
               <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="pausarCronometro()">⏸ Pausar</button>
@@ -557,9 +572,9 @@ select.linp option{color:#0F172A;background:#fff;}
         <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mEmenda')">+ Nova Emenda</button>
       </div>
       <div class="g3" style="margin-bottom:14px;">
-        <div class="kpi kc-navy"><div class="kpi-ico">💰</div><div class="kpi-val" id="kpiEmTotalProp">R$ 0</div><div class="kpi-label">Total Proposto</div></div>
-        <div class="kpi kc-emerald"><div class="kpi-ico">✅</div><div class="kpi-val" id="kpiEmTotalExec">R$ 0</div><div class="kpi-label">Total Executado</div></div>
-        <div class="kpi kc-gold"><div class="kpi-ico">📊</div><div class="kpi-val" id="kpiEmPct">—</div><div class="kpi-label">% Execução</div></div>
+        <div class="kpi kc-navy"><div class="kpi-ico">💰</div><div class="kpi-val">R$2,6M</div><div class="kpi-label">Total Proposto</div></div>
+        <div class="kpi kc-emerald"><div class="kpi-ico">✅</div><div class="kpi-val">R$1,8M</div><div class="kpi-label">Total Executado</div></div>
+        <div class="kpi kc-gold"><div class="kpi-ico">📊</div><div class="kpi-val">68%</div><div class="kpi-label">% Execução</div></div>
       </div>
       <div class="card">
         <table class="tbl"><thead><tr><th>Autor</th><th>Beneficiário</th><th>Valor</th><th>Exercício</th><th>Status</th></tr></thead>
@@ -593,7 +608,7 @@ select.linp option{color:#0F172A;background:#fff;}
         <div><div class="ph-title">📝 Atas com Inteligência Artificial</div><div class="ph-sub">Transcrição automática e geração de ata</div></div>
       </div>
       <div class="card" style="margin-bottom:14px;">
-        <div class="card-title">🤖 Nenhuma sessão transcrita ainda</div>
+        <div class="card-title">🤖 Última Sessão Transcrita — 19/06/2026</div>
         <div id="ataGerada"></div>
       </div>
       <div class="card">
@@ -648,276 +663,25 @@ select.linp option{color:#0F172A;background:#fff;}
 
 <!-- MODALS -->
 <div class="ov" id="mVereador">
-  <div class="modal" style="max-width:660px;">
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div class="m-title" style="margin-bottom:0;">👤 Cadastrar Vereador</div>
-      <button onclick="fecharModal('mVereador')" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;color:var(--tx3);display:flex;align-items:center;justify-content:center;">✕</button>
-    </div>
-
-    <!-- abas -->
-    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;" id="vTabs">
-      <button class="vtab active" onclick="mudarAbaVer(0,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--navy2);border-bottom:2px solid var(--navy2);cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">👤 PESSOAL</button>
-      <button class="vtab" onclick="mudarAbaVer(1,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">🏠 ENDEREÇO</button>
-      <button class="vtab" onclick="mudarAbaVer(2,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">📱 CONTATO</button>
-      <button class="vtab" onclick="mudarAbaVer(3,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">🗂️ COMISSÕES</button>
-      <button class="vtab" onclick="mudarAbaVer(4,this)" style="flex:1;padding:8px 4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;color:var(--tx3);border-bottom:2px solid transparent;cursor:pointer;letter-spacing:.3px;margin-bottom:-2px;">🔑 ACESSO</button>
-    </div>
-
-    <!-- aba 0 — dados pessoais -->
-    <div class="vaba" id="vaba0">
-      <label class="m-lbl">Nome Completo <span style="color:var(--red2)">*</span></label>
-      <input class="m-inp" id="vNome" placeholder="Ex: João da Silva Ferreira">
-
-      <label class="m-lbl">Nome na Urna <span style="color:var(--tx4);font-weight:500;text-transform:none;letter-spacing:0;font-size:10px;">— como aparece no Portal da Transparência</span></label>
-      <input class="m-inp" id="vNomeUrna" placeholder="Ex: João Ferreira, Tom de Binha, Dr. Carlos...">
-
-      <div class="fg">
-        <div>
-          <label class="m-lbl">Cargo <span style="color:var(--red2)">*</span></label>
-          <select class="m-sel" id="vCargo" onchange="toggleCamposVereador()">
-            <option value="Vereador">Vereador(a)</option>
-            <option value="Presidente">Presidente da Câmara</option>
-            <option value="Secretaria">Secretaria Legislativa</option>
-            <option value="Procuradoria">Procuradoria Jurídica</option>
-            <option value="Comissao">Membro de Comissão</option>
-            <option value="Administrador">Administrador</option>
-          </select>
-        </div>
-        <div id="campoPartidoWrap">
-          <label class="m-lbl">Partido</label>
-          <input class="m-inp" id="vPartido" placeholder="Ex: MDB, PT, PSD...">
-        </div>
-      </div>
-
-      <div class="fg">
-        <div>
-          <label class="m-lbl">CPF <span style="color:var(--red2)">*</span></label>
-          <input class="m-inp" id="vCpfLogin" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
-        </div>
-        <div>
-          <label class="m-lbl">RG</label>
-          <input class="m-inp" id="vRg" placeholder="0000000-0">
-        </div>
-      </div>
-
-      <div class="fg">
-        <div>
-          <label class="m-lbl">Data de Nascimento</label>
-          <input class="m-inp" id="vNascimento" type="date">
-        </div>
-        <div>
-          <label class="m-lbl">Gênero</label>
-          <select class="m-sel" id="vGenero">
-            <option value="">— selecione —</option>
-            <option>Masculino</option><option>Feminino</option><option>Não-binário</option><option>Prefiro não informar</option>
-          </select>
-        </div>
-      </div>
-
-      <label class="m-lbl">E-mail institucional</label>
-      <input class="m-inp" id="vEmail" type="email" placeholder="vereador@camara.ba.gov.br">
-
-      <div style="display:flex;justify-content:flex-end;margin-top:4px;">
-        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(1,document.querySelectorAll('.vtab')[1])">Próximo: Endereço →</button>
-      </div>
-    </div>
-
-    <!-- aba 1 — endereço -->
-    <div class="vaba" id="vaba1" style="display:none;">
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input class="m-inp" id="vCep" placeholder="CEP (00000-000)" style="flex:1;margin-bottom:0;" maxlength="9" oninput="mascaraCep(this)" onblur="buscarCep()">
-        <button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);border:1px solid #C5D9EE;white-space:nowrap;" onclick="buscarCep()">🔍 Buscar CEP</button>
-      </div>
-
-      <label class="m-lbl">Logradouro</label>
-      <input class="m-inp" id="vLogradouro" placeholder="Rua, Avenida, Praça...">
-
-      <div class="fg">
-        <div>
-          <label class="m-lbl">Número</label>
-          <input class="m-inp" id="vNumero" placeholder="123">
-        </div>
-        <div>
-          <label class="m-lbl">Complemento</label>
-          <input class="m-inp" id="vComplemento" placeholder="Apto, Bloco...">
-        </div>
-      </div>
-
-      <div class="fg">
-        <div>
-          <label class="m-lbl">Bairro</label>
-          <input class="m-inp" id="vBairro" placeholder="Bairro">
-        </div>
-        <div>
-          <label class="m-lbl">Cidade</label>
-          <input class="m-inp" id="vCidade" placeholder="Município">
-        </div>
-      </div>
-
-      <div class="fg">
-        <div>
-          <label class="m-lbl">Estado</label>
-          <select class="m-sel" id="vEstado">
-            <option value="BA" selected>BA — Bahia</option>
-            <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option><option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option><option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
-          </select>
-        </div>
-        <div>
-          <label class="m-lbl">CEP</label>
-          <input class="m-inp" id="vCepFinal" placeholder="00000-000" readonly style="background:var(--surface3);color:var(--tx3);">
-        </div>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;margin-top:4px;">
-        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(0,document.querySelectorAll('.vtab')[0])">← Voltar</button>
-        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(2,document.querySelectorAll('.vtab')[2])">Próximo: Contato →</button>
-      </div>
-    </div>
-
-    <!-- aba 2 — contato & telegram -->
-    <div class="vaba" id="vaba2" style="display:none;">
-      <div class="fg">
-        <div>
-          <label class="m-lbl">Celular / WhatsApp</label>
-          <input class="m-inp" id="vCelular" type="tel" placeholder="(00) 00000-0000" maxlength="15" oninput="mascaraTelefone(this)">
-        </div>
-        <div>
-          <label class="m-lbl">Telefone fixo</label>
-          <input class="m-inp" id="vTelefone" type="tel" placeholder="(00) 0000-0000" maxlength="14" oninput="mascaraTelefoneFixo(this)">
-        </div>
-      </div>
-
-      <label class="m-lbl">Gabinete / Ramal</label>
-      <input class="m-inp" id="vGabinete" placeholder="Ex: Gabinete 3 · Ramal 215">
-
-      <!-- bloco telegram -->
-      <div style="background:linear-gradient(135deg,#E8F4FD,#EFF8FF);border:1.5px solid #90CAF9;border-radius:10px;padding:14px;margin-bottom:14px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-          <div style="width:32px;height:32px;border-radius:8px;background:#0088CC;display:flex;align-items:center;justify-content:center;font-size:18px;">✈️</div>
-          <div>
-            <div style="font-size:13px;font-weight:800;color:#01579B;">Integração Telegram</div>
-            <div style="font-size:11px;color:#0277BD;">Notificações automáticas de sessões, votações e prazos</div>
-          </div>
-        </div>
-
-        <label class="m-lbl" style="color:#01579B;">Username do Telegram</label>
-        <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;">
-          <span style="font-size:13px;color:#01579B;font-weight:700;">@</span>
-          <input class="m-inp" id="vTelegramUser" placeholder="username_sem_arroba" style="margin-bottom:0;flex:1;border-color:#90CAF9;">
-        </div>
-
-        <label class="m-lbl" style="color:#01579B;">Chat ID (necessário para envio)</label>
-        <div style="display:flex;gap:6px;margin-bottom:8px;">
-          <input class="m-inp" id="vTelegramChatId" placeholder="Ex: 123456789" style="margin-bottom:0;flex:1;border-color:#90CAF9;">
-          <button class="btn-sm" id="btnTestarTelegram" onclick="testarTelegram()" style="background:#0088CC;color:#fff;white-space:nowrap;">📨 Testar</button>
-        </div>
-
-        <div style="background:rgba(1,87,155,.08);border-radius:7px;padding:10px 12px;font-size:11px;color:#01579B;line-height:1.7;">
-          <strong>Como obter o Chat ID:</strong><br>
-          1. O vereador abre o Telegram e busca <strong>@userinfobot</strong><br>
-          2. Envia qualquer mensagem<br>
-          3. O bot responde com o ID (número). Cole aqui.<br>
-          <span style="color:#0277BD;cursor:pointer;text-decoration:underline;" onclick="toast('🤖 Bot configurado: @LegisGovBot — peça ao admin para ativar')">ℹ️ Ver bot oficial do LegisGov</span>
-        </div>
-
-        <div id="telegramStatus" style="display:none;margin-top:8px;padding:7px 10px;border-radius:7px;font-size:11.5px;font-weight:600;"></div>
-      </div>
-
-      <label class="m-lbl">Redes sociais (opcional)</label>
-      <div class="fg">
-        <div>
-          <input class="m-inp" id="vInstagram" placeholder="Instagram (@usuario)">
-        </div>
-        <div>
-          <input class="m-inp" id="vFacebook" placeholder="Facebook (perfil)">
-        </div>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;margin-top:4px;">
-        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(1,document.querySelectorAll('.vtab')[1])">← Voltar</button>
-        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(3,document.querySelectorAll('.vtab')[3])">Próximo: Comissões →</button>
-      </div>
-    </div>
-
-    <!-- aba 3 — comissões -->
-    <div class="vaba" id="vaba3" style="display:none;">
-      <div style="padding:10px 14px;background:var(--emerald-l);border:1px solid rgba(14,124,90,.25);border-radius:9px;margin-bottom:14px;font-size:11.5px;color:var(--emerald);">
-        🗂️ Vincule o vereador às comissões de que faz parte. Ele poderá consultar essas comissões diretamente no painel.
-      </div>
-
-      <div id="vComissoesVinculadas" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
-
-      <div style="border:1.5px dashed var(--border2);border-radius:var(--rs);padding:10px 12px;background:var(--surface2);">
-        <div style="font-size:11px;font-weight:700;color:var(--tx3);letter-spacing:.6px;margin-bottom:8px;">+ VINCULAR A UMA COMISSÃO</div>
-        <div style="display:flex;gap:8px;">
-          <select id="vAddComissaoSelect" class="m-sel" style="flex:1;margin-bottom:0;">
-          </select>
-          <select id="vAddComissaoRole" class="m-sel" style="width:130px;margin-bottom:0;">
-            <option value="Membro">Membro</option>
-            <option value="Presidente">Presidente</option>
-            <option value="Vice-Presidente">Vice-Presidente</option>
-            <option value="Relator">Relator</option>
-            <option value="Secretário">Secretário(a)</option>
-          </select>
-          <button class="btn-sm" style="background:var(--navy2);color:#fff;white-space:nowrap;" onclick="vincularComissaoVereador()">+ Vincular</button>
-        </div>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;margin-top:14px;">
-        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(2,document.querySelectorAll('.vtab')[2])">← Voltar</button>
-        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mudarAbaVer(4,document.querySelectorAll('.vtab')[4])">Próximo: Acesso →</button>
-      </div>
-    </div>
-
-    <!-- aba 4 — acesso ao sistema -->
-    <div class="vaba" id="vaba4" style="display:none;">
-      <div style="padding:10px 14px;background:var(--navy-l);border:1px solid #C5D9EE;border-radius:9px;margin-bottom:14px;font-size:11.5px;color:var(--navy2);">
-        🔑 O vereador usará o <strong>CPF</strong> informado na aba Pessoal e esta senha para acessar o LegisGov.
-      </div>
-
-      <div class="fg">
-        <div>
-          <label class="m-lbl">CPF de acesso</label>
-          <input class="m-inp" id="vCpfLoginDisplay" readonly style="background:var(--surface3);color:var(--tx2);" placeholder="Preenchido na aba Pessoal">
-        </div>
-        <div>
-          <label class="m-lbl">Senha provisória <span style="color:var(--red2)">*</span></label>
-          <input class="m-inp" id="vSenha" type="text" placeholder="Mín. 6 caracteres">
-        </div>
-      </div>
-      <div style="font-size:11px;color:var(--tx3);margin:-4px 0 14px;">Passe a senha para a pessoa por outro canal (ex: WhatsApp) — ela poderá trocar depois.</div>
-
-      <label class="m-lbl">Perfil de acesso</label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;" id="perfilAcessoGrid">
-        <div class="perfil-opt active" onclick="selecionarPerfil(this,'total')" style="border:2px solid var(--navy2);border-radius:9px;padding:10px 12px;cursor:pointer;background:var(--navy-l);">
-          <div style="font-size:12px;font-weight:800;color:var(--navy2);">🏛️ Acesso Total</div>
-          <div style="font-size:10.5px;color:var(--tx3);margin-top:3px;">Vê todas as telas do sistema</div>
-        </div>
-        <div class="perfil-opt" onclick="selecionarPerfil(this,'leitura')" style="border:2px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;">
-          <div style="font-size:12px;font-weight:800;color:var(--tx2);">👁️ Somente Leitura</div>
-          <div style="font-size:10.5px;color:var(--tx3);margin-top:3px;">Consulta sem editar</div>
-        </div>
-        <div class="perfil-opt" onclick="selecionarPerfil(this,'votacao')" style="border:2px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;">
-          <div style="font-size:12px;font-weight:800;color:var(--tx2);">🗳️ Votação + Leitura</div>
-          <div style="font-size:10.5px;color:var(--tx3);margin-top:3px;">Vota e consulta</div>
-        </div>
-        <div class="perfil-opt" onclick="selecionarPerfil(this,'admin')" style="border:2px solid var(--border);border-radius:9px;padding:10px 12px;cursor:pointer;">
-          <div style="font-size:12px;font-weight:800;color:var(--tx2);">⚙️ Administrador</div>
-          <div style="font-size:10.5px;color:var(--tx3);margin-top:3px;">Gerencia usuários</div>
-        </div>
-      </div>
-      <input type="hidden" id="vPerfilAcesso" value="total">
-
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <button class="btn-sm" style="background:var(--surface2);color:var(--tx2);border:1px solid var(--border);" onclick="mudarAbaVer(3,document.querySelectorAll('.vtab')[3])">← Voltar</button>
-        <div style="font-size:10.5px;color:var(--tx3);">* campos obrigatórios</div>
-      </div>
-
-      <button class="btn-p" onclick="salvarVereador()" style="font-size:14px;padding:14px;">💾 CADASTRAR VEREADOR</button>
-      <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
-    </div>
-
+  <div class="modal">
+    <div class="m-title">👤 Cadastrar Novo Usuário</div>
+    <div style="font-size:11.5px;color:var(--tx3);margin:-6px 0 12px;">Cria um login real para esta pessoa acessar o LegisGov, já vinculado à sua Câmara.</div>
+    <label class="m-lbl">Nome Completo</label><input class="m-inp" id="vNome" placeholder="Nome civil">
+    <label class="m-lbl">Cargo</label>
+    <select class="m-sel" id="vCargo">
+      <option value="Vereador">Vereador(a)</option>
+      <option value="Presidente">Presidente</option>
+      <option value="Secretaria">Secretaria Legislativa</option>
+      <option value="Procuradoria">Procuradoria Jurídica</option>
+      <option value="Comissao">Comissão</option>
+      <option value="Administrador">Administrador</option>
+    </select>
+    <div class="fg"><div><label class="m-lbl">Partido</label><input class="m-inp" id="vPartido" placeholder="Sigla (se Vereador)"></div><div><label class="m-lbl">CPF</label><input class="m-inp" id="vCpf" placeholder="000.000.000-00"></div></div>
+    <label class="m-lbl">CPF de acesso</label><input class="m-inp" id="vCpfLogin" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
+    <label class="m-lbl">Senha provisória</label><input class="m-inp" id="vSenha" type="text" placeholder="Mínimo 6 caracteres">
+    <div style="font-size:11px;color:var(--tx3);margin:-6px 0 12px;">Combine essa senha com a pessoa por fora do sistema — ela pode trocar depois.</div>
+    <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR E CRIAR LOGIN</button>
+    <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
   </div>
 </div>
 
@@ -947,56 +711,12 @@ select.linp option{color:#0F172A;background:#fff;}
 </div>
 
 <div class="ov" id="mComissao">
-  <div class="modal" style="max-width:600px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div class="m-title" style="margin-bottom:0;" id="mComissaoTitulo">🗂️ Nova Comissão</div>
-      <button onclick="fecharModal('mComissao')" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;color:var(--tx3);display:flex;align-items:center;justify-content:center;">✕</button>
-    </div>
-    <input type="hidden" id="cEditId" value="">
-
-    <label class="m-lbl">Nome da Comissão <span style="color:var(--red2)">*</span></label>
-    <input class="m-inp" id="cNome" placeholder="Ex: Comissão de Justiça e Redação">
-
-    <div class="fg">
-      <div>
-        <label class="m-lbl">Tipo <span style="color:var(--red2)">*</span></label>
-        <select class="m-sel" id="cTipo" onchange="toggleCpiFields()">
-          <option>Permanente</option><option>Temporária</option><option>Especial</option><option>CPI</option>
-        </select>
-      </div>
-      <div>
-        <label class="m-lbl">Frequência de Reuniões</label>
-        <select class="m-sel" id="cFreq">
-          <option>Semanal</option><option>Quinzenal</option><option>Mensal</option><option>Sob demanda</option>
-        </select>
-      </div>
-    </div>
-
-    <label class="m-lbl">Presidente <span style="color:var(--red2)">*</span></label>
-    <select class="m-sel" id="cPresidente"></select>
-
-    <label class="m-lbl">Membros</label>
-    <div id="cMembrosWrap" style="border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;max-height:160px;overflow-y:auto;background:var(--surface2);">
-      <div style="font-size:11.5px;color:var(--tx3);">Nenhum membro adicionado ainda.</div>
-    </div>
-    <select class="m-sel" id="cAddMembroSelect" style="margin-bottom:6px;"></select>
-    <button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);border:1px solid #C5D9EE;margin-bottom:12px;" onclick="adicionarMembroComissao()">+ Adicionar membro</button>
-
-    <label class="m-lbl">Objetivo / Atribuições</label>
-    <textarea class="m-ta" id="cObjetivo" placeholder="Descreva as atribuições desta comissão..." style="min-height:70px;"></textarea>
-
-    <div class="fg" id="cDatasWrap">
-      <div>
-        <label class="m-lbl">Data de Instalação</label>
-        <input class="m-inp" id="cDataInst" type="date">
-      </div>
-      <div id="cPrazoFimWrap">
-        <label class="m-lbl">Prazo Final <span style="font-size:10px;color:var(--tx4)">(CPI/Especial)</span></label>
-        <input class="m-inp" id="cPrazoFim" type="date">
-      </div>
-    </div>
-
-    <button class="btn-p" id="btnSalvarComissao" onclick="salvarComissao()">💾 CRIAR COMISSÃO</button>
+  <div class="modal">
+    <div class="m-title">🗂️ Nova Comissão</div>
+    <label class="m-lbl">Nome</label><input class="m-inp" id="cNome" placeholder="Ex: Comissão de Justiça e Redação">
+    <label class="m-lbl">Tipo</label><select class="m-sel" id="cTipo"><option>Permanente</option><option>Temporária</option><option>Especial</option><option>CPI</option></select>
+    <label class="m-lbl">Presidente</label><select class="m-sel" id="cPresidente"></select>
+    <button class="btn-p" onclick="salvarComissao()">💾 CRIAR COMISSÃO</button>
     <button class="btn-c" onclick="fecharModal('mComissao')">Cancelar</button>
   </div>
 </div>
@@ -1299,56 +1019,113 @@ function voltarEtapaCredenciais(){
 // Modo demonstração: não usa login real nem grava nada permanentemente — só para mostrar o sistema funcionando
 function loginDemo(){
   sessaoAuth=null;
-  camaraAtual='andarai';
-  meuPerfil={nome:'Visitante',cargo:'Presidente',camara_codigo:'andarai',legisgov_camaras:{nome:'Câmara Municipal de Andaraí'}};
-  entrar({nome:'Visitante',av:'AN',cargo:'Visualização'});
+  camaraAtual='demo';
+  meuPerfil={nome:'Usuário Demonstração',cargo:'Presidente',camara_codigo:'demo',legisgov_camaras:{nome:'Câmara Municipal (Demonstração)'}};
+  entrar({nome:'Usuário Demonstração',av:'UD',cargo:'Presidente (demo)'});
 }
 
 function aplicarDadosOffline(){
-  // Câmara Municipal de Andaraí — sistema em produção, sem dados de demonstração
-  vereadores = [];
-  materias   = [];
-  auditoria  = [];
+  vereadores=[
+    {id:1,nome:'João Ferreira Lima',partido:'PSD',presenca:96,proposicoes:14,status:'active',av:'JF',cor:'#0F2A4A',presente:true,
+      legislaturas:[
+        {num:'17ª',inicio:'2017-01-01',fim:'2020-12-31',dataPosse:'2017-01-01',dataSaida:'',partido:'DEM',obs:''},
+        {num:'18ª',inicio:'2021-01-01',fim:'2024-12-31',dataPosse:'2021-01-01',dataSaida:'',partido:'PSD',obs:''},
+        {num:'19ª',inicio:'2025-01-01',fim:'2028-12-31',dataPosse:'2025-01-01',dataSaida:'',partido:'PSD',obs:'Atual'},
+      ]},
+    {id:2,nome:'Maria Aparecida Souza',partido:'PT',presenca:88,proposicoes:9,status:'active',av:'MA',cor:'#0E7C5A',presente:true,
+      legislaturas:[
+        {num:'18ª',inicio:'2021-01-01',fim:'2024-12-31',dataPosse:'2021-01-01',dataSaida:'',partido:'PT',obs:''},
+        {num:'19ª',inicio:'2025-01-01',fim:'2028-12-31',dataPosse:'2025-01-01',dataSaida:'',partido:'PT',obs:'Atual'},
+      ]},
+    {id:3,nome:'Carlos Mendes Filho',partido:'MDB',presenca:74,proposicoes:6,status:'active',av:'CM',cor:'#B8860B',presente:true,
+      legislaturas:[
+        {num:'19ª',inicio:'2025-01-01',fim:'2028-12-31',dataPosse:'2025-01-01',dataSaida:'',partido:'MDB',obs:'Atual'},
+      ]},
+    {id:4,nome:'Ana Paula Ribeiro',partido:'PSDB',presenca:100,proposicoes:18,status:'active',av:'AP',cor:'#5B21B6',presente:true,
+      legislaturas:[
+        {num:'18ª',inicio:'2021-01-01',fim:'2024-12-31',dataPosse:'2021-03-15',dataSaida:'2024-12-31',partido:'PSDB',obs:'Entrou em março — substituição'},
+        {num:'19ª',inicio:'2025-01-01',fim:'2028-12-31',dataPosse:'2025-01-01',dataSaida:'',partido:'PSDB',obs:'Atual'},
+      ]},
+    {id:5,nome:'Roberto Carlos Alves',partido:'PL',presenca:62,proposicoes:3,status:'risk',av:'RC',cor:'#DC2626',presente:false,
+      legislaturas:[
+        {num:'19ª',inicio:'2025-01-01',fim:'2028-12-31',dataPosse:'2025-01-01',dataSaida:'',partido:'PL',obs:'Atual'},
+      ]},
+  ];
+  materias=[
+    {num:'045/2026',tipo:'Projeto de Lei',ementa:'Reforma da Iluminação Pública com Energia Solar',autor:'João Ferreira Lima',situacao:'Plenário',prazo:'22/06/2026',critico:true,historico:{}},
+    {num:'046/2026',tipo:'Requerimento',ementa:'Solicita informações sobre obras na Av. Central',autor:'Maria Aparecida Souza',situacao:'Comissão',prazo:'25/06/2026',critico:false,historico:{}},
+    {num:'012/2026',tipo:'Projeto de Lei Complementar',ementa:'Altera o Código Tributário Municipal',autor:'Ana Paula Ribeiro',situacao:'Jurídico',prazo:'30/06/2026',critico:false,historico:{}},
+    {num:'038/2026',tipo:'Moção',ementa:'Moção de Aplauso aos profissionais de saúde',autor:'Carlos Mendes Filho',situacao:'Aprovado',prazo:'—',critico:false,historico:{}},
+    {num:'041/2026',tipo:'Indicação',ementa:'Indica a instalação de semáforo na Rua das Flores',autor:'Roberto Carlos Alves',situacao:'Protocolado',prazo:'28/06/2026',critico:false,historico:{}},
+    {num:'029/2026',tipo:'Projeto de Lei',ementa:'Institui o Programa Municipal de Hortas Comunitárias',autor:'Maria Aparecida Souza',situacao:'Parecer',prazo:'20/06/2026',critico:true,historico:{}},
+    {num:'008/2026',tipo:'Veto',ementa:'Veto parcial ao PL 003/2026 — Zoneamento Urbano',autor:'Executivo Municipal',situacao:'Plenário',prazo:'24/06/2026',critico:true,historico:{}},
+  ];
+  auditoria=[
+    {user:'Ana Paula Ribeiro',acao:'Assinatura de Voto',recurso:'PL 045/2026',ip:'192.168.1.42',data:'19/06/2026 14:32'},
+    {user:'Secretaria Legislativa',acao:'Publicação de Ata',recurso:'Sessão 18/06/2026',ip:'192.168.1.10',data:'19/06/2026 09:15'},
+    {user:'João Ferreira Lima',acao:'Protocolo de Matéria',recurso:'PL 045/2026',ip:'192.168.1.55',data:'15/06/2026 11:02'},
+    {user:'Presidente',acao:'Abertura de Sessão',recurso:'Sessão 18/06/2026',ip:'192.168.1.05',data:'18/06/2026 14:00'},
+  ];
 }
 
 async function initDados(){
-  comissoes    = [];
-  contasExec   = [];
-  emendas      = [];
-  notificacoes = [];
+  // dados que não mudam de Câmara para Câmara (ainda fixos, não fazem parte das tabelas Supabase desta etapa)
+  comissoes=[
+    {nome:'Comissão de Justiça e Redação',tipo:'Permanente',presidente:'Ana Paula Ribeiro',membros:5,materias:8},
+    {nome:'Comissão de Finanças e Orçamento',tipo:'Permanente',presidente:'João Ferreira Lima',membros:5,materias:6},
+    {nome:'Comissão de Obras e Serviços Públicos',tipo:'Permanente',presidente:'Maria Aparecida Souza',membros:4,materias:5},
+    {nome:'CPI — Irregularidades em Licitações',tipo:'CPI',presidente:'Carlos Mendes Filho',membros:5,materias:1},
+    {nome:'Comissão Especial — Revisão Lei Orgânica',tipo:'Especial',presidente:'Ana Paula Ribeiro',membros:7,materias:1},
+  ];
+  contasExec=[
+    {exercicio:2024,gestor:'Prefeito Municipal',parecer:'Favorável com ressalvas',situacao:'Julgado — Aprovado',prazo:'—'},
+    {exercicio:2025,gestor:'Prefeito Municipal',parecer:'Em análise',situacao:'Comissão',prazo:'15/07/2026'},
+  ];
+  emendas=[
+    {autor:'João Ferreira Lima',benef:'Secretaria de Saúde',valor:180000,exercicio:2026,status:'Paga'},
+    {autor:'Maria Aparecida Souza',benef:'Secretaria de Educação',valor:250000,exercicio:2026,status:'Liquidada'},
+    {autor:'Ana Paula Ribeiro',benef:'Secretaria de Obras',valor:420000,exercicio:2026,status:'Empenhada'},
+    {autor:'Carlos Mendes Filho',benef:'Assistência Social',valor:95000,exercicio:2026,status:'Aprovada'},
+    {autor:'Roberto Carlos Alves',benef:'Secretaria de Esportes',valor:60000,exercicio:2026,status:'Proposta'},
+  ];
+  notificacoes=[
+    {tipo:'Prazo',titulo:'Prazo de parecer vence em 1 dia',desc:'PL 029/2026 — Comissão de Obras',quando:'há 2h'},
+    {tipo:'Sessão',titulo:'Sessão Ordinária convocada',desc:'Hoje às 14h — Plenário Principal',quando:'há 5h'},
+    {tipo:'Votação',titulo:'Votação aberta',desc:'PL 045/2026 está em votação nominal',quando:'agora'},
+  ];
 
-  // com sessão real → carrega do Supabase
-  if(sessaoAuth){
-    try {
-      const [vereadoresDB, materiasDB] = await Promise.all([
-        db.listarVereadores(),
-        db.listarMaterias(),
-      ]);
-      vereadores = vereadoresDB.map(v => ({
-        id: v.id, nome: v.nome, partido: v.partido, presente: v.presente, eu: v.eu,
-        presenca: 90, proposicoes: 0, status: 'active',
-        av: v.nome.split(' ').map(p=>p[0]).slice(0,2).join(''), cor: '#0F2A4A'
-      }));
-      materias = materiasDB.map(m => ({
-        num: m.num, tipo: m.tipo, ementa: m.ementa, justificativa: m.justificativa,
-        autor: m.autor, situacao: m.situacao, prazo: m.prazo, critico: m.critico,
-        historico: m.historico || {}
-      }));
-      supabaseOnline = true;
-      auditoria = [];
-      console.log('✅ LegisGov — Câmara de Andaraí conectada ao Supabase.');
-    } catch (err) {
-      console.error('⚠️ Erro ao conectar ao Supabase:', err);
-      supabaseOnline = false;
-      aplicarDadosOffline();
-      toast('⚠️ Sem conexão com o banco — dados não carregados');
-    }
+  // modo demonstração: nunca tenta o Supabase (não há sessão de usuário real, o RLS bloquearia mesmo)
+  if(!sessaoAuth){
+    aplicarDadosOffline();
+    toast('🧪 Modo demonstração — os dados não são salvos permanentemente');
     return;
   }
 
-  // sem sessão → modo demonstração com tela limpa
-  aplicarDadosOffline();
-  toast('🏛️ Câmara Municipal de Andaraí — pronto para uso!');
+  // tenta carregar do Supabase (banco real, com isolamento por Câmara garantido pelo RLS)
+  try {
+    const [vereadoresDB, materiasDB] = await Promise.all([
+      db.listarVereadores(),
+      db.listarMaterias(),
+    ]);
+    vereadores = vereadoresDB.map(v => ({
+      id: v.id, nome: v.nome, partido: v.partido, presente: v.presente, eu: v.eu,
+      // campos de exibição usados no Dashboard/Vereadores (mantidos com valor padrão por enquanto)
+      presenca: 90, proposicoes: 0, status: 'active', av: v.nome.split(' ').map(p=>p[0]).slice(0,2).join(''), cor: '#0F2A4A'
+    }));
+    materias = materiasDB.map(m => ({
+      num: m.num, tipo: m.tipo, ementa: m.ementa, justificativa: m.justificativa,
+      autor: m.autor, situacao: m.situacao, prazo: m.prazo, critico: m.critico,
+      historico: m.historico || {}
+    }));
+    supabaseOnline = true;
+    auditoria=[]; // auditoria real será carregada sob demanda na tela de Auditoria
+    console.log('✅ LegisGov conectado ao Supabase — dados carregados do banco real.');
+  } catch (err) {
+    console.error('⚠️ Não foi possível conectar ao Supabase, usando dados de exemplo locais:', err);
+    supabaseOnline = false;
+    aplicarDadosOffline();
+    toast('⚠️ Sem conexão com o banco — usando dados de demonstração (não serão salvos)');
+  }
 }
 
 async function entrar(u){
@@ -1425,170 +1202,221 @@ function renderAll(){renderDash();}
 function atualizarSaudacao(){const h=new Date().getHours();const s=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';document.getElementById('dashGreeting').textContent=`${s}, ${curUser?.nome?.split(' ')[0]||'Presidente'}!`;document.getElementById('dashDate').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
 
 function popularSelects(){
-  ['cPresidente','mtAutor','emAutor'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.innerHTML=vereadores.map(v=>`<option>${v.nome}</option>`).join('');
-  });
-  const addMemb=document.getElementById('cAddMembroSelect');
-  if(addMemb) addMemb.innerHTML=vereadores.map(v=>`<option>${v.nome}</option>`).join('');
+  ['cPresidente','mtAutor','emAutor'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=vereadores.map(v=>`<option>${v.nome}</option>`).join('');});
 }
 
-function abrirModal(id){
-  popularSelects();
-  if(id==='mVereador') limparModalVereador();
-  if(id==='mComissao'){
-    document.getElementById('cEditId').value='';
-    document.getElementById('mComissaoTitulo').textContent='🗂️ Nova Comissão';
-    document.getElementById('btnSalvarComissao').textContent='💾 CRIAR COMISSÃO';
-    document.getElementById('cNome').value='';
-    document.getElementById('cTipo').value='Permanente';
-    document.getElementById('cFreq').value='Quinzenal';
-    document.getElementById('cObjetivo').value='';
-    document.getElementById('cDataInst').value='';
-    document.getElementById('cPrazoFim').value='';
-    cMembrosTemp=[];
-    renderMembrosModal();
-    toggleCpiFields();
-  }
-  document.getElementById(id)?.classList.add('on');
-}
+// ═══ DASHBOARD ═══
 function renderDash(){
-  atualizarSaudacao(); popularSelects();
-
-  // KPIs dinâmicos
-  const emTram=materias.filter(m=>!['Aprovado','Rejeitado','Arquivado','Vetado'].includes(m.situacao)).length;
-  const criticos=materias.filter(m=>m.critico).length;
-  const comAtivas=comissoes.filter(c=>c.ativa!==false).length;
-  const totalEm=emendas.reduce((s,e)=>s+e.valor,0);
-  const pagasEm=emendas.filter(e=>['Paga','Liquidada'].includes(e.status)).reduce((s,e)=>s+e.valor,0);
-  const pctEm=totalEm>0?Math.round(pagasEm/totalEm*100):null;
-  const elM=document.getElementById('kpiMaterias'),elMS=document.getElementById('kpiMateriasSub');
-  const elC=document.getElementById('kpiComissoes'),elCS=document.getElementById('kpiComissoesSub');
-  const elE=document.getElementById('kpiEmendas');
-  if(elM)elM.textContent=emTram;
-  if(elMS)elMS.textContent=criticos>0?`${criticos} com prazo crítico`:'Sem prazos críticos';
-  if(elC)elC.textContent=comAtivas;
-  if(elCS)elCS.textContent=comAtivas>0?`${comAtivas} ativa${comAtivas>1?'s':''}`:'Nenhuma cadastrada';
-  if(elE)elE.textContent=pctEm!==null?pctEm+'%':'—';
-
+  atualizarSaudacao();popularSelects();
   const spEl=document.getElementById('dashStatusProj');
   if(spEl){
-    if(!materias.length){spEl.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhuma matéria cadastrada ainda.</div>';}
-    else{
-      const g={Protocolado:0,Jurídico:0,Comissão:0,Plenário:0,Aprovado:0,Rejeitado:0};
-      materias.forEach(m=>{if(g[m.situacao]!==undefined)g[m.situacao]++;else if(m.situacao==='Parecer')g['Comissão']++;});
-      const cor={Protocolado:'#94A3B8',Jurídico:'#5B21B6',Comissão:'#B8860B',Plenário:'#1E4470',Aprovado:'#0E7C5A',Rejeitado:'#DC2626'};
-      spEl.innerHTML=Object.entries(g).map(([l,v])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><div style="width:10px;height:10px;border-radius:3px;background:${cor[l]};flex-shrink:0;"></div><span style="font-size:12px;color:var(--tx2);flex:1;">${l}</span><span style="font-size:13px;font-weight:800;color:${cor[l]};">${v}</span></div>`).join('');
-    }
+    const st=[{l:'Protocolado',v:4,c:'#94A3B8'},{l:'Jurídico',v:3,c:'#5B21B6'},{l:'Comissão',v:6,c:'#B8860B'},{l:'Plenário',v:5,c:'#1E4470'},{l:'Aprovado',v:38,c:'#0E7C5A'},{l:'Rejeitado',v:6,c:'#DC2626'}];
+    spEl.innerHTML=st.map(s=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><div style="width:10px;height:10px;border-radius:3px;background:${s.c};flex-shrink:0;"></div><span style="font-size:12px;color:var(--tx2);flex:1;">${s.l}</span><span style="font-size:13px;font-weight:800;color:${s.c};">${s.v}</span></div>`).join('');
   }
   const ivEl=document.getElementById('dashIndicVereador');
-  if(ivEl){
-    if(!vereadores.length)ivEl.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhum vereador cadastrado ainda.</div>';
-    else ivEl.innerHTML=vereadores.slice(0,5).map(v=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div class="av" style="width:26px;height:26px;background:${v.cor};font-size:10px;">${v.av}</div><span style="font-size:11.5px;color:var(--tx2);flex:1;">${v.nome}</span><span class="b ${(v.presenca||0)>=80?'b-emerald':(v.presenca||0)>=60?'b-gold':'b-red'}">${v.presenca||0}%</span></div>`).join('');
-  }
+  if(ivEl)ivEl.innerHTML=vereadores.slice(0,5).map(v=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div class="av" style="width:26px;height:26px;background:${v.cor};font-size:10px;">${v.av}</div><span style="font-size:11.5px;color:var(--tx2);flex:1;">${v.nome}</span><span class="b ${v.presenca>=80?'b-emerald':v.presenca>=60?'b-gold':'b-red'}">${v.presenca}%</span></div>`).join('');
   const pzEl=document.getElementById('dashPrazos');
-  if(pzEl){
-    const cl=materias.filter(m=>m.critico);
-    pzEl.innerHTML=cl.length?cl.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${m.num}</span><span style="font-size:11.5px;color:var(--tx2);flex:1;">${m.ementa.substring(0,40)}...</span><span class="b b-red">${m.prazo}</span></div>`).join(''):'<div style="text-align:center;padding:1rem;color:var(--tx3);font-size:12px;">✅ Nenhum prazo crítico.</div>';
-  }
+  if(pzEl)pzEl.innerHTML=materias.filter(m=>m.critico).map(m=>`<div class="risk-item" style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${m.num}</span><span style="font-size:11.5px;color:var(--tx2);flex:1;">${m.ementa.substring(0,40)}...</span><span class="b b-red">${m.prazo}</span></div>`).join('');
   const paEl=document.getElementById('dashProcAdmin');
-  if(paEl)paEl.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhum processo administrativo registrado.</div>';
+  if(paEl)paEl.innerHTML=`<div style="font-size:12px;color:var(--tx2);line-height:2;">📁 12 processos administrativos ativos<br>📋 3 licitações em análise<br>👥 2 processos de RH em tramitação<br>🏗️ 4 prestações de contas de convênios</div>`;
   const caEl=document.getElementById('chartAprovacao'),clEl=document.getElementById('chartAprovacaoLabels');
-  if(caEl){
-    const meses=['Jan','Fev','Mar','Abr','Mai','Jun'];
-    caEl.innerHTML=meses.map(()=>`<div style="flex:1;display:flex;flex-direction:column;gap:2px;height:100%;justify-content:flex-end;"><div style="background:#0E7C5A;border-radius:3px 3px 0 0;min-height:2px;opacity:.2;height:2px;"></div></div>`).join('');
-    clEl.innerHTML=meses.map(m=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--tx3);font-weight:600;">${m}</div>`).join('');
-  }
+  if(caEl){const meses=['Jan','Fev','Mar','Abr','Mai','Jun'];const aprov=[5,7,4,8,6,9];const rejei=[1,0,2,1,1,1];const max=10;
+    caEl.innerHTML=meses.map((m,i)=>`<div style="flex:1;display:flex;flex-direction:column;gap:2px;height:100%;justify-content:flex-end;"><div style="background:#0E7C5A;border-radius:3px 3px 0 0;height:${(aprov[i]/max)*100}%;"></div><div style="background:#DC2626;border-radius:0 0 3px 3px;height:${(rejei[i]/max)*40}%;"></div></div>`).join('');
+    clEl.innerHTML=meses.map(m=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--tx3);font-weight:600;">${m}</div>`).join('');}
 }
 
 // ═══ VEREADORES ═══
 function renderVereadores(){
-  const tbody = document.getElementById('tbVereadores');
-  if(vereadores.length === 0){
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:48px 16px;">
-      <div style="font-size:32px;margin-bottom:10px;">👥</div>
-      <div style="font-size:14px;font-weight:700;color:var(--tx2);margin-bottom:6px;">Nenhum vereador cadastrado</div>
-      <div style="font-size:12px;color:var(--tx3);margin-bottom:16px;">Clique em <strong>+ Novo Vereador</strong> para começar</div>
-      <button class="btn-sm" style="background:var(--navy2);color:#fff;margin:0 auto;" onclick="abrirModal('mVereador')">+ Cadastrar Primeiro Vereador</button>
-    </td></tr>`;
-  } else {
-    tbody.innerHTML=vereadores.map(v=>`<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;"><td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td><td><strong>${v.nome}</strong>${v.dados?.nomeUrna?`<div style="font-size:10.5px;color:var(--tx3);font-style:italic;">${v.dados.nomeUrna}</div>`:''}</td><td><span class="b b-navy">${v.partido||'—'}</span></td><td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca||0}%;background:${(v.presenca||0)>=80?'#0E7C5A':(v.presenca||0)>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca||0}%</span></div></td><td>${v.proposicoes||0}</td><td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td></tr>`).join('');
-  }
-  // botão visível para Secretaria/Presidente/Administrador — e sempre no modo demonstração
-  const podeCadastrar = !meuPerfil || ['Secretaria','Presidente','Administrador','Vereador'].includes(meuPerfil?.cargo);
+  document.getElementById('tbVereadores').innerHTML=vereadores.map(v=>`<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;"><td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td><td><strong>${v.nome}</strong></td><td><span class="b b-navy">${v.partido}</span></td><td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca}%;background:${v.presenca>=80?'#0E7C5A':v.presenca>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca}%</span></div></td><td>${v.proposicoes}</td><td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td></tr>`).join('');
+  // só Secretaria/Presidente/Administrador podem cadastrar novos usuários (a tela só mostra; o banco também impede via RLS)
+  const podeCadastrar=['Secretaria','Presidente','Administrador'].includes(meuPerfil?.cargo);
   const btn=document.getElementById('btnNovoVereador');
-  if(btn){ btn.style.display=podeCadastrar?'inline-flex':'none'; btn.textContent='+ Novo Vereador'; }
+  if(btn)btn.style.display=podeCadastrar?'inline-flex':'none';
 }
+function fmtData(iso){
+  if(!iso)return '—';
+  const [y,m,d]=iso.split('-');
+  return d&&m&&y?`${d}/${m}/${y}`:iso;
+}
+function anoAtual(){return new Date().getFullYear();}
+function legStatus(l){
+  const hoje=new Date();
+  const fim=l.dataSaida||l.fim;
+  if(!fim||new Date(fim)>=hoje){
+    // verifica se entrou depois do início da legislatura
+    if(l.dataPosse&&l.dataPosse>l.inicio) return 'parc';
+    return 'atual';
+  }
+  return 'pass';
+}
+function legAnos(l){
+  const ini=new Date(l.dataPosse||l.inicio);
+  const fim=l.dataSaida?new Date(l.dataSaida):l.fim?new Date(l.fim):new Date();
+  const meses=Math.round((fim-ini)/(1000*60*60*24*30.44));
+  if(meses>=24) return Math.floor(meses/12)+'a';
+  return meses+'m';
+}
+
+function renderLegislaturasGrid(v){
+  if(!v.legislaturas) v.legislaturas=[];
+  const legs=v.legislaturas;
+
+  // resumos
+  const total=legs.length;
+  const partidos=[...new Set(legs.map(l=>l.partido).filter(Boolean))];
+  const anos=legs.reduce((s,l)=>{
+    const ini=new Date(l.dataPosse||l.inicio);
+    const fim=l.dataSaida?new Date(l.dataSaida):l.fim?new Date(l.fim):new Date();
+    return s+Math.round((fim-ini)/(1000*60*60*24*365.25)*10)/10;
+  },0);
+
+  return `
+  <div class="det-sec" style="display:flex;align-items:center;justify-content:space-between;">
+    <span>📋 HISTÓRICO DE LEGISLATURAS</span>
+    <button onclick="legAdd(${v.id})"
+      style="font-size:11px;font-weight:700;color:var(--navy2);background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:3px 9px;cursor:pointer;">
+      + Adicionar
+    </button>
+  </div>
+
+  <!-- resumo compacto -->
+  <div class="leg-resumo">
+    <span class="leg-stat">🗳️ ${total} mandato${total!==1?'s':''}</span>
+    <span class="leg-stat">🕐 ~${Math.round(anos)} ano${anos!==1?'s':''} de casa</span>
+    ${partidos.map(p=>`<span class="leg-stat" style="background:#EEF4FF;color:#1E40AF;">🏛️ ${p}</span>`).join('')}
+  </div>
+
+  <!-- grade -->
+  <div id="legGrid-${v.id}" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:8px;">
+    <div class="leg-row header">
+      <span>LEGISLATURA</span><span>POSSE</span><span>SAÍDA</span><span>PARTIDO</span><span></span>
+    </div>
+    ${legs.length===0
+      ? `<div style="padding:14px 10px;font-size:12px;color:var(--tx3);text-align:center;">Nenhuma legislatura cadastrada ainda.</div>`
+      : legs.map((l,i)=>{
+          const st=legStatus(l);
+          const badge=st==='atual'
+            ? `<span class="leg-badge-atual">Atual</span>`
+            : st==='parc'
+            ? `<span class="leg-badge-parc">Parcial</span>`
+            : `<span class="leg-badge-pass">Encerrada</span>`;
+          const dur=legAnos(l);
+          return `<div class="leg-row" id="legrow-${v.id}-${i}">
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <input class="leg-inp" style="font-weight:700;" value="${l.num||''}"
+                placeholder="Ex: 19ª"
+                onchange="legUpd(${v.id},${i},'num',this.value)">
+              <div style="display:flex;gap:4px;align-items:center;">${badge}<span style="font-size:10px;color:var(--tx3);">${dur}</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <label style="font-size:9px;color:var(--tx3);font-weight:700;">POSSE</label>
+              <input class="leg-inp" type="date" value="${l.dataPosse||l.inicio||''}"
+                onchange="legUpd(${v.id},${i},'dataPosse',this.value)">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <label style="font-size:9px;color:var(--tx3);font-weight:700;">SAÍDA</label>
+              <input class="leg-inp" type="date" value="${l.dataSaida||''}"
+                placeholder="Deixe vazio se em curso"
+                onchange="legUpd(${v.id},${i},'dataSaida',this.value)">
+            </div>
+            <input class="leg-inp" value="${l.partido||''}" placeholder="Sigla"
+              onchange="legUpd(${v.id},${i},'partido',this.value)">
+            <button class="leg-del" onclick="legRem(${v.id},${i})">✕</button>
+          </div>`;
+        }).join('')
+    }
+  </div>
+
+  <!-- observações por legislatura -->
+  ${legs.length>0?`
+  <div style="margin-top:8px;">
+    ${legs.filter(l=>l.obs).map(l=>`
+      <div style="font-size:11px;color:var(--tx3);padding:4px 0;">
+        💬 <strong>${l.num}</strong>: ${l.obs}
+      </div>`).join('')}
+  </div>`:''}`;
+}
+
+function legUpd(vid,idx,campo,val){
+  const v=vereadores.find(x=>x.id===vid);if(!v||!v.legislaturas)return;
+  v.legislaturas[idx][campo]=val;
+  // re-renderiza só a grade sem fechar o painel
+  const grid=document.getElementById('legGrid-'+vid);
+  if(grid){
+    const novoHtml=renderLegislaturasGrid(v);
+    const temp=document.createElement('div');
+    temp.innerHTML=novoHtml;
+    const novoGrid=temp.querySelector('#legGrid-'+vid);
+    if(novoGrid)grid.outerHTML=novoGrid.outerHTML;
+    // atualiza também o resumo
+    const resumoEl=grid.previousElementSibling;
+    if(resumoEl&&resumoEl.classList.contains('leg-resumo')){
+      const novoResumo=temp.querySelector('.leg-resumo');
+      if(novoResumo)resumoEl.outerHTML=novoResumo.outerHTML;
+    }
+  }
+  // atualiza partido atual na lista principal se for a legislatura mais recente
+  const legs=v.legislaturas;
+  if(legs.length>0){
+    const ultima=legs[legs.length-1];
+    if(!ultima.dataSaida) v.partido=ultima.partido||v.partido;
+  }
+}
+
+function legAdd(vid){
+  const v=vereadores.find(x=>x.id===vid);if(!v)return;
+  if(!v.legislaturas)v.legislaturas=[];
+  // calcula próxima legislatura automaticamente
+  const ultima=v.legislaturas[v.legislaturas.length-1];
+  const novaNum=ultima?`${parseInt(ultima.num)||0+1}ª`:'';
+  const novoIni=ultima?`${parseInt((ultima.fim||ultima.inicio||'').split('-')[0]||0)+4}-01-01`:'';
+  const novoFim=ultima?`${parseInt((ultima.fim||ultima.inicio||'').split('-')[0]||0)+7}-12-31`:'';
+  v.legislaturas.push({
+    num:novaNum,
+    inicio:novoIni,
+    fim:novoFim,
+    dataPosse:novoIni,
+    dataSaida:'',
+    partido:v.partido||'',
+    obs:''
+  });
+  abrirDetVereador(vid);
+}
+
+function legRem(vid,idx){
+  const v=vereadores.find(x=>x.id===vid);if(!v||!v.legislaturas)return;
+  if(!confirm('Remover esta legislatura?'))return;
+  v.legislaturas.splice(idx,1);
+  abrirDetVereador(vid);
+}
+
 function abrirDetVereador(id){
   const v=vereadores.find(x=>x.id===id);if(!v)return;
-  const d=v.dados||{};
-  const c=d.contato||{};
-  const e=d.endereco||{};
-
-  const temTelegram=c.telegram_chat_id||c.telegram_user;
-  const temEndereco=e.logradouro||e.cidade;
-
+  if(!v.legislaturas)v.legislaturas=[];
   document.getElementById('detTitle').textContent=v.nome;
+
+  // nome na urna em destaque se existir
+  const nomeUrna=v.nomeUrna?`<div style="font-size:12px;color:var(--navy2);font-style:italic;margin-top:2px;">"${v.nomeUrna}"</div>`:'';
+
   document.getElementById('detBody').innerHTML=`
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
       <div class="av" style="width:52px;height:52px;background:${v.cor};font-size:18px;">${v.av}</div>
       <div>
         <div style="font-size:16px;font-weight:800;">${v.nome}</div>
-        ${d.nomeUrna?`<div style="font-size:13px;font-weight:700;color:var(--navy2);margin-top:1px;">"${d.nomeUrna}"</div>`:''}
-        <div style="font-size:12px;color:var(--tx3);">${v.cargo||v.partido||'—'} · ${v.partido&&v.cargo?v.partido:'19ª Legislatura'}</div>
-        ${temTelegram?`<div style="display:inline-flex;align-items:center;gap:4px;background:#E3F2FD;color:#0277BD;border-radius:5px;padding:2px 8px;font-size:10px;font-weight:700;margin-top:4px;">✈️ Telegram ativo</div>`:''}
+        ${nomeUrna}
+        <div style="font-size:12px;color:var(--tx3);">${v.partido} · ${v.legislaturas.length>0?v.legislaturas[v.legislaturas.length-1].num+' Legislatura':'Vereador(a)'}</div>
       </div>
     </div>
 
-    <div class="det-sec">PRESENÇA E ATIVIDADE</div>
-    <div class="pb" style="margin-bottom:4px;"><div class="pb-fill" style="width:${v.presenca||0}%;background:#0E7C5A;"></div></div>
-    <div style="font-size:11px;color:var(--tx3);margin-bottom:14px;">${v.presenca||0}% de presença nas sessões · ${v.proposicoes||0} proposições</div>
+    <div class="det-sec">PRESENÇA</div>
+    <div class="pb" style="margin-bottom:4px;"><div class="pb-fill" style="width:${v.presenca}%;background:#0E7C5A;"></div></div>
+    <div style="font-size:11px;color:var(--tx3);">${v.presenca}% de presença nas sessões</div>
 
-    <div class="det-sec">COMISSÕES VINCULADAS</div>
-    ${(d.comissoes?.length)?
-      d.comissoes.map(cv=>{
-        const corBadge=cv.tipo==='CPI'?'b-red':cv.tipo==='Especial'?'b-purple':cv.tipo==='Temporária'?'b-gold':'b-navy';
-        const corRole=cv.role==='Presidente'?'color:var(--gold2);font-weight:800':cv.role==='Vice-Presidente'?'color:var(--emerald);font-weight:700':'color:var(--tx3)';
-        return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border-radius:7px;margin-bottom:6px;cursor:pointer;" onclick="fecharDet();sw('comissoes')">
-          <span class="b ${corBadge}" style="font-size:10px;">${cv.tipo}</span>
-          <span style="font-size:12px;font-weight:600;flex:1;color:var(--tx);">${cv.nome}</span>
-          <span style="font-size:11px;${corRole}">${cv.role}</span>
-          <span style="font-size:13px;color:var(--tx4);">›</span>
-        </div>`;
-      }).join('')
-    :`<div style="font-size:12px;color:var(--tx3);padding:10px;background:var(--surface2);border-radius:7px;margin-bottom:14px;">Nenhuma comissão vinculada.</div>`}
+    <div class="det-sec">PROPOSIÇÕES</div>
+    <div style="font-size:22px;font-weight:900;color:var(--navy2);">${v.proposicoes}</div>
 
-    <div style="margin-bottom:14px;"></div>
-
-    ${d.email||c.celular?`
-    <div class="det-sec">CONTATO</div>
-    ${d.email?`<div style="font-size:12px;color:var(--tx2);margin-bottom:5px;">📧 ${d.email}</div>`:''}
-    ${c.celular?`<div style="font-size:12px;color:var(--tx2);margin-bottom:5px;">📱 ${c.celular}</div>`:''}
-    ${c.telefone?`<div style="font-size:12px;color:var(--tx2);margin-bottom:5px;">☎️ ${c.telefone}</div>`:''}
-    ${c.gabinete?`<div style="font-size:12px;color:var(--tx2);margin-bottom:5px;">🏛️ ${c.gabinete}</div>`:''}
-    `:''}
-
-    ${temTelegram?`
-    <div class="det-sec">TELEGRAM</div>
-    <div style="background:#E3F2FD;border-radius:8px;padding:10px 12px;margin-bottom:10px;">
-      ${c.telegram_user?`<div style="font-size:12px;color:#01579B;margin-bottom:3px;">✈️ @${c.telegram_user}</div>`:''}
-      ${c.telegram_chat_id?`<div style="font-size:11px;color:#0277BD;">Chat ID: <code style="background:#fff;padding:2px 5px;border-radius:4px;">${c.telegram_chat_id}</code></div>`:''}
-    </div>`:''}
-
-    ${temEndereco?`
-    <div class="det-sec">ENDEREÇO</div>
-    <div style="font-size:12px;color:var(--tx2);line-height:1.8;">
-      ${e.logradouro?`${e.logradouro}${e.numero?', '+e.numero:''}${e.complemento?' — '+e.complemento:''}<br>`:''}
-      ${e.bairro?`${e.bairro} · `:''}${e.cidade||''}${e.estado?' — '+e.estado:''}${e.cep?'<br>CEP: '+e.cep:''}
-    </div>`:''}
-
-    <div class="det-sec">AÇÕES</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);" onclick="toast('✏️ Edição em breve')">✏️ Editar</button>
-      ${temTelegram?`<button class="btn-sm" style="background:#E3F2FD;color:#0277BD;" onclick="toast('📨 Enviando mensagem de teste...')">📨 Enviar teste Telegram</button>`:''}
-      <button class="btn-sm" style="background:var(--red-l);color:var(--red);" onclick="toast('⚠️ Confirmação necessária')">🚫 Desativar</button>
-    </div>`;
-
+    ${renderLegislaturasGrid(v)}
+  `;
   document.getElementById('detPanel').classList.add('on');
 }
 
@@ -1683,556 +1511,58 @@ async function salvarUsuarioAdmin(){
     toast('⚠️ Não foi possível cadastrar — '+(err.message||'verifique os dados e tente novamente'));
   }
 }
-// ── máscaras ──────────────────────────────────────────────────────────────
-function mascaraTelefone(el){
-  let v=el.value.replace(/\D/g,'').substring(0,11);
-  if(v.length>=7) v=`(${v.substring(0,2)}) ${v.substring(2,7)}-${v.substring(7)}`;
-  else if(v.length>=3) v=`(${v.substring(0,2)}) ${v.substring(2)}`;
-  else if(v.length>0) v=`(${v}`;
-  el.value=v;
-}
-function mascaraTelefoneFixo(el){
-  let v=el.value.replace(/\D/g,'').substring(0,10);
-  if(v.length>=6) v=`(${v.substring(0,2)}) ${v.substring(2,6)}-${v.substring(6)}`;
-  else if(v.length>=3) v=`(${v.substring(0,2)}) ${v.substring(2)}`;
-  else if(v.length>0) v=`(${v}`;
-  el.value=v;
-}
-function mascaraCep(el){
-  let v=el.value.replace(/\D/g,'').substring(0,8);
-  if(v.length>5) v=`${v.substring(0,5)}-${v.substring(5)}`;
-  el.value=v;
-}
-
-// ── busca CEP via ViaCEP ────────────────────────────────────────────────────
-async function buscarCep(){
-  const cep=(document.getElementById('vCep').value||'').replace(/\D/g,'');
-  if(cep.length!==8){toast('⚠️ CEP inválido (precisa ter 8 dígitos)');return;}
-  try{
-    const r=await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const d=await r.json();
-    if(d.erro){toast('⚠️ CEP não encontrado');return;}
-    document.getElementById('vLogradouro').value=d.logradouro||'';
-    document.getElementById('vBairro').value=d.bairro||'';
-    document.getElementById('vCidade').value=d.localidade||'';
-    document.getElementById('vEstado').value=d.uf||'BA';
-    document.getElementById('vCepFinal').value=document.getElementById('vCep').value;
-    document.getElementById('vNumero').focus();
-    toast('✅ Endereço preenchido automaticamente!');
-  }catch(e){toast('⚠️ Não foi possível buscar o CEP');}
-}
-
-// ── abas do modal vereador ──────────────────────────────────────────────────
-let vComissoesTemp = []; // comissões vinculadas ao vereador sendo cadastrado/editado
-
-function mudarAbaVer(idx, el){
-  if(idx===4){
-    const cpfV=document.getElementById('vCpfLogin')?.value||'';
-    const disp=document.getElementById('vCpfLoginDisplay');
-    if(disp) disp.value=cpfV||'(preencha na aba Pessoal)';
-  }
-  if(idx===3){
-    renderComissoesVereadorModal();
-    // preencher select de comissões disponíveis
-    const sel=document.getElementById('vAddComissaoSelect');
-    if(sel) sel.innerHTML=comissoes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
-  }
-  document.querySelectorAll('.vaba').forEach((a,i)=>a.style.display=i===idx?'block':'none');
-  document.querySelectorAll('.vtab').forEach((t,i)=>{
-    t.style.color=i===idx?'var(--navy2)':'var(--tx3)';
-    t.style.borderBottomColor=i===idx?'var(--navy2)':'transparent';
-  });
-}
-
-function vincularComissaoVereador(){
-  const sel=document.getElementById('vAddComissaoSelect');
-  const roleSel=document.getElementById('vAddComissaoRole');
-  const id=parseInt(sel?.value);
-  const role=roleSel?.value||'Membro';
-  if(!id){ toast('⚠️ Selecione uma comissão'); return; }
-  if(vComissoesTemp.find(c=>c.id===id)){ toast('⚠️ Vereador já vinculado a esta comissão'); return; }
-  const comissao=comissoes.find(c=>c.id===id);
-  if(!comissao){ toast('⚠️ Comissão não encontrada'); return; }
-  vComissoesTemp.push({id, nome:comissao.nome, tipo:comissao.tipo, role});
-  renderComissoesVereadorModal();
-  toast(`✅ Vinculado à ${comissao.nome}`);
-}
-
-function desvincularComissaoVereador(id){
-  vComissoesTemp=vComissoesTemp.filter(c=>c.id!==id);
-  renderComissoesVereadorModal();
-}
-
-function renderComissoesVereadorModal(){
-  const wrap=document.getElementById('vComissoesVinculadas');
-  if(!wrap) return;
-  if(!vComissoesTemp.length){
-    wrap.innerHTML=`<div style="text-align:center;padding:20px;background:var(--surface2);border-radius:var(--rs);border:1.5px dashed var(--border);">
-      <div style="font-size:22px;margin-bottom:6px;">🗂️</div>
-      <div style="font-size:12px;color:var(--tx3);">Nenhuma comissão vinculada ainda.</div>
-    </div>`;
-    return;
-  }
-  const corBadge=tipo=>tipo==='CPI'?'b-red':tipo==='Especial'?'b-purple':tipo==='Temporária'?'b-gold':'b-navy';
-  const corRole=r=>r==='Presidente'?'b-gold':r==='Vice-Presidente'?'b-emerald':'b-gray';
-  wrap.innerHTML=vComissoesTemp.map(c=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);">
-      <span class="b ${corBadge(c.tipo)}" style="font-size:10px;">${c.tipo}</span>
-      <span style="font-size:12.5px;font-weight:600;flex:1;color:var(--tx);">${c.nome}</span>
-      <span class="b ${corRole(c.role)}" style="font-size:10px;">${c.role}</span>
-      <button onclick="desvincularComissaoVereador(${c.id})" style="border:none;background:var(--red-l);color:var(--red);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:11px;font-weight:700;">✕</button>
-    </div>`).join('');
-}
-
-function selecionarPerfil(el, val){
-  document.querySelectorAll('.perfil-opt').forEach(o=>{
-    o.style.borderColor='var(--border)';
-    o.style.background='transparent';
-    o.querySelector('div').style.color='var(--tx2)';
-  });
-  el.style.borderColor='var(--navy2)';
-  el.style.background='var(--navy-l)';
-  el.querySelector('div').style.color='var(--navy2)';
-  document.getElementById('vPerfilAcesso').value=val;
-}
-
-function toggleCamposVereador(){
-  const cargo=document.getElementById('vCargo').value;
-  const ehVer=cargo==='Vereador'||cargo==='Presidente';
-  document.getElementById('campoPartidoWrap').style.display=ehVer?'block':'none';
-}
-
-// ── testar Telegram ─────────────────────────────────────────────────────────
-async function testarTelegram(){
-  const chatId=(document.getElementById('vTelegramChatId').value||'').trim();
-  const nome=(document.getElementById('vNome').value||'Vereador(a)').trim();
-  const statusEl=document.getElementById('telegramStatus');
-  const btn=document.getElementById('btnTestarTelegram');
-
-  if(!chatId){toast('⚠️ Informe o Chat ID do Telegram');return;}
-
-  btn.textContent='⏳ Enviando...';
-  btn.disabled=true;
-  statusEl.style.display='none';
-
-  // A chave do bot deve estar configurada no backend / variável de ambiente.
-  // Para demonstração, simulamos o envio e orientamos o operador.
-  const TELEGRAM_BOT_TOKEN = window.LEGISGOV_TELEGRAM_TOKEN || '';
-
-  if(!TELEGRAM_BOT_TOKEN){
-    // modo demonstração — simula ok
-    await new Promise(r=>setTimeout(r,1200));
-    statusEl.style.display='block';
-    statusEl.style.background='#E8F5E9';
-    statusEl.style.color='#1B5E20';
-    statusEl.innerHTML='✅ <strong>Simulação OK</strong> — em produção, configure o token do bot nas variáveis de ambiente (<code>LEGISGOV_TELEGRAM_TOKEN</code>).';
-    btn.textContent='📨 Testar';
-    btn.disabled=false;
-    return;
-  }
-
-  try{
-    const msg=encodeURIComponent(`🏛️ *LegisGov — Teste de Notificação*\n\nOlá, *${nome}*! Sua integração com o Telegram foi configurada com sucesso.\n\nVocê receberá avisos de:\n• 📅 Sessões plenárias agendadas\n• 🗳️ Votações abertas\n• ⏰ Prazos legislativos\n• 📜 Novas matérias protocoladas`);
-    const resp=await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${chatId}&text=${msg}&parse_mode=Markdown`);
-    const d=await resp.json();
-    if(d.ok){
-      statusEl.style.display='block';
-      statusEl.style.background='#E8F5E9';
-      statusEl.style.color='#1B5E20';
-      statusEl.innerHTML='✅ <strong>Mensagem enviada!</strong> O vereador recebeu a notificação de boas-vindas.';
-    } else {
-      throw new Error(d.description||'Erro desconhecido');
-    }
-  }catch(e){
-    statusEl.style.display='block';
-    statusEl.style.background='#FEEFEF';
-    statusEl.style.color='#B71C1C';
-    statusEl.innerHTML=`❌ <strong>Falha:</strong> ${e.message}. Verifique o Chat ID e o token do bot.`;
-  }
-  btn.textContent='📨 Testar';
-  btn.disabled=false;
-}
-
-// ── limpar modal ─────────────────────────────────────────────────────────────
-function limparModalVereador(){
-  ['vNome','vNomeUrna','vPartido','vCpfLogin','vRg','vEmail','vNascimento',
-   'vCep','vLogradouro','vNumero','vComplemento','vBairro','vCidade','vCepFinal',
-   'vCelular','vTelefone','vGabinete','vTelegramUser','vTelegramChatId',
-   'vInstagram','vFacebook','vSenha','vCpfLoginDisplay']
-  .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-  document.getElementById('vCargo').value='Vereador';
-  document.getElementById('vEstado').value='BA';
-  document.getElementById('vGenero').value='';
-  document.getElementById('vPerfilAcesso').value='total';
-  document.getElementById('telegramStatus').style.display='none';
-  vComissoesTemp=[];
-  renderComissoesVereadorModal();
-  // reset perfil-opt visual
-  document.querySelectorAll('.perfil-opt').forEach((o,i)=>{
-    o.style.borderColor=i===0?'var(--navy2)':'var(--border)';
-    o.style.background=i===0?'var(--navy-l)':'transparent';
-    o.querySelector('div').style.color=i===0?'var(--navy2)':'var(--tx2)';
-  });
-  mudarAbaVer(0, document.querySelectorAll('.vtab')[0]);
-  toggleCamposVereador();
-}
-
-// ── salvar vereador ───────────────────────────────────────────────────────────
 async function salvarVereador(){
-  const nome      = document.getElementById('vNome').value.trim();
-  const cargo     = document.getElementById('vCargo').value;
-  const cpfLogin  = document.getElementById('vCpfLogin').value.trim();
-  const senha     = document.getElementById('vSenha').value;
-  const partido   = document.getElementById('vPartido').value.trim() || '—';
-  const numeros   = cpfLogin.replace(/\D/g,'');
+  const nome=document.getElementById('vNome').value.trim();
+  const cargo=document.getElementById('vCargo').value;
+  const cpfLogin=document.getElementById('vCpfLogin').value.trim();
+  const senha=document.getElementById('vSenha').value;
+  const partido=document.getElementById('vPartido').value||'—';
+  const apenasNumeros=cpfLogin.replace(/\D/g,'');
 
-  // validação
-  if(!nome){ mudarAbaVer(0,document.querySelectorAll('.vtab')[0]); toast('⚠️ Informe o nome completo'); return; }
-  if(numeros.length!==11){ mudarAbaVer(0,document.querySelectorAll('.vtab')[0]); toast('⚠️ CPF inválido (11 dígitos)'); return; }
-  if(senha.length<6){ mudarAbaVer(3,document.querySelectorAll('.vtab')[3]); toast('⚠️ Senha precisa ter pelo menos 6 caracteres'); return; }
+  if(!nome){toast('⚠️ Informe o nome');return;}
+  if(apenasNumeros.length!==11||!senha){toast('⚠️ Informe um CPF válido (11 dígitos) e a senha de acesso');return;}
+  if(senha.length<6){toast('⚠️ A senha precisa ter pelo menos 6 caracteres');return;}
 
-  // monta objeto completo
-  const dados = {
-    nome, cargo, partido,
-    nomeUrna:    document.getElementById('vNomeUrna').value.trim(),
-    cpf: cpfLogin,
-    rg:          document.getElementById('vRg').value.trim(),
-    email:       document.getElementById('vEmail').value.trim(),
-    nascimento:  document.getElementById('vNascimento').value,
-    genero:      document.getElementById('vGenero').value,
-    comissoes:   [...vComissoesTemp],
-    endereco: {
-      cep:         document.getElementById('vCep').value.trim(),
-      logradouro:  document.getElementById('vLogradouro').value.trim(),
-      numero:      document.getElementById('vNumero').value.trim(),
-      complemento: document.getElementById('vComplemento').value.trim(),
-      bairro:      document.getElementById('vBairro').value.trim(),
-      cidade:      document.getElementById('vCidade').value.trim(),
-      estado:      document.getElementById('vEstado').value,
-    },
-    contato: {
-      celular:   document.getElementById('vCelular').value.trim(),
-      telefone:  document.getElementById('vTelefone').value.trim(),
-      gabinete:  document.getElementById('vGabinete').value.trim(),
-      telegram_user:    document.getElementById('vTelegramUser').value.trim(),
-      telegram_chat_id: document.getElementById('vTelegramChatId').value.trim(),
-      instagram: document.getElementById('vInstagram').value.trim(),
-      facebook:  document.getElementById('vFacebook').value.trim(),
-    },
-    perfil_acesso: document.getElementById('vPerfilAcesso').value,
-  };
-
-  // sincroniza vereador nas listas das comissões vinculadas
-  function sincComissoes(nomeVer){
-    vComissoesTemp.forEach(vc=>{
-      const com=comissoes.find(c=>c.id===vc.id);
-      if(!com) return;
-      if(!com.listaMemb) com.listaMemb=[];
-      if(!com.listaMemb.includes(nomeVer)) com.listaMemb.push(nomeVer);
-      com.membros=com.listaMemb.length;
-      if(vc.role==='Presidente') com.presidente=nomeVer;
-    });
-  }
-
-  // ── Modo demonstração: cadastra localmente ──────────────────────────────
   if(!supabaseOnline){
-    const cores=['#0F2A4A','#0E7C5A','#5B21B6','#B8860B','#B91C1C','#1E4470','#D4A017'];
-    const initials=nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
-    const novoId=Date.now()%100000;
-    vereadores.push({
-      id:novoId, nome, partido, cargo, dados,
-      presente:true, eu:false,
-      presenca:100, proposicoes:0, status:'active',
-      av:initials, cor:cores[vereadores.length%cores.length]
-    });
-    sincComissoes(nome);
-    fecharModal('mVereador');
-    limparModalVereador();
-    renderVereadores();
-    popularSelects();
-    logAuditoria('Cadastro', nome);
-    const nCom=vComissoesTemp.length;
-    toast(`✅ ${nome} cadastrado(a)${nCom?` · vinculado a ${nCom} comissão${nCom>1?'ões':''}`:''}! (modo demo)`);
+    toast('⚠️ Sem conexão com o banco — não é possível criar login agora');
     return;
   }
 
-  // ── Modo real: cria login no Supabase ───────────────────────────────────
   const emailTecnico=cpfParaEmailTecnico(cpfLogin);
+
   try{
+    // 1) cria o login real no Supabase Auth (senha sempre criptografada, identificado internamente pelo CPF)
     const novoUsuario=await auth.cadastrar(emailTecnico,senha);
-    const novoUserId=novoUsuario.user?.id||novoUsuario.id;
+    const novoUserId=novoUsuario.user?.id || novoUsuario.id;
     if(!novoUserId)throw new Error('Não foi possível obter o ID do novo usuário');
 
-    // salva perfil (com dados extras no campo jsonb, se a tabela suportar)
-    await db.cadastrarPerfilUsuario(novoUserId, nome, cargo);
+    // 2) vincula o perfil dele à MESMA Câmara de quem está cadastrando, com o cargo escolhido
+    await db.cadastrarPerfilUsuario(novoUserId,nome,cargo);
 
+    // 3) se for Vereador, também aparece na lista de vereadores da Câmara
     if(cargo==='Vereador'||cargo==='Presidente'){
       await sbRequest('legisgov_vereadores',{
         method:'POST',
-        body:JSON.stringify({
-          id:vereadores.length+1, nome, partido,
-          presente:true, eu:false,
-          camara_codigo:camaraAtual,
-          telegram_chat_id:dados.contato.telegram_chat_id||null,
-          celular:dados.contato.celular||null,
-          email:dados.email||null,
-        })
+        body:JSON.stringify({id:vereadores.length+1,nome,partido,presente:true,eu:false,camara_codigo:camaraAtual})
       });
     }
 
     fecharModal('mVereador');
-    limparModalVereador();
     await initDados();
     renderAll();
-    logAuditoria('Cadastro usuário', nome);
-    toast(`✅ ${nome} cadastrado(a) com login real!`);
+    toast(`✅ ${nome} cadastrado(a) com login próprio! Avise a senha por fora do sistema.`);
   }catch(err){
-    console.error('Erro ao cadastrar:',err);
-    toast('⚠️ Erro: '+(err.message||'verifique os dados'));
+    console.error('Erro ao cadastrar novo usuário:',err);
+    toast('⚠️ Não foi possível cadastrar — ' + (err.message||'verifique os dados e tente novamente'));
   }
 }
 
 // ═══ COMISSÕES ═══
-// ═══ COMISSÕES ═══
-let cMembrosTemp = []; // membros em edição no modal
-
-function toggleCpiFields(){
-  const tipo = document.getElementById('cTipo').value;
-  const prazoWrap = document.getElementById('cPrazoFimWrap');
-  if(prazoWrap) prazoWrap.style.opacity = (tipo==='CPI'||tipo==='Especial'||tipo==='Temporária') ? '1' : '0.4';
-}
-
 function renderComissoes(){
   popularSelects();
-  const lista = document.getElementById('listaComissoes');
-  if(!comissoes.length){
-    lista.innerHTML=`<div class="card" style="text-align:center;padding:3rem;">
-      <div style="font-size:32px;margin-bottom:8px;">🗂️</div>
-      <div style="font-size:14px;font-weight:700;color:var(--tx2);margin-bottom:6px;">Nenhuma comissão cadastrada</div>
-      <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mComissao')">+ Criar primeira comissão</button>
-    </div>`;
-    return;
-  }
-  lista.innerHTML = comissoes.map(c=>{
-    const corBadge = c.tipo==='CPI'?'b-red':c.tipo==='Especial'?'b-purple':c.tipo==='Temporária'?'b-gold':'b-navy';
-    const corBorda = c.tipo==='CPI'?'var(--red)':c.tipo==='Especial'?'var(--purple)':c.tipo==='Temporária'?'var(--gold)':'var(--navy3)';
-    const diasRestantes = c.prazoFim ? Math.ceil((new Date(c.prazoFim)-new Date())/86400000) : null;
-    const alerta = diasRestantes!==null && diasRestantes<=30 && diasRestantes>0;
-    return `
-    <div class="card" style="margin-bottom:10px;cursor:pointer;border-left:3px solid ${corBorda};transition:box-shadow .15s;"
-         onclick="abrirDetComissao(${c.id})"
-         onmouseover="this.style.boxShadow='var(--sh2)'"
-         onmouseout="this.style.boxShadow='var(--sh1)'">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span class="b ${corBadge}">${c.tipo}</span>
-        <strong style="font-size:13px;flex:1;">${c.nome}</strong>
-        ${alerta?`<span class="b b-red" style="font-size:10px;">⏰ ${diasRestantes}d restantes</span>`:''}
-        <span style="font-size:11px;color:var(--tx3);">${c.materias} matéria${c.materias!==1?'s':''}</span>
-        <span style="font-size:16px;color:var(--tx4);">›</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:14px;font-size:11.5px;color:var(--tx3);margin-top:8px;flex-wrap:wrap;">
-        <span>👤 Presidente: <strong style="color:var(--tx2);">${c.presidente}</strong></span>
-        <span>👥 ${c.membros} membros</span>
-        ${c.reuniaoFreq?`<span>📅 ${c.reuniaoFreq}</span>`:''}
-        ${c.dataInst?`<span>📋 Instalada em ${c.dataInst}</span>`:''}
-      </div>
-    </div>`;
-  }).join('');
+  document.getElementById('listaComissoes').innerHTML=comissoes.map(c=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span class="b ${c.tipo==='CPI'?'b-red':c.tipo==='Especial'?'b-purple':c.tipo==='Temporária'?'b-gold':'b-navy'}">${c.tipo}</span><strong style="font-size:13px;flex:1;">${c.nome}</strong><span style="font-size:11px;color:var(--tx3);">${c.materias} matérias</span></div><div style="font-size:11.5px;color:var(--tx3);margin-top:8px;">👤 Presidente: ${c.presidente} · 👥 ${c.membros} membros</div></div>`).join('');
 }
-
-function abrirDetComissao(id){
-  const c = comissoes.find(x=>x.id===id);
-  if(!c) return;
-  const corBadge = c.tipo==='CPI'?'b-red':c.tipo==='Especial'?'b-purple':c.tipo==='Temporária'?'b-gold':'b-navy';
-  const diasRestantes = c.prazoFim ? Math.ceil((new Date(c.prazoFim)-new Date())/86400000) : null;
-
-  document.getElementById('detTitle').textContent = c.nome;
-  document.getElementById('detBody').innerHTML = `
-
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-      <span class="b ${corBadge}">${c.tipo}</span>
-      ${diasRestantes!==null ? `<span class="b ${diasRestantes<=30?'b-red':'b-gold'}" style="font-size:10px;">Prazo: ${diasRestantes}d restantes</span>` : ''}
-      <span class="b ${c.ativa?'b-emerald':'b-gray'}" style="font-size:10px;">${c.ativa?'Ativa':'Encerrada'}</span>
-    </div>
-
-    ${c.objetivo?`<div style="font-size:12px;color:var(--tx2);line-height:1.7;margin:10px 0 14px;padding:10px 12px;background:var(--surface2);border-radius:8px;">${c.objetivo}</div>`:''}
-
-    <div class="det-sec">COMPOSIÇÃO</div>
-    <div style="margin-bottom:14px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 10px;background:var(--gold-l);border-radius:7px;">
-        <div class="av" style="width:28px;height:28px;background:var(--gold);font-size:10px;">${c.presidente.split(' ').map(p=>p[0]).slice(0,2).join('')}</div>
-        <div>
-          <div style="font-size:12px;font-weight:800;color:var(--tx);">${c.presidente}</div>
-          <div style="font-size:10px;color:var(--tx3);">Presidente</div>
-        </div>
-      </div>
-      ${(c.listaMemb||[]).filter(m=>m!==c.presidente).map(m=>`
-        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);">
-          <div class="av" style="width:24px;height:24px;background:var(--navy2);font-size:9px;">${m.split(' ').map(p=>p[0]).slice(0,2).join('')}</div>
-          <span style="font-size:12px;color:var(--tx2);">${m}</span>
-        </div>`).join('')}
-    </div>
-
-    <div class="det-sec">INFORMAÇÕES</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;font-size:11.5px;color:var(--tx2);">
-      <div>📋 <strong>Instalação:</strong> ${c.dataInst||'—'}</div>
-      <div>⏳ <strong>Prazo Final:</strong> ${c.prazoFim||'—'}</div>
-      <div>📅 <strong>Reuniões:</strong> ${c.reuniaoFreq||'—'}</div>
-      <div>📜 <strong>Matérias:</strong> ${c.materias}</div>
-    </div>
-
-    ${c.historicoReunioes?.length ? `
-    <div class="det-sec">HISTÓRICO DE REUNIÕES</div>
-    <div style="margin-bottom:14px;">
-      ${c.historicoReunioes.map(r=>`
-        <div style="padding:8px 10px;border-left:2px solid var(--navy3);margin-bottom:8px;background:var(--surface2);border-radius:0 7px 7px 0;">
-          <div style="font-size:11px;font-weight:700;color:var(--navy2);">${r.data}</div>
-          <div style="font-size:11.5px;color:var(--tx2);margin-top:2px;">${r.pauta}</div>
-          <div style="font-size:11px;color:var(--tx3);margin-top:2px;">→ ${r.resultado}</div>
-        </div>`).join('')}
-    </div>` : ''}
-
-    <div class="det-sec">AÇÕES</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="editarComissao(${c.id})">✏️ Editar</button>
-      <button class="btn-sm" style="background:var(--emerald-l);color:var(--emerald);" onclick="registrarReuniaoComissao(${c.id})">📅 Registrar Reunião</button>
-      <button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);" onclick="toast('📜 Filtrando matérias desta comissão...');sw('materias')">📜 Ver Matérias</button>
-      <button class="btn-sm" style="background:var(--red-l);color:var(--red);" onclick="encerrarComissao(${c.id})">🚫 Encerrar</button>
-    </div>`;
-
-  document.getElementById('detPanel').classList.add('on');
-}
-
-function editarComissao(id){
-  const c = comissoes.find(x=>x.id===id);
-  if(!c) return;
-  fecharDet();
-  // preenche modal
-  document.getElementById('cEditId').value = id;
-  document.getElementById('mComissaoTitulo').textContent = '✏️ Editar Comissão';
-  document.getElementById('btnSalvarComissao').textContent = '💾 SALVAR ALTERAÇÕES';
-  document.getElementById('cNome').value = c.nome;
-  document.getElementById('cTipo').value = c.tipo;
-  document.getElementById('cFreq').value = c.reuniaoFreq || 'Quinzenal';
-  document.getElementById('cObjetivo').value = c.objetivo || '';
-  document.getElementById('cDataInst').value = c.dataInst ? converterDataParaInput(c.dataInst) : '';
-  document.getElementById('cPrazoFim').value = c.prazoFim || '';
-  popularSelects();
-  document.getElementById('cPresidente').value = c.presidente;
-  cMembrosTemp = [...(c.listaMemb || [c.presidente])];
-  renderMembrosModal();
-  toggleCpiFields();
-  document.getElementById('mComissao').classList.add('on');
-}
-
-function converterDataParaInput(str){
-  // converte dd/mm/yyyy → yyyy-mm-dd
-  if(!str || str.includes('-')) return str;
-  const [d,m,y] = str.split('/');
-  return `${y}-${m}-${d}`;
-}
-
-function adicionarMembroComissao(){
-  const sel = document.getElementById('cAddMembroSelect');
-  const nome = sel?.value;
-  if(!nome) return;
-  if(cMembrosTemp.includes(nome)){ toast('⚠️ Este membro já foi adicionado'); return; }
-  cMembrosTemp.push(nome);
-  renderMembrosModal();
-}
-
-function removerMembroComissao(nome){
-  cMembrosTemp = cMembrosTemp.filter(m=>m!==nome);
-  renderMembrosModal();
-}
-
-function renderMembrosModal(){
-  const wrap = document.getElementById('cMembrosWrap');
-  if(!wrap) return;
-  if(!cMembrosTemp.length){
-    wrap.innerHTML = '<div style="font-size:11.5px;color:var(--tx3);">Nenhum membro adicionado.</div>';
-    return;
-  }
-  const presidente = document.getElementById('cPresidente')?.value || '';
-  wrap.innerHTML = cMembrosTemp.map(m=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);">
-      <div class="av" style="width:22px;height:22px;background:var(--navy2);font-size:8px;">${m.split(' ').map(p=>p[0]).slice(0,2).join('')}</div>
-      <span style="font-size:12px;flex:1;color:var(--tx2);">${m}</span>
-      ${m===presidente?`<span class="b b-gold" style="font-size:9px;">Presidente</span>`:''}
-      <button onclick="removerMembroComissao('${m}')" style="border:none;background:none;color:var(--tx4);cursor:pointer;font-size:14px;line-height:1;">✕</button>
-    </div>`).join('');
-}
-
-function popularSelectsMembros(){
-  const sel = document.getElementById('cAddMembroSelect');
-  if(sel) sel.innerHTML = vereadores.map(v=>`<option>${v.nome}</option>`).join('');
-}
-
-function salvarComissao(){
-  const nome = document.getElementById('cNome').value.trim();
-  const tipo = document.getElementById('cTipo').value;
-  const presidente = document.getElementById('cPresidente').value;
-  const freq = document.getElementById('cFreq').value;
-  const objetivo = document.getElementById('cObjetivo').value.trim();
-  const dataInst = document.getElementById('cDataInst').value;
-  const prazoFim = document.getElementById('cPrazoFim').value;
-  const editId = parseInt(document.getElementById('cEditId').value) || 0;
-
-  if(!nome){ toast('⚠️ Informe o nome da comissão'); return; }
-  if(!presidente){ toast('⚠️ Selecione o presidente'); return; }
-
-  // garante presidente na lista
-  if(!cMembrosTemp.includes(presidente)) cMembrosTemp.unshift(presidente);
-
-  const dataInstFormatada = dataInst ? dataInst.split('-').reverse().join('/') : '';
-
-  if(editId){
-    // edição
-    const idx = comissoes.findIndex(c=>c.id===editId);
-    if(idx>=0){
-      comissoes[idx] = {...comissoes[idx], nome, tipo, presidente, reuniaoFreq:freq,
-        objetivo, dataInst:dataInstFormatada, prazoFim,
-        membros:cMembrosTemp.length, listaMemb:[...cMembrosTemp]};
-    }
-    toast(`✅ "${nome}" atualizada!`);
-  } else {
-    // criação
-    const novoId = Math.max(0,...comissoes.map(c=>c.id||0))+1;
-    comissoes.push({id:novoId, nome, tipo, presidente, reuniaoFreq:freq,
-      objetivo, dataInst:dataInstFormatada, prazoFim,
-      membros:cMembrosTemp.length, listaMemb:[...cMembrosTemp],
-      materias:0, ativa:true, historicoReunioes:[]});
-    toast(`✅ Comissão "${nome}" criada!`);
-  }
-
-  fecharModal('mComissao');
-  renderComissoes();
-  logAuditoria(editId?'Edição comissão':'Criação comissão', nome);
-}
-
-function encerrarComissao(id){
-  const c = comissoes.find(x=>x.id===id);
-  if(!c) return;
-  if(!confirm(`Encerrar a comissão "${c.nome}"? Esta ação não pode ser desfeita.`)) return;
-  c.ativa = false;
-  fecharDet();
-  renderComissoes();
-  toast(`⏹️ Comissão "${c.nome}" encerrada.`);
-}
-
-function registrarReuniaoComissao(id){
-  const c = comissoes.find(x=>x.id===id);
-  if(!c) return;
-  const pauta = prompt(`Pauta da reunião — ${c.nome}:`);
-  if(!pauta) return;
-  const resultado = prompt('Resultado / deliberação:') || 'Em discussão';
-  const hoje = new Date().toLocaleDateString('pt-BR');
-  if(!c.historicoReunioes) c.historicoReunioes = [];
-  c.historicoReunioes.unshift({data:hoje, pauta, resultado});
-  fecharDet();
-  abrirDetComissao(id);
-  toast('✅ Reunião registrada!');
-}
+function salvarComissao(){const nome=document.getElementById('cNome').value.trim();if(!nome){toast('⚠️ Informe o nome');return;}comissoes.push({nome,tipo:document.getElementById('cTipo').value,presidente:document.getElementById('cPresidente').value,membros:1,materias:0});fecharModal('mComissao');renderComissoes();toast('✅ Comissão criada!');}
 
 // ═══ MATÉRIAS ═══
 function abrirTramitacao(num){
@@ -2501,18 +1831,14 @@ async function confirmarAcaoEtapa(){
 
 // ═══ SESSÃO PLENÁRIA ═══
 function renderSessao(){
-  const oradores = document.getElementById('listaOradores');
-  if(oradores) oradores.innerHTML='<div style="text-align:center;padding:1rem;color:var(--tx3);font-size:12px;">Nenhum orador inscrito.</div>';
-  const ordem=materias.filter(m=>m.situacao==='Plenário');
-  document.getElementById('ordemDoDia').innerHTML=ordem.length
-    ? ordem.map((m,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:8px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${i+1}.</span><div style="flex:1;"><div style="font-size:12.5px;font-weight:700;">${m.num} — ${m.ementa}</div><div style="font-size:10.5px;color:var(--tx3);">${m.tipo} · Autor: ${m.autor}</div></div><button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="sw('votacao')">Votar</button></div>`).join('')
-    : '<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhuma matéria em Plenário no momento.</div>';
+  document.getElementById('listaOradores').innerHTML=['Carlos Mendes Filho','Maria Aparecida Souza','Roberto Carlos Alves'].map((n,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${i+1}º</span><span style="font-size:12px;color:var(--tx2);flex:1;">${n}</span>${i===0?'<span class="b b-gold">Falando</span>':''}</div>`).join('');
+  document.getElementById('ordemDoDia').innerHTML=materias.filter(m=>m.situacao==='Plenário').map((m,i)=>`<div class="risk-item" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:8px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${i+1}.</span><div style="flex:1;"><div style="font-size:12.5px;font-weight:700;">${m.num} — ${m.ementa}</div><div style="font-size:10.5px;color:var(--tx3);">${m.tipo} · Autor: ${m.autor}</div></div><button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="sw('votacao')">Votar</button></div>`).join('');
 }
 function toggleSessao(){
   sessaoAberta=!sessaoAberta;
   const btn=document.getElementById('btnAbrirSessao');
   if(sessaoAberta){btn.textContent='⏹ Encerrar Sessão';btn.style.background='var(--red2)';document.getElementById('sessaoStatus').textContent='🔴 Sessão EM ANDAMENTO · Iniciada às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});toast('🏛️ Sessão aberta — gravação iniciada automaticamente');logAuditoria('Abertura de Sessão','Sessão Plenária');}
-  else{btn.textContent='▶ Abrir Sessão';btn.style.background='var(--emerald)';document.getElementById('sessaoStatus').textContent='Nenhuma sessão agendada';toast('✅ Sessão encerrada — gravação finalizada e enviada para IA de transcrição');logAuditoria('Encerramento de Sessão','Sessão Plenária');}
+  else{btn.textContent='▶ Abrir Sessão';btn.style.background='var(--emerald)';document.getElementById('sessaoStatus').textContent='Sessão Ordinária · 19/06/2026 · 14h00';toast('✅ Sessão encerrada — gravação finalizada e enviada para IA de transcrição');logAuditoria('Encerramento de Sessão','Sessão Plenária');}
 }
 function iniciarCronometro(){clearInterval(cronInterval);cronInterval=setInterval(()=>{cronSegundos--;if(cronSegundos<=0){clearInterval(cronInterval);toast('⏰ Tempo esgotado!');cronSegundos=0;}const m=String(Math.floor(cronSegundos/60)).padStart(2,'0');const s=String(cronSegundos%60).padStart(2,'0');document.getElementById('cronometro').textContent=`${m}:${s}`;},1000);}
 function pausarCronometro(){clearInterval(cronInterval);}
@@ -2665,51 +1991,35 @@ function renderTransmissao(){
 }
 
 // ═══ CONTAS ═══
-function renderContas(){
-  const tb=document.getElementById('tbContas');
-  tb.innerHTML=contasExec.length
-    ? contasExec.map(c=>`<tr><td><strong>${c.exercicio}</strong></td><td>${c.gestor}</td><td><span class="b ${c.parecer.includes('Favorável')?'b-emerald':'b-gold'}">${c.parecer}</span></td><td><span class="b b-navy">${c.situacao}</span></td><td>${c.prazo}</td></tr>`).join('')
-    : '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--tx3);">Nenhum processo de contas registrado ainda.</td></tr>';
-}
+function renderContas(){document.getElementById('tbContas').innerHTML=contasExec.map(c=>`<tr><td><strong>${c.exercicio}</strong></td><td>${c.gestor}</td><td><span class="b ${c.parecer.includes('Favorável')?'b-emerald':'b-gold'}">${c.parecer}</span></td><td><span class="b b-navy">${c.situacao}</span></td><td>${c.prazo}</td></tr>`).join('');}
 function salvarContas(){const ex=document.getElementById('ctExercicio').value;if(!ex){toast('⚠️ Informe o exercício');return;}contasExec.unshift({exercicio:ex,gestor:document.getElementById('ctGestor').value,parecer:document.getElementById('ctParecer').value,situacao:'Recebimento',prazo:'A definir'});fecharModal('mContas');renderContas();toast('✅ Processo registrado!');}
 
 // ═══ EMENDAS ═══
-function renderEmendas(){
-  popularSelects();
-  const tb=document.getElementById('tbEmendas');
-  tb.innerHTML=emendas.length
-    ? emendas.map(e=>`<tr><td>${e.autor}</td><td>${e.benef}</td><td style="font-weight:700;">R$ ${e.valor.toLocaleString('pt-BR')}</td><td>${e.exercicio}</td><td><span class="b ${e.status==='Paga'?'b-emerald':e.status==='Liquidada'?'b-navy':e.status==='Empenhada'?'b-gold':'b-gray'}">${e.status}</span></td></tr>`).join('')
-    : '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--tx3);">Nenhuma emenda registrada ainda.</td></tr>';
-}
+function renderEmendas(){popularSelects();document.getElementById('tbEmendas').innerHTML=emendas.map(e=>`<tr><td>${e.autor}</td><td>${e.benef}</td><td style="font-weight:700;">R$ ${e.valor.toLocaleString('pt-BR')}</td><td>${e.exercicio}</td><td><span class="b ${e.status==='Paga'?'b-emerald':e.status==='Liquidada'?'b-navy':e.status==='Empenhada'?'b-gold':'b-gray'}">${e.status}</span></td></tr>`).join('');}
 function salvarEmenda(){const benef=document.getElementById('emBenef').value.trim();if(!benef){toast('⚠️ Informe o beneficiário');return;}emendas.unshift({autor:document.getElementById('emAutor').value,benef,valor:Number(document.getElementById('emValor').value)||0,exercicio:document.getElementById('emExercicio').value||2026,status:'Proposta'});fecharModal('mEmenda');renderEmendas();toast('📌 Emenda registrada!');}
 
 // ═══ TRANSPARÊNCIA ═══
-function renderTransparencia(){
-  document.getElementById('listaTransparencia').innerHTML=
-    '<div style="text-align:center;padding:1.5rem;color:var(--tx3);font-size:12px;">Nenhuma publicação registrada ainda.</div>';
-}
+function renderTransparencia(){document.getElementById('listaTransparencia').innerHTML=[
+  {t:'PL 045/2026 publicado',d:'há 2h'},{t:'Ata da Sessão 18/06/2026 publicada',d:'há 5h'},{t:'Emenda 2026-014 atualizada para PAGA',d:'há 1 dia'},
+].map(x=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;"><span style="color:var(--tx2);">${x.t}</span><span style="color:var(--tx3);">${x.d}</span></div>`).join('');}
 
 // ═══ ATAS IA ═══
 function renderAtas(){
-  document.getElementById('ataGerada').innerHTML=`
-    <div style="background:linear-gradient(135deg,#081B30,#0F2A4A);border-radius:10px;padding:16px;text-align:center;">
-      <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:8px;">🤖 GERAÇÃO AUTOMÁTICA DE ATAS</div>
-      <div style="font-size:12.5px;color:rgba(255,255,255,.55);line-height:1.8;">Nenhuma sessão transcrita ainda.<br>Após encerrar uma sessão, a IA gerará a ata automaticamente.</div>
-    </div>`;
-  document.getElementById('tbAtas').innerHTML='<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--tx3);">Nenhuma ata gerada ainda.</td></tr>';
+  document.getElementById('ataGerada').innerHTML=`<div style="background:linear-gradient(135deg,#081B30,#0F2A4A);border-radius:10px;padding:16px;"><div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:8px;">🤖 GERADO AUTOMATICAMENTE</div><div style="font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.8;">Sessão Ordinária aberta às 14h00 com 15 vereadores presentes (quórum atingido). Aprovados: PL 045/2026 (Reforma Iluminação Pública, 12 votos a favor), Moção 038/2026. Comissão de Obras apresentou parecer favorável ao PL 029/2026. Encerrada às 17h42.</div><button class="btn-sm" style="background:rgba(255,255,255,.15);color:#fff;margin-top:10px;" onclick="toast('✏️ Abrindo editor de ata para revisão')">✏️ Revisar e Publicar</button></div>`;
+  document.getElementById('tbAtas').innerHTML=[
+    {s:'Sessão Ordinária',d:'19/06/2026',st:'Rascunho IA'},{s:'Sessão Ordinária',d:'18/06/2026',st:'Publicada'},{s:'Sessão Extraordinária',d:'12/06/2026',st:'Publicada'},
+  ].map(a=>`<tr><td>${a.s}</td><td>${a.d}</td><td><span class="b ${a.st==='Publicada'?'b-emerald':'b-gold'}">${a.st}</span></td><td><button class="btn-sm" style="background:var(--navy-l);color:var(--navy2);" onclick="toast('📄 Abrindo ata')">Ver</button></td></tr>`).join('');
 }
 
 // ═══ ASSISTENTE IA ═══
-const iaResp={
-  default:(q)=>`Analisando "${q}"... Assim que a Câmara de Andaraí tiver matérias e sessões cadastradas, poderei responder com dados reais. Por enquanto, experimente cadastrar vereadores e matérias no sistema.`,
-  vereador:`Ainda não há vereadores cadastrados. Acesse **Vereadores** no menu e clique em **+ Novo Vereador** para começar.`,
-  parados:`Ainda não há matérias em tramitação. Protocole a primeira matéria em **Processo Legislativo**.`,
-  resumo:`Nenhuma sessão foi realizada ainda na Câmara de Andaraí. Após a primeira sessão, o resumo aparecerá aqui automaticamente.`
-};
+const iaResp={default:(q)=>`Analisando "${q}"... Com base nos documentos da Câmara, recomendo consultar o módulo correspondente para mais detalhes.`,
+local:'**PL 045/2026** está atualmente em **Plenário**, incluído na Ordem do Dia da sessão de hoje (19/06/2026, 14h). Parecer jurídico e da Comissão de Obras já foram favoráveis. Aguarda votação nominal.',
+parados:'**Projetos parados há mais de 30 dias:**\\n\\n🔴 Nenhum projeto crítico no momento.\\n🟡 PLC 012/2026 está há 12 dias em análise jurídica — dentro do prazo regimental.',
+resumo:'**Resumo da última sessão (18/06/2026):**\\n\\nQuórum atingido com 15 presentes. Aprovados: 2 matérias. Rejeitado: 1 requerimento. Destaque: parecer favorável da Comissão de Obras ao PL 029/2026 (Hortas Comunitárias).'};
 function renderAssistente(){
   const chatEl=document.getElementById('iaChat');
-  if(chatEl&&chatEl.children.length===0) adicionarMsgIA('Olá! Sou o Assistente Legislativo da **Câmara Municipal de Andaraí**. Assim que os primeiros dados forem cadastrados, poderei ajudar a localizar matérias, consultar votações e resumir sessões. Como posso ajudar?','ia');
-  document.getElementById('iaSugestoes').innerHTML=['Como cadastrar vereadores?','Como protocolar uma matéria?','Como abrir uma sessão?'].map(s=>`<button onclick="enviarMsgDireta('${s}')" style="padding:5px 12px;border-radius:20px;border:1px solid #C5D9EE;background:var(--navy-l);color:var(--navy2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${s}</button>`).join('');
+  if(chatEl&&chatEl.children.length===0)adicionarMsgIA('Olá! Sou o Assistente Legislativo do LegisGov. Posso ajudar você a localizar matérias, consultar votações ou resumir sessões. O que precisa?','ia');
+  document.getElementById('iaSugestoes').innerHTML=['Onde está o PL 045/2026?','Quais projetos estão parados?','Resuma a última sessão'].map(s=>`<button onclick="enviarMsgDireta('${s}')" style="padding:5px 12px;border-radius:20px;border:1px solid #C5D9EE;background:var(--navy-l);color:var(--navy2);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${s}</button>`).join('');
 }
 function adicionarMsgIA(texto,quem){const el=document.getElementById('iaChat');if(!el)return;const wrap=document.createElement('div');wrap.style.cssText=`display:flex;${quem==='user'?'justify-content:flex-end;':''}`;const bubble=document.createElement('div');bubble.className=`chat-bubble ${quem==='ia'?'chat-ia':'chat-user'}`;bubble.innerHTML=texto.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\\n/g,'<br>');wrap.appendChild(bubble);el.appendChild(wrap);el.scrollTop=el.scrollHeight;}
 function enviarIA(){const input=document.getElementById('iaInput');const q=input?.value?.trim();if(!q)return;adicionarMsgIA(q,'user');input.value='';setTimeout(()=>{const lq=q.toLowerCase();let resp=iaResp.default(q);if(lq.includes('045'))resp=iaResp.local;else if(lq.includes('parad'))resp=iaResp.parados;else if(lq.includes('resum')||lq.includes('sessão'))resp=iaResp.resumo;adicionarMsgIA(resp,'ia');},700);}
@@ -2728,10 +2038,8 @@ function logAuditoria(acao,recurso){
 function renderNotificacoes(){document.getElementById('listaNotificacoes').innerHTML=notificacoes.map(n=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;align-items:center;gap:10px;"><span class="b b-navy">${n.tipo}</span><strong style="font-size:13px;flex:1;">${n.titulo}</strong><span style="font-size:10.5px;color:var(--tx3);">${n.quando}</span></div><div style="font-size:11.5px;color:var(--tx3);margin-top:6px;">${n.desc}</div></div>`).join('');}
 
 // ═══ MODALS / TOAST / LOADING ═══
-function fecharModal(id){
-  document.getElementById(id)?.classList.remove('on');
-  if(id==='mVereador') limparModalVereador();
-}
+function abrirModal(id){popularSelects();document.getElementById(id)?.classList.add('on');}
+function fecharModal(id){document.getElementById(id)?.classList.remove('on');}
 document.addEventListener('click',e=>{if(e.target.classList.contains('ov'))e.target.classList.remove('on');});
 function fecharDet(){document.getElementById('detPanel')?.classList.remove('on');}
 let toastTimer;function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('on'),3000);}
