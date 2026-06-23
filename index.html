@@ -1352,19 +1352,6 @@ function aplicarDadosOffline(){
     {nome:'Força do Povo',       legislatura:'19ª',partidos:['PT','PSDB'],candidato:'Carlos Ribeiro',vice:'Maria José',vagas:3,obs:''},
     {nome:'Renovação Andaraí',   legislatura:'18ª',partidos:['DEM','PSD'],candidato:'Pedro Alves',vice:'João Lima',vagas:6,obs:'Ganhou a maioria em 2020'},
   ];
-}
-
-function aplicarDadosVazios(){
-  // Câmara nova no banco real, sem dados ainda — deixa tudo vazio, não mostra dados fictícios
-  vereadores=[];
-  materias=[];
-  auditoria=[];
-  partidos=[];
-  coligacoes=[];
-}
-
-async function initDados(){
-  // dados que não mudam de Câmara para Câmara (ainda fixos, não fazem parte das tabelas Supabase desta etapa)
   comissoes=[
     {nome:'Comissão de Justiça e Redação',tipo:'Permanente',presidente:'Ana Paula Ribeiro',membros:5,materias:8},
     {nome:'Comissão de Finanças e Orçamento',tipo:'Permanente',presidente:'João Ferreira Lima',membros:5,materias:6},
@@ -1388,15 +1375,32 @@ async function initDados(){
     {tipo:'Sessão',titulo:'Sessão Ordinária convocada',desc:'Hoje às 14h — Plenário Principal',quando:'há 5h'},
     {tipo:'Votação',titulo:'Votação aberta',desc:'PL 045/2026 está em votação nominal',quando:'agora'},
   ];
+}
 
-  // modo demonstração: nunca tenta o Supabase (não há sessão de usuário real, o RLS bloquearia mesmo)
+function aplicarDadosVazios(){
+  // Câmara nova no banco real, sem dados ainda — deixa tudo vazio, não mostra dados fictícios
+  vereadores=[];
+  materias=[];
+  auditoria=[];
+  partidos=[];
+  coligacoes=[];
+}
+
+async function initDados(){
+  // modo demonstração: carrega dados fictícios e para aqui
   if(!sessaoAuth){
     aplicarDadosOffline();
     toast('🧪 Modo demonstração — os dados não são salvos permanentemente');
     return;
   }
 
-  // tenta carregar do Supabase (banco real, com isolamento por Câmara garantido pelo RLS)
+  // banco real: começa tudo zerado
+  comissoes=[];
+  contasExec=[];
+  emendas=[];
+  notificacoes=[];
+
+  // tenta carregar do Supabase
   try {
     const [vereadoresDB, materiasDB] = await Promise.all([
       db.listarVereadores(),
@@ -1422,31 +1426,21 @@ async function initDados(){
         cor: coresBase[v.id % coresBase.length]
       };
     });
-    // Se o banco retornou vazio (câmara nova, ainda sem vereadores cadastrados),
-    // mantém a lista vazia mas mostra o botão de cadastro
-    if(vereadores.length === 0){
-      console.log('ℹ️ Nenhum vereador encontrado no banco para esta Câmara — lista vazia.');
-    }
     materias = materiasDB.map(m => ({
       num: m.num, tipo: m.tipo, ementa: m.ementa, justificativa: m.justificativa,
       autor: m.autor, situacao: m.situacao, prazo: m.prazo, critico: m.critico,
       historico: m.historico || {}
     }));
     supabaseOnline = true;
-    auditoria=[]; // auditoria real será carregada sob demanda na tela de Auditoria
-    console.log('✅ LegisGov conectado ao Supabase — dados carregados do banco real.');
+    auditoria = [];
+    console.log('✅ LegisGov conectado ao Supabase.');
   } catch (err) {
     console.error('⚠️ Erro ao carregar dados do Supabase:', err);
     supabaseOnline = false;
-    // Se há sessão ativa (usuário real logado), mantém dados vazios — NÃO polui com dados fictícios
-    // Se não há sessão (improvável cair aqui), usa demo
-    if(sessaoAuth){
-      aplicarDadosVazios();
-      toast('⚠️ Erro ao carregar dados do banco. Verifique a conexão e recarregue a página.');
-    } else {
-      aplicarDadosOffline();
-      toast('⚠️ Sem conexão com o banco — usando dados de demonstração (não serão salvos)');
-    }
+    vereadores = [];
+    materias = [];
+    auditoria = [];
+    toast('⚠️ Erro ao carregar dados do banco. Verifique a conexão e recarregue a página.');
   }
 }
 
@@ -1729,11 +1723,9 @@ function renderVereadores(){
       </tr>`;
     }).join('');
   }
-  // Botão: visível para Secretaria/Presidente/Administrador — e SEMPRE em modo demo/offline
-  const podeCadastrar = !supabaseOnline ||
-    ['Secretaria','Presidente','Administrador'].includes(meuPerfil?.cargo);
+  // Botão sempre visível para qualquer usuário logado
   const btn = document.getElementById('btnNovoVereador');
-  if(btn) btn.style.display = podeCadastrar ? 'inline-flex' : 'none';
+  if(btn) btn.style.display = 'inline-flex';
 }
 function fmtData(iso){
   if(!iso)return '—';
