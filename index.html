@@ -1354,6 +1354,15 @@ function aplicarDadosOffline(){
   ];
 }
 
+function aplicarDadosVazios(){
+  // Câmara nova no banco real, sem dados ainda — deixa tudo vazio, não mostra dados fictícios
+  vereadores=[];
+  materias=[];
+  auditoria=[];
+  partidos=[];
+  coligacoes=[];
+}
+
 async function initDados(){
   // dados que não mudam de Câmara para Câmara (ainda fixos, não fazem parte das tabelas Supabase desta etapa)
   comissoes=[
@@ -1427,10 +1436,17 @@ async function initDados(){
     auditoria=[]; // auditoria real será carregada sob demanda na tela de Auditoria
     console.log('✅ LegisGov conectado ao Supabase — dados carregados do banco real.');
   } catch (err) {
-    console.error('⚠️ Não foi possível conectar ao Supabase, usando dados de exemplo locais:', err);
+    console.error('⚠️ Erro ao carregar dados do Supabase:', err);
     supabaseOnline = false;
-    aplicarDadosOffline();
-    toast('⚠️ Sem conexão com o banco — usando dados de demonstração (não serão salvos)');
+    // Se há sessão ativa (usuário real logado), mantém dados vazios — NÃO polui com dados fictícios
+    // Se não há sessão (improvável cair aqui), usa demo
+    if(sessaoAuth){
+      aplicarDadosVazios();
+      toast('⚠️ Erro ao carregar dados do banco. Verifique a conexão e recarregue a página.');
+    } else {
+      aplicarDadosOffline();
+      toast('⚠️ Sem conexão com o banco — usando dados de demonstração (não serão salvos)');
+    }
   }
 }
 
