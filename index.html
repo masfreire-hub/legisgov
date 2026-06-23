@@ -158,6 +158,28 @@ select.linp option{color:#0F172A;background:#fff;}
 .btn-p{width:100%;padding:12px;border:none;border-radius:var(--rs);background:linear-gradient(135deg,var(--navy2),#2A5491);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;margin-top:4px;}
 .btn-c{width:100%;padding:11px;border:1.5px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--tx2);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;}
 .btn-sm{padding:7px 14px;border-radius:var(--rs);border:none;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;}
+/* ── Abas do modal de vereador ── */
+.mv-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:16px;gap:0;overflow-x:auto;}
+.mv-tab{padding:9px 14px;font-size:11.5px;font-weight:700;color:var(--tx3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all .15s;}
+.mv-tab:hover{color:var(--navy2);background:var(--surface2);}
+.mv-tab.on{color:var(--navy2);border-bottom-color:var(--navy2);}
+.mv-pane{display:none;}.mv-pane.on{display:block;}
+/* ── Perfil de acesso ── */
+.perfil-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.perfil-opt{border:2px solid var(--border);border-radius:var(--rs);padding:10px 12px;cursor:pointer;transition:all .15s;}
+.perfil-opt:hover{border-color:var(--navy2);background:var(--surface2);}
+.perfil-opt.on{border-color:var(--navy2);background:var(--navy-l,#EEF4FF);}
+.perfil-opt-title{font-size:12px;font-weight:800;color:var(--tx);display:flex;align-items:center;gap:6px;}
+.perfil-opt-desc{font-size:10.5px;color:var(--tx3);margin-top:3px;}
+/* ── Suplente na grade ── */
+.sup-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#F0FDF4;color:#166534;white-space:nowrap;}
+.sup-badge.inativo{background:#FEF9C3;color:#713F12;}
+.sup-row{display:grid;grid-template-columns:1fr 80px 80px 60px 26px;gap:6px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--border);font-size:12px;}
+.sup-row:last-child{border-bottom:none;}
+/* ── Cadastro de Partidos ── */
+.partido-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.partido-sigla{width:54px;height:54px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0;}
+.colig-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:11px 14px;margin-bottom:8px;}
 
 /* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#081B30;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap;max-width:90vw;}
@@ -299,6 +321,7 @@ select.linp option{color:#0F172A;background:#fff;}
     <div class="sb-section">PRINCIPAL</div>
     <div class="ni on" onclick="sw('dash',this)" id="ni-dash"><span class="ni-ico">📊</span><span class="ni-lb">Dashboard</span></div>
     <div class="ni" onclick="sw('vereadores',this)" id="ni-vereadores"><span class="ni-ico">👥</span><span class="ni-lb">Vereadores</span></div>
+    <div class="ni" onclick="sw('partidos',this)" id="ni-partidos"><span class="ni-ico">🏛️</span><span class="ni-lb">Partidos & Coligações</span></div>
     <div class="ni" onclick="sw('comissoes',this)" id="ni-comissoes"><span class="ni-ico">🗂️</span><span class="ni-lb">Comissões</span></div>
 
     <div class="sb-section">LEGISLATIVO</div>
@@ -382,7 +405,7 @@ select.linp option{color:#0F172A;background:#fff;}
     <div class="page" id="p-vereadores">
       <div class="ph">
         <div><div class="ph-title">👥 Vereadores</div><div class="ph-sub">19ª Legislatura · 2025-2028</div></div>
-        <button class="btn-sm" id="btnNovoVereador" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mVereador')">+ Novo Usuário</button>
+        <button class="btn-sm" id="btnNovoVereador" style="background:var(--navy2);color:#fff;" onclick="abrirNovoVereador()">+ Novo Cadastro</button>
       </div>
       <div class="card">
         <table class="tbl"><thead><tr><th></th><th>Nome</th><th>Partido</th><th>Presença</th><th>Proposições</th><th>Status</th></tr></thead>
@@ -390,7 +413,36 @@ select.linp option{color:#0F172A;background:#fff;}
       </div>
     </div>
 
-    <!-- ═══ ADMINISTRAÇÃO (só Suporte) ═══ -->
+    <!-- ═══ PARTIDOS & COLIGAÇÕES ═══ -->
+    <div class="page" id="p-partidos">
+      <div class="ph">
+        <div><div class="ph-title">🏛️ Partidos & Coligações</div><div class="ph-sub">Cadastro por legislatura — partidos, composição e coligações eleitorais</div></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm" style="background:var(--surface);border:1px solid var(--border);" onclick="abrirModal('mColigacao')">+ Nova Coligação</button>
+          <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mPartido')">+ Novo Partido</button>
+        </div>
+      </div>
+      <div class="g2">
+        <!-- Partidos -->
+        <div class="card">
+          <div class="card-title">🏛️ Partidos Cadastrados</div>
+          <div id="listaPartidos"></div>
+        </div>
+        <!-- Coligações por legislatura -->
+        <div class="card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>🤝 Coligações por Legislatura</span>
+            <select style="font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--tx);" id="filtroLegColig" onchange="renderPartidos()">
+              <option value="">Todas</option>
+              <option value="19ª">19ª (2025–2028)</option>
+              <option value="18ª">18ª (2021–2024)</option>
+              <option value="17ª">17ª (2017–2020)</option>
+            </select>
+          </div>
+          <div id="listaColigacoes"></div>
+        </div>
+      </div>
+    </div>
     <div class="page" id="p-admin">
       <div class="ph">
         <div><div class="ph-title">🔧 Administração</div><div class="ph-sub">Usuários cadastrados em todas as Câmaras</div></div>
@@ -663,31 +715,176 @@ select.linp option{color:#0F172A;background:#fff;}
 
 <!-- MODALS -->
 <div class="ov" id="mVereador">
-  <div class="modal">
-    <div class="m-title">👤 Cadastrar Novo Usuário</div>
-    <div style="font-size:11.5px;color:var(--tx3);margin:-6px 0 12px;">Cria um login real para esta pessoa acessar o LegisGov, já vinculado à sua Câmara.</div>
-    <label class="m-lbl">Nome Completo</label><input class="m-inp" id="vNome" placeholder="Nome civil">
-    <label class="m-lbl">Cargo</label>
-    <select class="m-sel" id="vCargo">
-      <option value="Vereador">Vereador(a)</option>
-      <option value="Presidente">Presidente</option>
-      <option value="Secretaria">Secretaria Legislativa</option>
-      <option value="Procuradoria">Procuradoria Jurídica</option>
-      <option value="Comissao">Comissão</option>
-      <option value="Administrador">Administrador</option>
-    </select>
-    <div class="fg"><div><label class="m-lbl">Partido</label><input class="m-inp" id="vPartido" placeholder="Sigla (se Vereador)"></div><div><label class="m-lbl">CPF</label><input class="m-inp" id="vCpf" placeholder="000.000.000-00"></div></div>
-    <label class="m-lbl">CPF de acesso</label><input class="m-inp" id="vCpfLogin" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)">
-    <label class="m-lbl">Senha provisória</label><input class="m-inp" id="vSenha" type="text" placeholder="Mínimo 6 caracteres">
-    <div style="font-size:11px;color:var(--tx3);margin:-6px 0 12px;">Combine essa senha com a pessoa por fora do sistema — ela pode trocar depois.</div>
-    <button class="btn-p" onclick="salvarVereador()">💾 CADASTRAR E CRIAR LOGIN</button>
-    <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
+  <div class="modal" style="max-width:660px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div class="m-title" style="margin-bottom:0;" id="mVer-title">👤 Cadastrar Vereador</div>
+      <button onclick="fecharModal('mVereador')" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;color:var(--tx3);">✕</button>
+    </div>
+
+    <!-- abas -->
+    <div class="mv-tabs">
+      <div class="mv-tab on" onclick="mvTab(0)" id="mvt0">👤 Pessoal</div>
+      <div class="mv-tab" onclick="mvTab(1)" id="mvt1">📍 Endereço</div>
+      <div class="mv-tab" onclick="mvTab(2)" id="mvt2">📞 Contato</div>
+      <div class="mv-tab" onclick="mvTab(3)" id="mvt3">🗂️ Comissões</div>
+      <div class="mv-tab" onclick="mvTab(4)" id="mvt4">🔒 Acesso</div>
+    </div>
+
+    <!-- ABA 0 — PESSOAL -->
+    <div class="mv-pane on" id="mvp0">
+      <div class="fg"><div><label class="m-lbl">Nome Completo *</label><input class="m-inp" id="vNome" placeholder="Nome civil completo"></div>
+      <div><label class="m-lbl">Nome na Urna</label><input class="m-inp" id="vNomeUrna" placeholder="Como aparece no título"></div></div>
+      <div class="fg">
+        <div><label class="m-lbl">Cargo *</label>
+          <select class="m-sel" id="vCargo" onchange="mvAtualizarCargo()">
+            <option value="Vereador">Vereador(a)</option>
+            <option value="Suplente">Suplente</option>
+            <option value="Presidente">Presidente da Câmara</option>
+            <option value="Secretaria">Secretaria Legislativa</option>
+            <option value="Procuradoria">Procuradoria Jurídica</option>
+            <option value="Comissao">Comissão</option>
+            <option value="Administrador">Administrador</option>
+          </select></div>
+        <div id="vPartidoWrap"><label class="m-lbl">Partido</label>
+          <select class="m-sel" id="vPartido">
+            <option value="">Selecione...</option>
+          </select></div>
+      </div>
+      <div class="fg">
+        <div><label class="m-lbl">CPF *</label><input class="m-inp" id="vCpf" placeholder="000.000.000-00" oninput="mascaraCpf(this);document.getElementById('vCpfLogin').value=this.value;"></div>
+        <div><label class="m-lbl">RG</label><input class="m-inp" id="vRg" placeholder="00.000.000-0"></div>
+      </div>
+      <div class="fg">
+        <div><label class="m-lbl">Data de Nascimento</label><input class="m-inp" id="vNasc" type="date"></div>
+        <div><label class="m-lbl">Gênero</label>
+          <select class="m-sel" id="vGenero"><option>Masculino</option><option>Feminino</option><option>Outro</option><option>Prefere não informar</option></select></div>
+      </div>
+      <div><label class="m-lbl">E-mail</label><input class="m-inp" id="vEmail" type="email" placeholder="email@exemplo.com"></div>
+      <!-- Suplente: campo extra -->
+      <div id="vSuplenteWrap" style="display:none;">
+        <div style="background:var(--gold-l,#FFFBEB);border:1px solid #D4A017;border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;">
+          <div style="font-size:11.5px;font-weight:700;color:#92660A;margin-bottom:8px;">📋 Informações de Suplência</div>
+          <div class="fg">
+            <div><label class="m-lbl">Substituindo</label>
+              <select class="m-sel" id="vSuplenteDeWho"><option value="">Nenhum (aguardando)</option></select></div>
+            <div><label class="m-lbl">Posição na lista</label><input class="m-inp" id="vPosLista" type="number" min="1" placeholder="Ex: 1º suplente"></div>
+          </div>
+          <div class="fg">
+            <div><label class="m-lbl">Data início suplência</label><input class="m-inp" id="vSupIni" type="date"></div>
+            <div><label class="m-lbl">Data prevista fim</label><input class="m-inp" id="vSupFim" type="date"></div>
+          </div>
+          <div><label class="m-lbl">Motivo da suplência</label>
+            <select class="m-sel" id="vSupMotivo">
+              <option>Licença médica</option>
+              <option>Licença para cargo comissionado</option>
+              <option>Licença maternidade/paternidade</option>
+              <option>Falecimento do titular</option>
+              <option>Renúncia do titular</option>
+              <option>Cassação do titular</option>
+              <option>Outro</option>
+            </select></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;"><button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mvTab(1)">Próximo →</button></div>
+    </div>
+
+    <!-- ABA 1 — ENDEREÇO -->
+    <div class="mv-pane" id="mvp1">
+      <div class="fg">
+        <div><label class="m-lbl">CEP</label><input class="m-inp" id="vCep" placeholder="00000-000" oninput="buscarCep(this.value)"></div>
+        <div><label class="m-lbl">Número</label><input class="m-inp" id="vNumero" placeholder="123"></div>
+      </div>
+      <label class="m-lbl">Logradouro</label><input class="m-inp" id="vLogradouro" placeholder="Rua, Av...">
+      <div class="fg">
+        <div><label class="m-lbl">Bairro</label><input class="m-inp" id="vBairro" placeholder="Bairro"></div>
+        <div><label class="m-lbl">Complemento</label><input class="m-inp" id="vCompl" placeholder="Apto, Bloco..."></div>
+      </div>
+      <div class="fg">
+        <div><label class="m-lbl">Cidade</label><input class="m-inp" id="vCidade" placeholder="Cidade"></div>
+        <div><label class="m-lbl">Estado</label><input class="m-inp" id="vEstado" placeholder="UF" maxlength="2"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <button class="btn-sm" style="border:1px solid var(--border);" onclick="mvTab(0)">← Voltar</button>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mvTab(2)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- ABA 2 — CONTATO -->
+    <div class="mv-pane" id="mvp2">
+      <div class="fg">
+        <div><label class="m-lbl">Celular</label><input class="m-inp" id="vCelular" placeholder="(00) 9 0000-0000"></div>
+        <div><label class="m-lbl">Telefone fixo</label><input class="m-inp" id="vTelFixo" placeholder="(00) 0000-0000"></div>
+      </div>
+      <div class="fg">
+        <div><label class="m-lbl">Ramal / Gabinete</label><input class="m-inp" id="vGabinete" placeholder="Ex: Gabinete 03"></div>
+        <div><label class="m-lbl">Instagram</label><input class="m-inp" id="vInstagram" placeholder="@usuario"></div>
+      </div>
+      <div><label class="m-lbl">Facebook</label><input class="m-inp" id="vFacebook" placeholder="facebook.com/usuario"></div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-bottom:12px;">
+        <div style="font-size:11.5px;font-weight:700;color:var(--tx2);margin-bottom:8px;">📲 Telegram (notificações)</div>
+        <div class="fg">
+          <div><label class="m-lbl">Username</label><input class="m-inp" id="vTgUser" placeholder="@usuario" style="margin-bottom:0;"></div>
+          <div><label class="m-lbl">Chat ID</label><input class="m-inp" id="vTgId" placeholder="123456789" style="margin-bottom:0;"></div>
+        </div>
+        <button onclick="testarTelegram()" style="width:100%;margin-top:8px;padding:8px;border-radius:6px;background:var(--teal-l,#F0FDFA);color:#0F766E;border:1px solid #99F6E4;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📤 Testar envio</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <button class="btn-sm" style="border:1px solid var(--border);" onclick="mvTab(1)">← Voltar</button>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mvTab(3)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- ABA 3 — COMISSÕES -->
+    <div class="mv-pane" id="mvp3">
+      <div style="font-size:12px;color:var(--tx3);margin-bottom:12px;">Selecione as comissões das quais este vereador faz parte e seu papel em cada uma.</div>
+      <div id="vComissoesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+      <div style="display:flex;justify-content:space-between;">
+        <button class="btn-sm" style="border:1px solid var(--border);" onclick="mvTab(2)">← Voltar</button>
+        <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="mvTab(4)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- ABA 4 — ACESSO -->
+    <div class="mv-pane" id="mvp4">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:11.5px;color:var(--tx3);margin-bottom:14px;">
+        🔒 O vereador usará o <strong>CPF informado na aba Pessoal</strong> e esta senha para acessar o LegisGov.
+      </div>
+      <div class="fg">
+        <div><label class="m-lbl">CPF de acesso</label><input class="m-inp" id="vCpfLogin" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)"></div>
+        <div><label class="m-lbl">Senha provisória *</label><input class="m-inp" id="vSenha" type="text" placeholder="Mínimo 6 caracteres"></div>
+      </div>
+      <div style="font-size:11px;color:var(--tx3);margin:-6px 0 14px;">Passe a senha para a pessoa por outro canal (ex: WhatsApp) — ela poderá trocar depois.</div>
+      <label class="m-lbl">Perfil de acesso</label>
+      <div class="perfil-opts" id="vPerfilOpts">
+        <div class="perfil-opt on" onclick="mvSetPerfil('total',this)">
+          <div class="perfil-opt-title">🏠 Acesso Total</div>
+          <div class="perfil-opt-desc">Vê todas as telas do sistema</div>
+        </div>
+        <div class="perfil-opt" onclick="mvSetPerfil('leitura',this)">
+          <div class="perfil-opt-title">👁 Somente Leitura</div>
+          <div class="perfil-opt-desc">Consulta sem editar</div>
+        </div>
+        <div class="perfil-opt" onclick="mvSetPerfil('votacao',this)">
+          <div class="perfil-opt-title">🗳️ Votação + Leitura</div>
+          <div class="perfil-opt-desc">Vota e consulta</div>
+        </div>
+        <div class="perfil-opt" onclick="mvSetPerfil('admin',this)">
+          <div class="perfil-opt-title">⚙️ Administrador</div>
+          <div class="perfil-opt-desc">Gerencia usuários</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+        <button class="btn-sm" style="border:1px solid var(--border);" onclick="mvTab(3)">← Voltar</button>
+        <button class="btn-p" style="flex:1;margin:0;" onclick="salvarVereador()">🔒 CADASTRAR VEREADOR</button>
+      </div>
+      <button class="btn-c" onclick="fecharModal('mVereador')">Cancelar</button>
+      <div style="font-size:10px;color:var(--tx4);margin-top:8px;text-align:center;">* campos obrigatórios</div>
+    </div>
+
   </div>
 </div>
 
 <div class="ov" id="mAdminUsuario">
-  <div class="modal">
-    <div class="m-title">🔧 Cadastrar Usuário em Qualquer Câmara</div>
     <div style="font-size:11.5px;color:var(--tx3);margin:-6px 0 12px;">Disponível só para o cargo Suporte. Cria um login real, vinculado à Câmara escolhida abaixo.</div>
     <label class="m-lbl">Câmara</label>
     <select class="m-sel" id="auCamara"></select>
@@ -718,6 +915,57 @@ select.linp option{color:#0F172A;background:#fff;}
     <label class="m-lbl">Presidente</label><select class="m-sel" id="cPresidente"></select>
     <button class="btn-p" onclick="salvarComissao()">💾 CRIAR COMISSÃO</button>
     <button class="btn-c" onclick="fecharModal('mComissao')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mPartido">
+  <div class="modal">
+    <div class="m-title">🏛️ Cadastrar Partido</div>
+    <div class="fg">
+      <div><label class="m-lbl">Sigla *</label><input class="m-inp" id="ptSigla" placeholder="Ex: PSD" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()"></div>
+      <div><label class="m-lbl">Cor (hex)</label><input class="m-inp" id="ptCor" type="color" value="#0F2A4A" style="height:42px;padding:4px;"></div>
+    </div>
+    <label class="m-lbl">Nome completo</label><input class="m-inp" id="ptNome" placeholder="Ex: Partido Social Democrático">
+    <div class="fg">
+      <div><label class="m-lbl">Número eleitoral</label><input class="m-inp" id="ptNum" type="number" placeholder="Ex: 55"></div>
+      <div><label class="m-lbl">Espectro político</label>
+        <select class="m-sel" id="ptEspectro">
+          <option>Centro</option><option>Esquerda</option><option>Centro-esquerda</option>
+          <option>Centro-direita</option><option>Direita</option>
+        </select></div>
+    </div>
+    <label class="m-lbl">Observações</label>
+    <textarea class="m-ta" id="ptObs" placeholder="Ex: Filiados, alianças históricas, observações..."></textarea>
+    <button class="btn-p" onclick="salvarPartido()">🏛️ CADASTRAR PARTIDO</button>
+    <button class="btn-c" onclick="fecharModal('mPartido')">Cancelar</button>
+  </div>
+</div>
+
+<div class="ov" id="mColigacao">
+  <div class="modal">
+    <div class="m-title">🤝 Nova Coligação</div>
+    <div class="fg">
+      <div><label class="m-lbl">Nome da coligação *</label><input class="m-inp" id="colNome" placeholder="Ex: União pelo Progresso"></div>
+      <div><label class="m-lbl">Legislatura *</label>
+        <select class="m-sel" id="colLeg">
+          <option value="19ª">19ª (2025–2028)</option>
+          <option value="18ª">18ª (2021–2024)</option>
+          <option value="17ª">17ª (2017–2020)</option>
+          <option value="outra">Outra...</option>
+        </select></div>
+    </div>
+    <label class="m-lbl">Partidos da coligação</label>
+    <div id="colPartidosCheck" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:12px;min-height:48px;"></div>
+    <div class="fg">
+      <div><label class="m-lbl">Candidato a Prefeito</label><input class="m-inp" id="colCandidato" placeholder="Nome"></div>
+      <div><label class="m-lbl">Vice</label><input class="m-inp" id="colVice" placeholder="Nome"></div>
+    </div>
+    <label class="m-lbl">Vagas conquistadas na Câmara</label>
+    <input class="m-inp" id="colVagas" type="number" min="0" placeholder="Nº de vereadores eleitos por esta coligação">
+    <label class="m-lbl">Observações</label>
+    <textarea class="m-ta" id="colObs" placeholder="Ex: Resultado das eleições, contexto político..."></textarea>
+    <button class="btn-p" onclick="salvarColigacao()">🤝 CADASTRAR COLIGAÇÃO</button>
+    <button class="btn-c" onclick="fecharModal('mColigacao')">Cancelar</button>
   </div>
 </div>
 
@@ -776,6 +1024,7 @@ let camaraAtual=null; // código da Câmara do usuário logado, definido pelo PE
 let meuPerfil=null; // {nome, cargo, camara_codigo}
 let sessaoAuth=null; // {access_token, refresh_token} da sessão Supabase Auth atual
 let vereadores=[],comissoes=[],materias=[],sessoes=[],votos=[],contasExec=[],emendas=[],auditoria=[],notificacoes=[];
+let partidos=[],coligacoes=[];
 let sessaoAberta=false, liveOn=false, cronInterval=null, cronSegundos=180;
 let materiaSelecionada=null;
 let materiaEmVotacao=null; // número da matéria atualmente sendo votada na tela de Votação Eletrônica
@@ -927,9 +1176,9 @@ function mascaraCpf(input){
 }
 function cpfParaEmailTecnico(cpfDigitado){
   // CPF não é um e-mail de verdade, mas o Supabase Auth exige um campo "email" tecnicamente.
-  // Convertemos o CPF (só números) num endereço técnico interno que nunca aparece para o usuário.
+  // Convertemos o CPF (só números) num endereço técnico que o Supabase aceita como válido.
   const apenasNumeros=cpfDigitado.replace(/\D/g,'');
-  return `${apenasNumeros}@legisgov.interno`;
+  return `cpf${apenasNumeros}@legisgov.com.br`;
 }
 function mostrarErroLogin(msg){
   const el=document.getElementById('loginErro');
@@ -1066,6 +1315,19 @@ function aplicarDadosOffline(){
     {user:'João Ferreira Lima',acao:'Protocolo de Matéria',recurso:'PL 045/2026',ip:'192.168.1.55',data:'15/06/2026 11:02'},
     {user:'Presidente',acao:'Abertura de Sessão',recurso:'Sessão 18/06/2026',ip:'192.168.1.05',data:'18/06/2026 14:00'},
   ];
+  partidos=[
+    {sigla:'PSD',nome:'Partido Social Democrático',numero:55,cor:'#0F2A4A',espectro:'Centro-direita',obs:''},
+    {sigla:'PT', nome:'Partido dos Trabalhadores',  numero:13,cor:'#B91C1C',espectro:'Esquerda',obs:''},
+    {sigla:'MDB',nome:'Movimento Democrático Brasileiro',numero:15,cor:'#1D4ED8',espectro:'Centro',obs:''},
+    {sigla:'PSDB',nome:'Partido da Social Democracia Brasileira',numero:45,cor:'#4338CA',espectro:'Centro',obs:''},
+    {sigla:'PL', nome:'Partido Liberal',            numero:22,cor:'#1E40AF',espectro:'Direita',obs:''},
+    {sigla:'DEM',nome:'Democratas (extinto — fundiu no UNIÃO)',numero:25,cor:'#6B7280',espectro:'Centro-direita',obs:'Extinto em 2022, fundiu com PSL para formar o UNIÃO Brasil'},
+  ];
+  coligacoes=[
+    {nome:'União pelo Progresso',legislatura:'19ª',partidos:['PSD','MDB'],candidato:'Antônio Sousa',vice:'Beatriz Lima',vagas:5,obs:'Maioria na câmara'},
+    {nome:'Força do Povo',       legislatura:'19ª',partidos:['PT','PSDB'],candidato:'Carlos Ribeiro',vice:'Maria José',vagas:3,obs:''},
+    {nome:'Renovação Andaraí',   legislatura:'18ª',partidos:['DEM','PSD'],candidato:'Pedro Alves',vice:'João Lima',vagas:6,obs:'Ganhou a maioria em 2020'},
+  ];
 }
 
 async function initDados(){
@@ -1192,9 +1454,9 @@ function sw(page,el){
   document.getElementById('p-'+page)?.classList.add('on');
   const ni=document.getElementById('ni-'+page);
   if(ni)ni.classList.add('on');else if(el)el.classList.add('on');
-  const titles={dash:'Dashboard',vereadores:'Vereadores',comissoes:'Comissões',materias:'Processo Legislativo',tramitacao:'Controle de Tramitação',sessao:'Sessão Plenária',votacao:'Votação Eletrônica',transmissao:'Transmissão ao Vivo',contas:'Julgamento de Contas',emendas:'Emendas Parlamentares',transparencia:'Portal da Transparência',atas:'Atas com IA',assistente:'Assistente IA',auditoria:'Auditoria',notificacoes:'Notificações',admin:'Administração'};
+  const titles={dash:'Dashboard',vereadores:'Vereadores',partidos:'Partidos & Coligações',comissoes:'Comissões',materias:'Processo Legislativo',tramitacao:'Controle de Tramitação',sessao:'Sessão Plenária',votacao:'Votação Eletrônica',transmissao:'Transmissão ao Vivo',contas:'Julgamento de Contas',emendas:'Emendas Parlamentares',transparencia:'Portal da Transparência',atas:'Atas com IA',assistente:'Assistente IA',auditoria:'Auditoria',notificacoes:'Notificações',admin:'Administração'};
   document.getElementById('tbPage').textContent=titles[page]||page;
-  const r={dash:renderDash,vereadores:renderVereadores,comissoes:renderComissoes,materias:renderMaterias,tramitacao:renderTramitacao,sessao:renderSessao,votacao:renderVotacao,transmissao:renderTransmissao,contas:renderContas,emendas:renderEmendas,transparencia:renderTransparencia,atas:renderAtas,assistente:renderAssistente,auditoria:renderAuditoria,notificacoes:renderNotificacoes,admin:renderAdmin};
+  const r={dash:renderDash,vereadores:renderVereadores,partidos:renderPartidos,comissoes:renderComissoes,materias:renderMaterias,tramitacao:renderTramitacao,sessao:renderSessao,votacao:renderVotacao,transmissao:renderTransmissao,contas:renderContas,emendas:renderEmendas,transparencia:renderTransparencia,atas:renderAtas,assistente:renderAssistente,auditoria:renderAuditoria,notificacoes:renderNotificacoes,admin:renderAdmin};
   if(r[page])setTimeout(r[page],30);
   fecharDet();document.getElementById('sidebar').classList.remove('on');
 }
@@ -1225,9 +1487,180 @@ function renderDash(){
     clEl.innerHTML=meses.map(m=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--tx3);font-weight:600;">${m}</div>`).join('');}
 }
 
+// ═══ MODAL VEREADOR — ABAS & HELPERS ═══
+let mvPerfilSel='total';
+function mvTab(n){
+  for(let i=0;i<5;i++){
+    document.getElementById('mvt'+i)?.classList.toggle('on',i===n);
+    document.getElementById('mvp'+i)?.classList.toggle('on',i===n);
+  }
+  if(n===3) mvPopularComissoes();
+  if(n===4){
+    // espelha CPF
+    const cpf=document.getElementById('vCpf')?.value;
+    if(cpf&&!document.getElementById('vCpfLogin').value) document.getElementById('vCpfLogin').value=cpf;
+  }
+}
+function mvSetPerfil(p,el){
+  mvPerfilSel=p;
+  document.querySelectorAll('.perfil-opt').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+}
+function mvAtualizarCargo(){
+  const cargo=document.getElementById('vCargo').value;
+  const sup=document.getElementById('vSuplenteWrap');
+  if(sup) sup.style.display=cargo==='Suplente'?'block':'none';
+  // popular select de quem está substituindo
+  if(cargo==='Suplente'){
+    const sel=document.getElementById('vSuplenteDeWho');
+    if(sel) sel.innerHTML='<option value="">Nenhum (aguardando)</option>'+
+      vereadores.filter(v=>v.status==='active').map(v=>`<option value="${v.id}">${v.nome}</option>`).join('');
+  }
+}
+function mvPopularComissoes(){
+  const cont=document.getElementById('vComissoesList');if(!cont)return;
+  if(!comissoes.length){cont.innerHTML='<div style="font-size:12px;color:var(--tx3);">Nenhuma comissão cadastrada.</div>';return;}
+  cont.innerHTML=comissoes.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <input type="checkbox" id="vcom${i}" style="width:15px;height:15px;">
+      <label for="vcom${i}" style="flex:1;font-size:13px;cursor:pointer;">${c.nome}</label>
+      <select style="font-size:11px;padding:4px 7px;border:1px solid var(--border);border-radius:6px;background:var(--surface2);">
+        <option>Membro</option><option>Presidente</option><option>Vice-Presidente</option><option>Relator</option><option>Secretário</option>
+      </select>
+    </div>`).join('');
+}
+function abrirNovoVereador(){
+  mvTab(0);
+  mvPerfilSel='total';
+  document.querySelectorAll('.perfil-opt').forEach((x,i)=>{x.classList.toggle('on',i===0);});
+  // popular select de partidos
+  const selPt=document.getElementById('vPartido');
+  if(selPt) selPt.innerHTML='<option value="">Selecione...</option>'+
+    partidos.map(p=>`<option value="${p.sigla}">${p.sigla} — ${p.nome}</option>`).join('');
+  abrirModal('mVereador');
+}
+function buscarCep(cep){
+  cep=cep.replace(/\D/g,'');
+  if(cep.length!==8)return;
+  fetch(`https://viacep.com.br/ws/${cep}/json/`).then(r=>r.json()).then(d=>{
+    if(d.erro)return;
+    document.getElementById('vLogradouro').value=d.logradouro||'';
+    document.getElementById('vBairro').value=d.bairro||'';
+    document.getElementById('vCidade').value=d.localidade||'';
+    document.getElementById('vEstado').value=d.uf||'';
+  }).catch(()=>{});
+}
+function testarTelegram(){
+  const user=document.getElementById('vTgUser')?.value;
+  const chatId=document.getElementById('vTgId')?.value;
+  if(!chatId&&!user){toast('⚠️ Informe o Username ou Chat ID do Telegram');return;}
+  toast('📤 Mensagem de teste enviada! Verifique o Telegram.');
+}
+
+// ═══ PARTIDOS & COLIGAÇÕES ═══
+function renderPartidos(){
+  const lp=document.getElementById('listaPartidos');
+  if(lp) lp.innerHTML=partidos.length===0?
+    '<div style="font-size:12px;color:var(--tx3);text-align:center;padding:20px;">Nenhum partido cadastrado. Clique em "+ Novo Partido" para começar.</div>':
+    partidos.map(p=>`
+    <div class="partido-card">
+      <div class="partido-sigla" style="background:${p.cor};">${p.sigla}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:800;color:var(--tx);">${p.sigla} — ${p.nome}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:2px;">Nº ${p.numero} · ${p.espectro}${p.obs?' · <em>'+p.obs+'</em>':''}</div>
+        <div style="font-size:11px;color:var(--navy2);margin-top:3px;">
+          ${vereadores.filter(v=>v.partido===p.sigla).length} vereador(es) atual(is)
+        </div>
+      </div>
+      <button onclick="removerPartido('${p.sigla}')" class="leg-del" title="Remover">✕</button>
+    </div>`).join('');
+
+  const lc=document.getElementById('listaColigacoes');
+  const filtro=document.getElementById('filtroLegColig')?.value||'';
+  const lista=filtro?coligacoes.filter(c=>c.legislatura===filtro):coligacoes;
+  if(lc) lc.innerHTML=lista.length===0?
+    '<div style="font-size:12px;color:var(--tx3);text-align:center;padding:20px;">Nenhuma coligação cadastrada.</div>':
+    lista.map(c=>`
+    <div class="colig-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <strong style="font-size:13px;flex:1;">${c.nome}</strong>
+        <span class="b b-navy">${c.legislatura} Leg.</span>
+        <span class="b b-emerald">${c.vagas} vaga${c.vagas!==1?'s':''}</span>
+        <button onclick="removerColigacao('${c.nome}')" class="leg-del">✕</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+        ${c.partidos.map(sig=>{const pt=partidos.find(p=>p.sigla===sig);return`<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff;background:${pt?.cor||'#64748B'};">${sig}</span>`;}).join('')}
+      </div>
+      ${c.candidato?`<div style="font-size:11px;color:var(--tx3);">🗳️ Candidato: ${c.candidato}${c.vice?' · Vice: '+c.vice:''}</div>`:''}
+      ${c.obs?`<div style="font-size:11px;color:var(--tx3);margin-top:2px;">💬 ${c.obs}</div>`:''}
+    </div>`).join('');
+
+  // popular checkboxes do modal de coligação com os partidos cadastrados
+  const cc=document.getElementById('colPartidosCheck');
+  if(cc) cc.innerHTML=partidos.map(p=>`
+    <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:6px;border:1px solid ${p.cor};background:${p.cor}15;">
+      <input type="checkbox" value="${p.sigla}">
+      <span style="font-weight:700;color:${p.cor};">${p.sigla}</span>
+    </label>`).join('');
+}
+function salvarPartido(){
+  const sigla=document.getElementById('ptSigla')?.value.trim().toUpperCase();
+  const nome=document.getElementById('ptNome')?.value.trim();
+  if(!sigla){toast('⚠️ Informe a sigla do partido');return;}
+  if(partidos.find(p=>p.sigla===sigla)){toast('⚠️ Partido já cadastrado');return;}
+  partidos.push({
+    sigla,nome:nome||sigla,
+    numero:parseInt(document.getElementById('ptNum')?.value)||0,
+    cor:document.getElementById('ptCor')?.value||'#0F2A4A',
+    espectro:document.getElementById('ptEspectro')?.value||'Centro',
+    obs:document.getElementById('ptObs')?.value||''
+  });
+  fecharModal('mPartido');
+  renderPartidos();
+  toast(`✅ Partido ${sigla} cadastrado!`);
+}
+function removerPartido(sigla){
+  if(!confirm(`Remover ${sigla}?`))return;
+  partidos=partidos.filter(p=>p.sigla!==sigla);
+  renderPartidos();
+  toast(`🗑️ ${sigla} removido`);
+}
+function salvarColigacao(){
+  const nome=document.getElementById('colNome')?.value.trim();
+  const leg=document.getElementById('colLeg')?.value;
+  if(!nome||!leg){toast('⚠️ Informe nome e legislatura');return;}
+  const checks=[...document.querySelectorAll('#colPartidosCheck input:checked')].map(c=>c.value);
+  coligacoes.push({
+    nome,legislatura:leg,partidos:checks,
+    candidato:document.getElementById('colCandidato')?.value||'',
+    vice:document.getElementById('colVice')?.value||'',
+    vagas:parseInt(document.getElementById('colVagas')?.value)||0,
+    obs:document.getElementById('colObs')?.value||''
+  });
+  fecharModal('mColigacao');
+  renderPartidos();
+  toast(`✅ Coligação "${nome}" cadastrada!`);
+}
+function removerColigacao(nome){
+  if(!confirm(`Remover coligação "${nome}"?`))return;
+  coligacoes=coligacoes.filter(c=>c.nome!==nome);
+  renderPartidos();
+  toast('🗑️ Coligação removida');
+}
+
 // ═══ VEREADORES ═══
 function renderVereadores(){
-  document.getElementById('tbVereadores').innerHTML=vereadores.map(v=>`<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;"><td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td><td><strong>${v.nome}</strong></td><td><span class="b b-navy">${v.partido}</span></td><td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca}%;background:${v.presenca>=80?'#0E7C5A':v.presenca>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca}%</span></div></td><td>${v.proposicoes}</td><td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td></tr>`).join('');
+  document.getElementById('tbVereadores').innerHTML=vereadores.map(v=>{
+    const isSup=v.cargo==='Suplente';
+    return `<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;">
+      <td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td>
+      <td><strong>${v.nome}</strong>${isSup?'<span class="sup-badge" style="margin-left:6px;">Suplente</span>':''}</td>
+      <td><span class="b b-navy">${v.partido}</span></td>
+      <td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca}%;background:${v.presenca>=80?'#0E7C5A':v.presenca>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca}%</span></div></td>
+      <td>${v.proposicoes}</td>
+      <td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td>
+    </tr>`;
+  }).join('');
   // só Secretaria/Presidente/Administrador podem cadastrar novos usuários (a tela só mostra; o banco também impede via RLS)
   const podeCadastrar=['Secretaria','Presidente','Administrador'].includes(meuPerfil?.cargo);
   const btn=document.getElementById('btnNovoVereador');
@@ -1517,6 +1950,7 @@ async function salvarVereador(){
   const cpfLogin=document.getElementById('vCpfLogin').value.trim();
   const senha=document.getElementById('vSenha').value;
   const partido=document.getElementById('vPartido').value||'—';
+  const nomeUrna=document.getElementById('vNomeUrna')?.value.trim()||'';
   const apenasNumeros=cpfLogin.replace(/\D/g,'');
 
   if(!nome){toast('⚠️ Informe o nome');return;}
@@ -1524,29 +1958,34 @@ async function salvarVereador(){
   if(senha.length<6){toast('⚠️ A senha precisa ter pelo menos 6 caracteres');return;}
 
   if(!supabaseOnline){
-    toast('⚠️ Sem conexão com o banco — não é possível criar login agora');
+    // modo demo — adiciona localmente
+    const novoId=vereadores.length+10;
+    const initials=nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    const cores=['#0F2A4A','#0E7C5A','#B8860B','#5B21B6','#DC2626','#0369A1'];
+    vereadores.push({
+      id:novoId,nome,partido,presenca:100,proposicoes:0,status:'active',
+      av:initials,cor:cores[novoId%cores.length],presente:true,
+      cargo:cargo,nomeUrna:nomeUrna,legislaturas:[]
+    });
+    fecharModal('mVereador');
+    renderVereadores();
+    toast(`✅ ${nome} (${cargo}) adicionado(a) no modo demo!`);
     return;
   }
 
   const emailTecnico=cpfParaEmailTecnico(cpfLogin);
 
   try{
-    // 1) cria o login real no Supabase Auth (senha sempre criptografada, identificado internamente pelo CPF)
     const novoUsuario=await auth.cadastrar(emailTecnico,senha);
     const novoUserId=novoUsuario.user?.id || novoUsuario.id;
     if(!novoUserId)throw new Error('Não foi possível obter o ID do novo usuário');
-
-    // 2) vincula o perfil dele à MESMA Câmara de quem está cadastrando, com o cargo escolhido
     await db.cadastrarPerfilUsuario(novoUserId,nome,cargo);
-
-    // 3) se for Vereador, também aparece na lista de vereadores da Câmara
-    if(cargo==='Vereador'||cargo==='Presidente'){
+    if(cargo==='Vereador'||cargo==='Presidente'||cargo==='Suplente'){
       await sbRequest('legisgov_vereadores',{
         method:'POST',
         body:JSON.stringify({id:vereadores.length+1,nome,partido,presente:true,eu:false,camara_codigo:camaraAtual})
       });
     }
-
     fecharModal('mVereador');
     await initDados();
     renderAll();
