@@ -1393,11 +1393,31 @@ async function initDados(){
       db.listarVereadores(),
       db.listarMaterias(),
     ]);
-    vereadores = vereadoresDB.map(v => ({
-      id: v.id, nome: v.nome, partido: v.partido, presente: v.presente, eu: v.eu,
-      // campos de exibição usados no Dashboard/Vereadores (mantidos com valor padrão por enquanto)
-      presenca: 90, proposicoes: 0, status: 'active', av: v.nome.split(' ').map(p=>p[0]).slice(0,2).join(''), cor: '#0F2A4A'
-    }));
+    vereadores = vereadoresDB.map(v => {
+      const nomePartes = v.nome ? v.nome.split(' ') : ['?'];
+      const initials = nomePartes.map(p=>p[0]).slice(0,2).join('').toUpperCase();
+      const coresBase = ['#0F2A4A','#0E7C5A','#B8860B','#5B21B6','#DC2626','#0369A1','#6D28D9','#B45309'];
+      return {
+        id: v.id,
+        nome: v.nome,
+        partido: v.partido || '—',
+        presente: v.presente,
+        eu: v.eu,
+        cargo: v.cargo || 'Vereador',
+        nomeUrna: v.nome_urna || '',
+        legislaturas: v.legislaturas || [],
+        presenca: v.presenca ?? 90,
+        proposicoes: v.proposicoes ?? 0,
+        status: 'active',
+        av: initials,
+        cor: coresBase[v.id % coresBase.length]
+      };
+    });
+    // Se o banco retornou vazio (câmara nova, ainda sem vereadores cadastrados),
+    // mantém a lista vazia mas mostra o botão de cadastro
+    if(vereadores.length === 0){
+      console.log('ℹ️ Nenhum vereador encontrado no banco para esta Câmara — lista vazia.');
+    }
     materias = materiasDB.map(m => ({
       num: m.num, tipo: m.tipo, ementa: m.ementa, justificativa: m.justificativa,
       autor: m.autor, situacao: m.situacao, prazo: m.prazo, critico: m.critico,
@@ -1674,21 +1694,30 @@ function removerColigacao(nome){
 
 // ═══ VEREADORES ═══
 function renderVereadores(){
-  document.getElementById('tbVereadores').innerHTML=vereadores.map(v=>{
-    const isSup=v.cargo==='Suplente';
-    return `<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;">
-      <td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td>
-      <td><strong>${v.nome}</strong>${isSup?'<span class="sup-badge" style="margin-left:6px;">Suplente</span>':''}</td>
-      <td><span class="b b-navy">${v.partido}</span></td>
-      <td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca}%;background:${v.presenca>=80?'#0E7C5A':v.presenca>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca}%</span></div></td>
-      <td>${v.proposicoes}</td>
-      <td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td>
-    </tr>`;
-  }).join('');
-  // só Secretaria/Presidente/Administrador podem cadastrar novos usuários (a tela só mostra; o banco também impede via RLS)
-  const podeCadastrar=['Secretaria','Presidente','Administrador'].includes(meuPerfil?.cargo);
-  const btn=document.getElementById('btnNovoVereador');
-  if(btn)btn.style.display=podeCadastrar?'inline-flex':'none';
+  const tbody = document.getElementById('tbVereadores');
+  if(vereadores.length === 0){
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--tx3);font-size:13px;">
+      Nenhum vereador cadastrado ainda.<br>
+      <span style="font-size:12px;">Clique em <strong>"+ Novo Cadastro"</strong> para adicionar o primeiro vereador.</span>
+    </td></tr>`;
+  } else {
+    tbody.innerHTML = vereadores.map(v=>{
+      const isSup = v.cargo==='Suplente';
+      return `<tr onclick="abrirDetVereador(${v.id})" style="cursor:pointer;">
+        <td><div class="av" style="width:28px;height:28px;background:${v.cor};font-size:10px;">${v.av}</div></td>
+        <td><strong>${v.nome}</strong>${isSup?'<span class="sup-badge" style="margin-left:6px;">Suplente</span>':''}</td>
+        <td><span class="b b-navy">${v.partido}</span></td>
+        <td><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="width:60px;"><div class="pb-fill" style="width:${v.presenca}%;background:${v.presenca>=80?'#0E7C5A':v.presenca>=60?'#D4A017':'#DC2626'};"></div></div><span style="font-size:11px;">${v.presenca}%</span></div></td>
+        <td>${v.proposicoes}</td>
+        <td><span class="b ${v.status==='active'?'b-emerald':'b-red'}">${v.status==='active'?'Ativo':'Atenção'}</span></td>
+      </tr>`;
+    }).join('');
+  }
+  // Botão: visível para Secretaria/Presidente/Administrador — e SEMPRE em modo demo/offline
+  const podeCadastrar = !supabaseOnline ||
+    ['Secretaria','Presidente','Administrador'].includes(meuPerfil?.cargo);
+  const btn = document.getElementById('btnNovoVereador');
+  if(btn) btn.style.display = podeCadastrar ? 'inline-flex' : 'none';
 }
 function fmtData(iso){
   if(!iso)return '—';
