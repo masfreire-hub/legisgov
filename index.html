@@ -1175,10 +1175,14 @@ function mascaraCpf(input){
   input.value=v;
 }
 function cpfParaEmailTecnico(cpfDigitado){
-  // CPF não é um e-mail de verdade, mas o Supabase Auth exige um campo "email" tecnicamente.
-  // Convertemos o CPF (só números) num endereço técnico que o Supabase aceita como válido.
+  // Formato ATUAL — aceito pelo Supabase Auth como email válido
   const apenasNumeros=cpfDigitado.replace(/\D/g,'');
   return `cpf${apenasNumeros}@legisgov.com.br`;
+}
+function cpfParaEmailLegado(cpfDigitado){
+  // Formato LEGADO — usado antes da correção. Necessário para logar usuários já cadastrados.
+  const apenasNumeros=cpfDigitado.replace(/\D/g,'');
+  return `${apenasNumeros}@legisgov.interno`;
 }
 function mostrarErroLogin(msg){
   const el=document.getElementById('loginErro');
@@ -1196,16 +1200,34 @@ async function doLogin(){
   const apenasNumeros=cpf.replace(/\D/g,'');
   if(apenasNumeros.length!==11||!senha){mostrarErroLogin('⚠️ Preencha um CPF válido (11 dígitos) e a senha.');return;}
 
-  const emailTecnico=cpfParaEmailTecnico(cpf);
+  // Tenta primeiro o formato atual; se falhar, tenta o formato legado (usuários cadastrados antes da correção)
+  const emailAtual=cpfParaEmailTecnico(cpf);
+  const emailLegado=cpfParaEmailLegado(cpf);
+
+  let sessao=null;
+  let emailUsado=emailAtual;
 
   try{
-    // 1) autentica no Supabase Auth — senha sempre criptografada, nunca lida em texto puro
-    _meuUserIdCache=null; // garante que não reaproveita o ID de uma sessão anterior
-    const sessao=await auth.login(emailTecnico,senha);
+    _meuUserIdCache=null;
+    sessao=await auth.login(emailAtual,senha);
+    emailUsado=emailAtual;
+  }catch(errAtual){
+    // formato atual falhou — tenta o legado (usuário cadastrado antes da correção do email)
+    try{
+      _meuUserIdCache=null;
+      sessao=await auth.login(emailLegado,senha);
+      emailUsado=emailLegado;
+    }catch(errLegado){
+      // nenhum dos dois funcionou
+      mostrarErroLogin('⚠️ CPF ou senha incorretos. Verifique os dados e tente novamente.');
+      return;
+    }
+  }
+
+  try{
     sessaoAuth={access_token:sessao.access_token,refresh_token:sessao.refresh_token};
 
     // 2) busca o perfil do usuário — é ELE quem diz a qual Câmara a pessoa pertence e seu cargo
-    //    (a pessoa nunca escolhe a Câmara; ela já vem definida pelo cadastro)
     const perfil=await db.buscarMeuPerfil();
     if(!perfil){
       mostrarErroLogin('⚠️ Login válido, mas este usuário ainda não tem um perfil de Câmara cadastrado. Procure a Secretaria da sua Câmara.');
@@ -1233,7 +1255,9 @@ async function doLogin(){
     await entrar({nome:perfil.nome,av,cargo:perfil.cargo});
   }catch(err){
     console.error('Erro no login:',err);
-    mostrarErroLogin('⚠️ E-mail ou senha incorretos, ou sem conexão com o banco.');
+    mostrarErroLogin('⚠️ Não foi possível entrar. Verifique a conexão com o banco.');
+    sessaoAuth=null;
+    _meuUserIdCache=null;
   }
 }
 
