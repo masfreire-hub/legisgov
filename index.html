@@ -2320,50 +2320,69 @@ async function salvarVereador(){
   const cargo=document.getElementById('vCargo').value;
   const cpfLogin=document.getElementById('vCpfLogin').value.trim();
   const senha=document.getElementById('vSenha').value;
-  const partido=document.getElementById('vPartido').value||'—';
+  const partido=document.getElementById('vPartido')?.value||'—';
   const nomeUrna=document.getElementById('vNomeUrna')?.value.trim()||'';
   const apenasNumeros=cpfLogin.replace(/\D/g,'');
 
-  if(!nome){toast('⚠️ Informe o nome');return;}
-  if(apenasNumeros.length!==11||!senha){toast('⚠️ Informe um CPF válido (11 dígitos) e a senha de acesso');return;}
-  if(senha.length<6){toast('⚠️ A senha precisa ter pelo menos 6 caracteres');return;}
+  if(!nome){toast('⚠️ Informe o nome completo');return;}
+  if(apenasNumeros.length!==11){toast('⚠️ CPF inválido — informe os 11 dígitos');return;}
+  if(!senha||senha.length<6){toast('⚠️ A senha precisa ter pelo menos 6 caracteres');return;}
 
+  // modo demo
   if(!supabaseOnline){
-    // modo demo — adiciona localmente
-    const novoId=vereadores.length+10;
+    const novoId = Date.now(); // usa timestamp para evitar colisão
     const initials=nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-    const cores=['#0F2A4A','#0E7C5A','#B8860B','#5B21B6','#DC2626','#0369A1'];
+    const cores=['#0F2A4A','#0E7C5A','#B8860B','#5B21B6','#DC2626','#0369A1','#6D28D9','#B45309'];
     vereadores.push({
-      id:novoId,nome,partido,presenca:100,proposicoes:0,status:'active',
+      id:novoId,nome,partido,presenca:0,proposicoes:0,status:'active',
       av:initials,cor:cores[novoId%cores.length],presente:true,
-      cargo:cargo,nomeUrna:nomeUrna,legislaturas:[]
+      cargo,nomeUrna,legislaturas:[]
     });
     fecharModal('mVereador');
     renderVereadores();
-    toast(`✅ ${nome} (${cargo}) adicionado(a) no modo demo!`);
+    toast(`✅ ${nome} adicionado(a) no modo demo!`);
     return;
   }
 
+  // banco real
   const emailTecnico=cpfParaEmailTecnico(cpfLogin);
+  const btnCad=document.querySelector('#mvp4 .btn-p');
+  if(btnCad){btnCad.disabled=true;btnCad.textContent='⏳ Cadastrando...';}
 
   try{
+    // 1. Cria login no Supabase Auth
     const novoUsuario=await auth.cadastrar(emailTecnico,senha);
-    const novoUserId=novoUsuario.user?.id || novoUsuario.id;
-    if(!novoUserId)throw new Error('Não foi possível obter o ID do novo usuário');
+    const novoUserId=novoUsuario.user?.id||novoUsuario.id;
+    if(!novoUserId)throw new Error('Não foi possível obter o ID do usuário criado');
+
+    // 2. Vincula ao perfil da Câmara
     await db.cadastrarPerfilUsuario(novoUserId,nome,cargo);
-    if(cargo==='Vereador'||cargo==='Presidente'||cargo==='Suplente'){
-      await sbRequest('legisgov_vereadores',{
+
+    // 3. Insere na tabela de vereadores SEM o campo id (banco gera automaticamente via SERIAL)
+    if(['Vereador','Presidente','Suplente','Secretaria','Procuradoria'].includes(cargo)){
+      await sbRequest('legisgov_vereadores', {
         method:'POST',
-        body:JSON.stringify({id:vereadores.length+1,nome,partido,presente:true,eu:false,camara_codigo:camaraAtual})
+        headers:{'Prefer':'return=minimal'},
+        body:JSON.stringify({nome,partido,presente:true,eu:false,camara_codigo:camaraAtual})
       });
     }
+
     fecharModal('mVereador');
     await initDados();
     renderAll();
-    toast(`✅ ${nome} cadastrado(a) com login próprio! Avise a senha por fora do sistema.`);
+    toast(`✅ ${nome} cadastrado(a)! Senha provisória enviada — lembre de passar por fora do sistema.`);
   }catch(err){
-    console.error('Erro ao cadastrar novo usuário:',err);
-    toast('⚠️ Não foi possível cadastrar — ' + (err.message||'verifique os dados e tente novamente'));
+    console.error('Erro ao cadastrar vereador:',err);
+    const msg=err.message||'';
+    if(msg.includes('duplicate')&&msg.includes('email')){
+      toast('⚠️ Este CPF já tem um login cadastrado no sistema.');
+    } else if(msg.includes('duplicate')&&msg.includes('pkey')){
+      toast('⚠️ Erro de ID duplicado no banco. Tente novamente — o sistema vai gerar um novo ID.');
+    } else {
+      toast('⚠️ Erro ao cadastrar: '+(msg.substring(0,120)||'verifique os dados e tente novamente'));
+    }
+  }finally{
+    if(btnCad){btnCad.disabled=false;btnCad.textContent='🔒 CADASTRAR VEREADOR';}
   }
 }
 
