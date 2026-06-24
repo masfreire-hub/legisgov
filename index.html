@@ -1579,7 +1579,7 @@ async function initDados(){
         cargo: v.cargo || 'Vereador',
         nomeUrna: v.nome_urna || '',
         legislaturas: v.legislaturas || [],
-        presenca: v.presenca ?? 90,
+        presenca: v.presenca ?? 0,
         proposicoes: v.proposicoes ?? 0,
         status: 'active',
         av: initials,
@@ -1684,21 +1684,132 @@ function popularSelects(){
 // ═══ DASHBOARD ═══
 function renderDash(){
   atualizarSaudacao();popularSelects();
-  const spEl=document.getElementById('dashStatusProj');
+
+  // ── KPIs principais (calculados dos dados reais) ──────────────────
+  const emTramitacao = materias.filter(m=>!['Aprovado','Rejeitado','Arquivado','Vetado'].includes(m.situacao)).length;
+  const comCritico   = materias.filter(m=>m.critico).length;
+  // sessões agendadas (por ora conta as futuras via sessaoAgendada)
+  const totalSessoes = typeof sessaoAgendada!=='undefined'&&sessaoAgendada ? 1 : 0;
+  const totalComissoes = comissoes.length;
+  const totalEmendas = emendas.length;
+  const totalExec = emendas.filter(e=>['Empenhada','Liquidada','Paga'].includes(e.status)).length;
+  const pctExec = totalEmendas > 0 ? Math.round(totalExec/totalEmendas*100) : 0;
+
+  // atualiza os 4 cards de KPI do dashboard
+  const kpis = document.querySelectorAll('.kpi-val');
+  // Dashboard tem 4 kpis: tramitação, sessões, comissões, emendas
+  const kpiData = [
+    {val: emTramitacao, sub: comCritico > 0 ? `${comCritico} com prazo crítico` : 'Sem prazos críticos'},
+    {val: totalSessoes, sub: totalSessoes > 0 ? 'Próxima agendada' : 'Nenhuma agendada'},
+    {val: totalComissoes, sub: totalComissoes > 0 ? `${comissoes.filter(c=>c.tipo==='CPI').length} CPI(s) em curso` : 'Nenhuma cadastrada'},
+    {val: pctExec+'%', sub: `R$ ${emendas.reduce((s,e)=>s+(e.valor||0),0).toLocaleString('pt-BR')} total`},
+  ];
+  kpis.forEach((k,i)=>{ if(kpiData[i]) k.textContent=kpiData[i].val; });
+  document.querySelectorAll('.kpi-label').forEach((k,i)=>{
+    if(i===0) k.textContent='EM TRAMITAÇÃO';
+    if(i===1) k.textContent='SESSÕES AGENDADAS';
+    if(i===2) k.textContent='COMISSÕES ATIVAS';
+    if(i===3) k.textContent='EMENDAS EXECUTADAS';
+  });
+
+  // ── Projetos por status ────────────────────────────────────────────
+  const spEl = document.getElementById('dashStatusProj');
   if(spEl){
-    const st=[{l:'Protocolado',v:4,c:'#94A3B8'},{l:'Jurídico',v:3,c:'#5B21B6'},{l:'Comissão',v:6,c:'#B8860B'},{l:'Plenário',v:5,c:'#1E4470'},{l:'Aprovado',v:38,c:'#0E7C5A'},{l:'Rejeitado',v:6,c:'#DC2626'}];
-    spEl.innerHTML=st.map(s=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><div style="width:10px;height:10px;border-radius:3px;background:${s.c};flex-shrink:0;"></div><span style="font-size:12px;color:var(--tx2);flex:1;">${s.l}</span><span style="font-size:13px;font-weight:800;color:${s.c};">${s.v}</span></div>`).join('');
+    if(!materias.length){
+      spEl.innerHTML='<div style="font-size:12px;color:var(--tx3);text-align:center;padding:16px 0;">Nenhuma matéria cadastrada.</div>';
+    } else {
+      const grupos=[
+        {l:'Protocolado',c:'#94A3B8'},{l:'Jurídico',c:'#5B21B6'},
+        {l:'Comissão',c:'#B8860B'},{l:'Plenário',c:'#1E4470'},
+        {l:'Aprovado',c:'#0E7C5A'},{l:'Rejeitado',c:'#DC2626'}
+      ];
+      spEl.innerHTML=grupos.map(g=>{
+        const qtd=materias.filter(m=>m.situacao===g.l).length;
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <div style="width:10px;height:10px;border-radius:3px;background:${g.c};flex-shrink:0;"></div>
+          <span style="font-size:12px;color:var(--tx2);flex:1;">${g.l}</span>
+          <span style="font-size:13px;font-weight:800;color:${g.c};">${qtd}</span>
+        </div>`;
+      }).join('');
+    }
   }
-  const ivEl=document.getElementById('dashIndicVereador');
-  if(ivEl)ivEl.innerHTML=vereadores.slice(0,5).map(v=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div class="av" style="width:26px;height:26px;background:${v.cor};font-size:10px;">${v.av}</div><span style="font-size:11.5px;color:var(--tx2);flex:1;">${v.nome}</span><span class="b ${v.presenca>=80?'b-emerald':v.presenca>=60?'b-gold':'b-red'}">${v.presenca}%</span></div>`).join('');
-  const pzEl=document.getElementById('dashPrazos');
-  if(pzEl)pzEl.innerHTML=materias.filter(m=>m.critico).map(m=>`<div class="risk-item" style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;"><span style="font-size:11px;font-weight:800;color:var(--navy2);">${m.num}</span><span style="font-size:11.5px;color:var(--tx2);flex:1;">${m.ementa.substring(0,40)}...</span><span class="b b-red">${m.prazo}</span></div>`).join('');
-  const paEl=document.getElementById('dashProcAdmin');
-  if(paEl)paEl.innerHTML=`<div style="font-size:12px;color:var(--tx2);line-height:2;">📁 12 processos administrativos ativos<br>📋 3 licitações em análise<br>👥 2 processos de RH em tramitação<br>🏗️ 4 prestações de contas de convênios</div>`;
+
+  // ── Indicadores por vereador ───────────────────────────────────────
+  const ivEl = document.getElementById('dashIndicVereador');
+  if(ivEl){
+    if(!vereadores.length){
+      ivEl.innerHTML='<div style="font-size:12px;color:var(--tx3);text-align:center;padding:16px 0;">Nenhum vereador cadastrado.</div>';
+    } else {
+      ivEl.innerHTML=vereadores.slice(0,5).map(v=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div class="av" style="width:26px;height:26px;background:${v.cor};font-size:10px;">${v.av}</div>
+          <span style="font-size:11.5px;color:var(--tx2);flex:1;">${v.nome}</span>
+          <span class="b ${v.presenca>=80?'b-emerald':v.presenca>=60?'b-gold':'b-red'}">${v.presenca}%</span>
+        </div>`).join('');
+    }
+  }
+
+  // ── Prazos críticos ────────────────────────────────────────────────
+  const pzEl = document.getElementById('dashPrazos');
+  if(pzEl){
+    const criticos=materias.filter(m=>m.critico);
+    pzEl.innerHTML = criticos.length === 0
+      ? '<div style="font-size:12px;color:var(--tx3);text-align:center;padding:16px 0;">Nenhum prazo crítico no momento. ✅</div>'
+      : criticos.map(m=>`
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border-radius:8px;margin-bottom:6px;">
+            <span style="font-size:11px;font-weight:800;color:var(--navy2);">${m.num}</span>
+            <span style="font-size:11.5px;color:var(--tx2);flex:1;">${m.ementa.substring(0,45)}${m.ementa.length>45?'…':''}</span>
+            <span class="b b-red">${m.prazo}</span>
+          </div>`).join('');
+  }
+
+  // ── Processos administrativos ──────────────────────────────────────
+  const paEl = document.getElementById('dashProcAdmin');
+  if(paEl){
+    const totalContas=contasExec.length;
+    const totalVer=vereadores.length;
+    const totalMat=materias.length;
+    paEl.innerHTML = totalContas===0 && totalVer===0 && totalMat===0
+      ? '<div style="font-size:12px;color:var(--tx3);line-height:2;">Nenhum dado cadastrado ainda.<br>Comece pelos Partidos → Vereadores.</div>'
+      : `<div style="font-size:12px;color:var(--tx2);line-height:2.2;">
+          👥 ${totalVer} vereador(es) cadastrado(s)<br>
+          📜 ${totalMat} matéria(s) em tramitação<br>
+          💰 ${totalContas} processo(s) de contas<br>
+          📌 ${emendas.length} emenda(s) parlamentar(es)
+        </div>`;
+  }
+
+  // ── Gráfico de aprovações (zera se não há dados) ───────────────────
   const caEl=document.getElementById('chartAprovacao'),clEl=document.getElementById('chartAprovacaoLabels');
-  if(caEl){const meses=['Jan','Fev','Mar','Abr','Mai','Jun'];const aprov=[5,7,4,8,6,9];const rejei=[1,0,2,1,1,1];const max=10;
-    caEl.innerHTML=meses.map((m,i)=>`<div style="flex:1;display:flex;flex-direction:column;gap:2px;height:100%;justify-content:flex-end;"><div style="background:#0E7C5A;border-radius:3px 3px 0 0;height:${(aprov[i]/max)*100}%;"></div><div style="background:#DC2626;border-radius:0 0 3px 3px;height:${(rejei[i]/max)*40}%;"></div></div>`).join('');
-    clEl.innerHTML=meses.map(m=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--tx3);font-weight:600;">${m}</div>`).join('');}
+  if(caEl){
+    if(!materias.length){
+      caEl.innerHTML='<div style="width:100%;text-align:center;font-size:11px;color:var(--tx3);padding-top:30px;">Sem dados</div>';
+      if(clEl) clEl.innerHTML='';
+    } else {
+      const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      const aprov=new Array(12).fill(0);
+      const rejei=new Array(12).fill(0);
+      materias.forEach(m=>{
+        if(m.situacao==='Aprovado') aprov[new Date().getMonth()]++;
+        if(m.situacao==='Rejeitado') rejei[new Date().getMonth()]++;
+      });
+      const mesesCom=meses.filter((_,i)=>aprov[i]>0||rejei[i]>0);
+      const aprovCom=aprov.filter((_,i)=>aprov[i]>0||rejei[i]>0);
+      const rejeiCom=rejei.filter((_,i)=>aprov[i]>0||rejei[i]>0);
+      const max=Math.max(...aprovCom,...rejeiCom,1);
+      if(!mesesCom.length){
+        caEl.innerHTML='<div style="width:100%;text-align:center;font-size:11px;color:var(--tx3);padding-top:30px;">Sem aprovações/rejeições ainda</div>';
+        if(clEl) clEl.innerHTML='';
+      } else {
+        caEl.innerHTML=mesesCom.map((m,i)=>`
+          <div style="flex:1;display:flex;flex-direction:column;gap:2px;height:100%;justify-content:flex-end;">
+            <div style="background:#0E7C5A;border-radius:3px 3px 0 0;height:${(aprovCom[i]/max)*100}%;"></div>
+            <div style="background:#DC2626;border-radius:0 0 3px 3px;height:${(rejeiCom[i]/max)*40}%;"></div>
+          </div>`).join('');
+        if(clEl) clEl.innerHTML=mesesCom.map(m=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--tx3);font-weight:600;">${m}</div>`).join('');
+      }
+    }
+  }
 }
 
 // ═══ MODAL VEREADOR — ABAS & HELPERS ═══
