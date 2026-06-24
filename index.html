@@ -373,10 +373,10 @@ select.linp option{color:#0F172A;background:#fff;}
       </div>
 
       <div class="g4" style="margin-bottom:16px;">
-        <div class="kpi kc-navy" onclick="sw('materias')"><div class="kpi-ico">📜</div><div class="kpi-val">23</div><div class="kpi-label">Em Tramitação</div><div class="kpi-sub">7 com prazo crítico</div></div>
-        <div class="kpi kc-emerald" onclick="sw('sessao')"><div class="kpi-ico">🏛️</div><div class="kpi-val">2</div><div class="kpi-label">Sessões Agendadas</div><div class="kpi-sub">Próxima: hoje 14h</div></div>
-        <div class="kpi kc-gold" onclick="sw('comissoes')"><div class="kpi-ico">🗂️</div><div class="kpi-val">6</div><div class="kpi-label">Comissões Ativas</div><div class="kpi-sub">1 CPI em curso</div></div>
-        <div class="kpi kc-purple" onclick="sw('emendas')"><div class="kpi-ico">💰</div><div class="kpi-val">68%</div><div class="kpi-label">Emendas Executadas</div><div class="kpi-sub">R$ 1,8M de R$ 2,6M</div></div>
+        <div class="kpi kc-navy" onclick="sw('materias')"><div class="kpi-ico">📜</div><div class="kpi-val" id="kpiTramitacao">0</div><div class="kpi-label">Em Tramitação</div><div class="kpi-sub" id="kpiTramitacaoSub">—</div></div>
+        <div class="kpi kc-emerald" onclick="sw('sessao')"><div class="kpi-ico">🏛️</div><div class="kpi-val" id="kpiSessoes">0</div><div class="kpi-label">Sessões Agendadas</div><div class="kpi-sub" id="kpiSessoesSub">—</div></div>
+        <div class="kpi kc-gold" onclick="sw('comissoes')"><div class="kpi-ico">🗂️</div><div class="kpi-val" id="kpiComissoes">0</div><div class="kpi-label">Comissões Ativas</div><div class="kpi-sub" id="kpiComissoesSub">—</div></div>
+        <div class="kpi kc-purple" onclick="sw('emendas')"><div class="kpi-ico">💰</div><div class="kpi-val" id="kpiEmendas">0%</div><div class="kpi-label">Emendas Executadas</div><div class="kpi-sub" id="kpiEmendasSub">—</div></div>
       </div>
 
       <div class="g2" style="margin-bottom:14px;">
@@ -649,9 +649,9 @@ select.linp option{color:#0F172A;background:#fff;}
         <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mEmenda')">+ Nova Emenda</button>
       </div>
       <div class="g3" style="margin-bottom:14px;">
-        <div class="kpi kc-navy"><div class="kpi-ico">💰</div><div class="kpi-val">R$2,6M</div><div class="kpi-label">Total Proposto</div></div>
-        <div class="kpi kc-emerald"><div class="kpi-ico">✅</div><div class="kpi-val">R$1,8M</div><div class="kpi-label">Total Executado</div></div>
-        <div class="kpi kc-gold"><div class="kpi-ico">📊</div><div class="kpi-val">68%</div><div class="kpi-label">% Execução</div></div>
+        <div class="kpi kc-navy"><div class="kpi-ico">💰</div><div class="kpi-val" id="kpiEmTotal">R$ 0</div><div class="kpi-label">Total Proposto</div></div>
+        <div class="kpi kc-emerald"><div class="kpi-ico">✅</div><div class="kpi-val" id="kpiEmExec">R$ 0</div><div class="kpi-label">Total Executado</div></div>
+        <div class="kpi kc-gold"><div class="kpi-ico">📊</div><div class="kpi-val" id="kpiEmPct">0%</div><div class="kpi-label">% Execução</div></div>
       </div>
       <div class="card">
         <table class="tbl"><thead><tr><th>Autor</th><th>Beneficiário</th><th>Valor</th><th>Função</th><th>Exercício</th><th>Status</th><th>LOA/LDO</th></tr></thead>
@@ -1688,29 +1688,23 @@ function renderDash(){
   // ── KPIs principais (calculados dos dados reais) ──────────────────
   const emTramitacao = materias.filter(m=>!['Aprovado','Rejeitado','Arquivado','Vetado'].includes(m.situacao)).length;
   const comCritico   = materias.filter(m=>m.critico).length;
-  // sessões agendadas (por ora conta as futuras via sessaoAgendada)
-  const totalSessoes = typeof sessaoAgendada!=='undefined'&&sessaoAgendada ? 1 : 0;
+  const totalSessoes = (typeof sessaoAgendada!=='undefined' && sessaoAgendada) ? 1 : 0;
   const totalComissoes = comissoes.length;
   const totalEmendas = emendas.length;
   const totalExec = emendas.filter(e=>['Empenhada','Liquidada','Paga'].includes(e.status)).length;
   const pctExec = totalEmendas > 0 ? Math.round(totalExec/totalEmendas*100) : 0;
+  const totalEmVal = emendas.reduce((s,e)=>s+(e.valor||0),0);
+  const execEmVal = emendas.filter(e=>['Empenhada','Liquidada','Paga'].includes(e.status)).reduce((s,e)=>s+(e.valor||0),0);
 
-  // atualiza os 4 cards de KPI do dashboard
-  const kpis = document.querySelectorAll('.kpi-val');
-  // Dashboard tem 4 kpis: tramitação, sessões, comissões, emendas
-  const kpiData = [
-    {val: emTramitacao, sub: comCritico > 0 ? `${comCritico} com prazo crítico` : 'Sem prazos críticos'},
-    {val: totalSessoes, sub: totalSessoes > 0 ? 'Próxima agendada' : 'Nenhuma agendada'},
-    {val: totalComissoes, sub: totalComissoes > 0 ? `${comissoes.filter(c=>c.tipo==='CPI').length} CPI(s) em curso` : 'Nenhuma cadastrada'},
-    {val: pctExec+'%', sub: `R$ ${emendas.reduce((s,e)=>s+(e.valor||0),0).toLocaleString('pt-BR')} total`},
-  ];
-  kpis.forEach((k,i)=>{ if(kpiData[i]) k.textContent=kpiData[i].val; });
-  document.querySelectorAll('.kpi-label').forEach((k,i)=>{
-    if(i===0) k.textContent='EM TRAMITAÇÃO';
-    if(i===1) k.textContent='SESSÕES AGENDADAS';
-    if(i===2) k.textContent='COMISSÕES ATIVAS';
-    if(i===3) k.textContent='EMENDAS EXECUTADAS';
-  });
+  const setKpi=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  setKpi('kpiTramitacao', emTramitacao);
+  setKpi('kpiTramitacaoSub', comCritico > 0 ? `${comCritico} com prazo crítico` : 'Sem prazos críticos');
+  setKpi('kpiSessoes', totalSessoes);
+  setKpi('kpiSessoesSub', totalSessoes > 0 ? 'Sessão agendada' : 'Nenhuma agendada');
+  setKpi('kpiComissoes', totalComissoes);
+  setKpi('kpiComissoesSub', totalComissoes > 0 ? `${comissoes.filter(c=>c.tipo==='CPI').length} CPI(s)` : 'Nenhuma cadastrada');
+  setKpi('kpiEmendas', pctExec + '%');
+  setKpi('kpiEmendasSub', totalEmVal > 0 ? `R$ ${(execEmVal/1e6).toFixed(1)}M de R$ ${(totalEmVal/1e6).toFixed(1)}M` : '—');
 
   // ── Projetos por status ────────────────────────────────────────────
   const spEl = document.getElementById('dashStatusProj');
@@ -2901,15 +2895,12 @@ function renderEmendas(){
   const el=document.getElementById('tbEmendas');
   if(!emendas.length){el.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--tx3);">Nenhuma emenda registrada.</td></tr>';
     // zerar KPIs
-    document.querySelectorAll('.kpi-val').forEach((k,i)=>{if(i<3){k.textContent=i===2?'0%':'R$ 0';}});
+    document.getElementById('kpiEmTotal').textContent='R$ 0';document.getElementById('kpiEmExec').textContent='R$ 0';document.getElementById('kpiEmPct').textContent='0%';
     return;}
   const total=emendas.reduce((s,e)=>s+(e.valor||0),0);
   const exec=emendas.filter(e=>['Empenhada','Liquidada','Paga'].includes(e.status)).reduce((s,e)=>s+(e.valor||0),0);
   const pct=total>0?Math.round(exec/total*100):0;
-  const kvals=document.querySelectorAll('.kpi-val');
-  if(kvals[0])kvals[0].textContent='R$ '+(total/1e6).toFixed(1)+'M';
-  if(kvals[1])kvals[1].textContent='R$ '+(exec/1e6).toFixed(1)+'M';
-  if(kvals[2])kvals[2].textContent=pct+'%';
+  const fmt=v=>v>=1e6?'R$ '+(v/1e6).toFixed(1)+'M':v>=1e3?'R$ '+(v/1e3).toFixed(0)+'K':'R$ '+v.toLocaleString('pt-BR');document.getElementById('kpiEmTotal').textContent=fmt(total);document.getElementById('kpiEmExec').textContent=fmt(exec);document.getElementById('kpiEmPct').textContent=pct+'%';
   el.innerHTML=emendas.map(e=>`<tr>
     <td>${e.autor}</td>
     <td>${e.benef}</td>
