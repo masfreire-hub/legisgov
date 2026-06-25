@@ -2382,9 +2382,9 @@ async function salvarVereador(){
     // 2. Vincula ao perfil da Câmara
     await db.cadastrarPerfilUsuario(novoUserId,nome,cargo);
 
-    // 3. Insere na tabela de vereadores SEM o campo id (banco gera automaticamente via SERIAL)
+    // 3. Insere na tabela de vereadores — id gerado automaticamente pela sequência do banco
     if(['Vereador','Presidente','Suplente','Secretaria','Procuradoria'].includes(cargo)){
-      await sbRequest('legisgov_vereadores', {
+      await sbRequest('legisgov_vereadores',{
         method:'POST',
         headers:{'Prefer':'return=minimal'},
         body:JSON.stringify({nome,partido,presente:true,eu:false,camara_codigo:camaraAtual})
