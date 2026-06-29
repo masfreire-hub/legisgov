@@ -1979,7 +1979,15 @@ function salvarPartido(){
   renderPartidos();
   toast(`✅ Partido ${sigla} cadastrado!`);
 }
-function removerPartido(sigla){if(!confirm(`Remover ${sigla}?`))return;partidos=partidos.filter(p=>p.sigla!==sigla);persistirPartidos();renderPartidos();toast(`🗑️ ${sigla} removido`);}
+function removerPartido(sigla){
+  if(!confirm(`Remover ${sigla}?`))return;
+  partidos=partidos.filter(p=>p.sigla!==sigla);
+  if(supabaseOnline&&camaraAtual){
+    sbRequest(`legisgov_partidos?camara_codigo=eq.${encodeURIComponent(camaraAtual)}&sigla=eq.${encodeURIComponent(sigla)}`,{method:'DELETE'}).catch(()=>{});
+  }
+  renderPartidos();
+  toast(`🗑️ ${sigla} removido`);
+}
 function salvarColigacao(){
   const nome=document.getElementById('colNome')?.value.trim();
   const leg=document.getElementById('colLeg')?.value;
@@ -1994,7 +2002,15 @@ function salvarColigacao(){
   });
   persistirPartidos();fecharModal('mColigacao');renderPartidos();toast(`✅ Coligação "${nome}" cadastrada!`);
 }
-function removerColigacao(nome){if(!confirm(`Remover coligação "${nome}"?`))return;coligacoes=coligacoes.filter(c=>c.nome!==nome);persistirPartidos();renderPartidos();toast('🗑️ Coligação removida');}
+function removerColigacao(nome){
+  if(!confirm(`Remover coligação "${nome}"?`))return;
+  coligacoes=coligacoes.filter(c=>c.nome!==nome);
+  if(supabaseOnline&&camaraAtual){
+    sbRequest(`legisgov_coligacoes?camara_codigo=eq.${encodeURIComponent(camaraAtual)}&nome=eq.${encodeURIComponent(nome)}`,{method:'DELETE'}).catch(()=>{});
+  }
+  renderPartidos();
+  toast('🗑️ Coligação removida');
+}
 
 // ═══ VEREADORES ═══
 function renderVereadores(){
@@ -3133,24 +3149,59 @@ const FLUXO_POR_TIPO={
 function obterFluxoTipo(tipo){ return FLUXO_POR_TIPO[tipo]||FLUXO_POR_TIPO['_default']; }
 
 
-// ── Persistência de partidos/coligações no localStorage ──────────────
-function persistirPartidos(){
+// ── Persistência de partidos/coligações no Supabase ──────────────────
+async function persistirPartidos(){
+  if(!supabaseOnline||!camaraAtual){
+    // fallback localStorage
+    try{
+      localStorage.setItem('lg_part_'+camaraAtual, JSON.stringify(partidos));
+      localStorage.setItem('lg_col_'+camaraAtual, JSON.stringify(coligacoes));
+    }catch(_){}
+    return;
+  }
+  // Salva partidos: upsert por (camara_codigo, sigla)
   try{
-    const key='legisgov_partidos_'+camaraAtual;
-    const keyC='legisgov_coligacoes_'+camaraAtual;
-    localStorage.setItem(key, JSON.stringify(partidos));
-    localStorage.setItem(keyC, JSON.stringify(coligacoes));
-  }catch(_){}
+    for(const p of partidos){
+      await sbRequest('legisgov_partidos', {
+        method:'POST',
+        headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},
+        body:JSON.stringify({camara_codigo:camaraAtual,sigla:p.sigla,nome:p.nome,numero:p.numero||0,cor:p.cor,espectro:p.espectro,obs:p.obs||''})
+      });
+    }
+  }catch(e){ console.warn('Erro ao salvar partidos no banco:',e); }
+  // Salva coligações
+  try{
+    for(const col of coligacoes){
+      await sbRequest('legisgov_coligacoes', {
+        method:'POST',
+        headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},
+        body:JSON.stringify({camara_codigo:camaraAtual,nome:col.nome,legislatura:col.legislatura,partidos_siglas:col.partidos,candidato:col.candidato||'',vice:col.vice||'',vagas:col.vagas||0,obs:col.obs||''})
+      });
+    }
+  }catch(e){ console.warn('Erro ao salvar coligações no banco:',e); }
 }
-function carregarPartidosSalvos(){
+
+async function carregarPartidosSalvos(){
+  if(!camaraAtual) return;
+  if(!supabaseOnline){
+    // fallback localStorage
+    try{
+      const p=localStorage.getItem('lg_part_'+camaraAtual);
+      const cc=localStorage.getItem('lg_col_'+camaraAtual);
+      if(p) partidos=JSON.parse(p);
+      if(cc) coligacoes=JSON.parse(cc);
+    }catch(_){}
+    return;
+  }
   try{
-    const key='legisgov_partidos_'+camaraAtual;
-    const keyC='legisgov_coligacoes_'+camaraAtual;
-    const p=localStorage.getItem(key);
-    const cc=localStorage.getItem(keyC);
-    if(p) partidos=JSON.parse(p);
-    if(cc) coligacoes=JSON.parse(cc);
-  }catch(_){}
+    const pDB = await sbRequest(`legisgov_partidos?camara_codigo=eq.${encodeURIComponent(camaraAtual)}&order=sigla.asc`);
+    if(pDB&&pDB.length) partidos=pDB.map(p=>({sigla:p.sigla,nome:p.nome||p.sigla,numero:p.numero||0,cor:p.cor||'#0F2A4A',espectro:p.espectro||'Centro',obs:p.obs||''}));
+  }catch(e){ console.warn('Tabela legisgov_partidos não encontrada — usando localStorage'); try{const p=localStorage.getItem('lg_part_'+camaraAtual);if(p)partidos=JSON.parse(p);}catch(_){} }
+  try{
+    const cDB = await sbRequest(`legisgov_coligacoes?camara_codigo=eq.${encodeURIComponent(camaraAtual)}&order=criado_em.asc`);
+    if(cDB&&cDB.length) coligacoes=cDB.map(c=>({nome:c.nome,legislatura:c.legislatura||'',partidos:c.partidos_siglas||[],candidato:c.candidato||'',vice:c.vice||'',vagas:c.vagas||0,obs:c.obs||''}));
+  }catch(e){ console.warn('Tabela legisgov_coligacoes não encontrada'); try{const cc=localStorage.getItem('lg_col_'+camaraAtual);if(cc)coligacoes=JSON.parse(cc);}catch(_){} }
+  renderPartidos();
 }
 </script>
 </body>
