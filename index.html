@@ -186,7 +186,7 @@ select.linp option{color:#0F172A;background:#fff;}
 #toast.on{opacity:1;}
 
 /* DETAIL PANEL */
-#detPanel{position:fixed;right:0;top:var(--tb-h);bottom:0;width:460px;background:var(--surface);border-left:1px solid var(--border);z-index:200;transform:translateX(100%);transition:transform .25s var(--ease);display:flex;flex-direction:column;box-shadow:var(--sh3);}
+#detPanel{position:fixed;right:0;top:var(--total-h,56px);bottom:0;width:460px;background:var(--surface);border-left:1px solid var(--border);z-index:200;transform:translateX(100%);transition:transform .25s var(--ease);display:flex;flex-direction:column;box-shadow:var(--sh3);}
 #detPanel.on{transform:translateX(0);}
 .det-hdr{padding:16px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .det-close{width:30px;height:30px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-left:auto;font-size:16px;color:var(--tx3);}
@@ -304,7 +304,6 @@ select.linp option{color:#0F172A;background:#fff;}
 
   <div class="topbar">
     <div class="tb-logo">
-      <span style="display:none;cursor:pointer;font-size:20px;" id="hamburger" onclick="toggleSidebar()">☰</span>
       <div class="tb-logo-badge">🏛️</div>
       <div class="tb-logo-text">LEGISGOV</div>
     </div>
@@ -316,11 +315,11 @@ select.linp option{color:#0F172A;background:#fff;}
     </div>
     <div class="tb-right">
       <div class="tb-btn" onclick="sw('sessao')" title="Sessão Plenária">🏛️</div>
-      <div class="tb-btn" onclick="toast('🔔 3 alertas: 1 prazo vencendo, 2 pareceres pendentes')" title="Alertas">
-        🔔<div class="tb-notif-dot">3</div>
+      <div class="tb-btn" onclick="sw('notificacoes')" title="Alertas">
+        🔔<div class="tb-notif-dot" id="notifDot">3</div>
       </div>
       <div class="tb-btn" onclick="sw('assistente')" title="Assistente IA">🤖</div>
-      <div class="tb-av" id="userAv" onclick="logout()">PR</div>
+      <div class="tb-av" id="userAv" onclick="logout()">MA</div>
     </div>
   </div>
 
@@ -330,32 +329,25 @@ select.linp option{color:#0F172A;background:#fff;}
     <div class="ni" onclick="sw('vereadores',this)" id="ni-vereadores"><span class="ni-ico">👥</span><span class="ni-lb">Vereadores</span></div>
     <div class="ni" onclick="sw('partidos',this)" id="ni-partidos"><span class="ni-ico">🏛️</span><span class="ni-lb">Partidos & Coligações</span></div>
     <div class="ni" onclick="sw('comissoes',this)" id="ni-comissoes"><span class="ni-ico">🗂️</span><span class="ni-lb">Comissões</span></div>
-
     <div class="sb-section">LEGISLATIVO</div>
-    <div class="ni" onclick="sw('materias',this)" id="ni-materias"><span class="ni-ico">📜</span><span class="ni-lb">Processo Legislativo</span><span class="ni-badge">7</span></div>
+    <div class="ni" onclick="sw('materias',this)" id="ni-materias"><span class="ni-ico">📜</span><span class="ni-lb">Processo Legislativo</span><span class="ni-badge" id="badgeMaterias">0</span></div>
     <div class="ni" onclick="sw('tramitacao',this)" id="ni-tramitacao"><span class="ni-ico">🔀</span><span class="ni-lb">Tramitação</span></div>
-
     <div class="sb-section">PLENÁRIO</div>
     <div class="ni" onclick="sw('sessao',this)" id="ni-sessao"><span class="ni-ico">🏛️</span><span class="ni-lb">Sessão Plenária</span></div>
     <div class="ni" onclick="sw('votacao',this)" id="ni-votacao"><span class="ni-ico">🗳️</span><span class="ni-lb">Votação Eletrônica</span></div>
     <div class="ni" onclick="sw('transmissao',this)" id="ni-transmissao"><span class="ni-ico">📡</span><span class="ni-lb">Transmissão ao Vivo</span></div>
-
     <div class="sb-section">FISCALIZAÇÃO</div>
     <div class="ni" onclick="sw('contas',this)" id="ni-contas"><span class="ni-ico">💰</span><span class="ni-lb">Julgamento de Contas</span></div>
     <div class="ni" onclick="sw('emendas',this)" id="ni-emendas"><span class="ni-ico">📌</span><span class="ni-lb">Emendas Parlamentares</span></div>
     <div class="ni" onclick="sw('transparencia',this)" id="ni-transparencia"><span class="ni-ico">🔍</span><span class="ni-lb">Portal Transparência</span></div>
-
     <div class="sb-section">INTELIGÊNCIA</div>
-    <div class="ni" onclick="sw('atas',this)" id="ni-atas"><span class="ni-ico">📝</span><span class="ni-lb">Atas (IA)</span><span class="ni-badge gold">2</span></div>
+    <div class="ni" onclick="sw('atas',this)" id="ni-atas"><span class="ni-ico">📝</span><span class="ni-lb">Atas (IA)</span><span class="ni-badge gold" id="badgeAtas">0</span></div>
     <div class="ni" onclick="sw('assistente',this)" id="ni-assistente"><span class="ni-ico">🤖</span><span class="ni-lb">Assistente IA</span></div>
-
     <div class="sb-section" id="sb-sec-suporte" style="display:none;">SUPORTE</div>
     <div class="ni" onclick="sw('admin',this)" id="ni-admin" style="display:none;"><span class="ni-ico">🔧</span><span class="ni-lb">Administração</span></div>
-
     <div class="sb-section">SISTEMA</div>
     <div class="ni" onclick="sw('auditoria',this)" id="ni-auditoria"><span class="ni-ico">🛡️</span><span class="ni-lb">Auditoria</span></div>
     <div class="ni" onclick="sw('notificacoes',this)" id="ni-notificacoes"><span class="ni-ico">📲</span><span class="ni-lb">Notificações</span></div>
-
     <div class="sb-spacer"></div>
     <div class="ni" onclick="logout()" style="margin-top:8px;"><span class="ni-ico">🚪</span><span class="ni-lb">Sair</span></div>
   </div>
@@ -365,7 +357,7 @@ select.linp option{color:#0F172A;background:#fff;}
     <!-- ═══ DASHBOARD ═══ -->
     <div class="page on" id="p-dash">
       <div class="ph">
-        <div><div class="ph-title" id="dashGreeting">Bom dia, Presidente!</div><div class="ph-sub" id="dashDate">Carregando...</div></div>
+        <div><div class="ph-title" id="dashGreeting">Bom dia!</div><div class="ph-sub" id="dashDate">Carregando...</div></div>
         <div style="display:flex;gap:8px;">
           <select id="filtroAno" style="padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;"><option>2026</option><option>2025</option><option>2024</option></select>
           <select id="filtroLeg" style="padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;"><option>19ª Legislatura</option><option>18ª Legislatura</option></select>
@@ -662,33 +654,27 @@ select.linp option{color:#0F172A;background:#fff;}
     <!-- ═══ PORTAL TRANSPARÊNCIA ═══ -->
     <div class="page" id="p-transparencia">
       <div class="ph">
-        <div><div class="ph-title">🔍 Portal da Transparência</div><div class="ph-sub">Visualização pública — dados publicados automaticamente</div></div>
+        <div><div class="ph-title">🔍 Transparência Legislativa</div><div class="ph-sub">Matérias, votações, atas e vereadores — acesso público</div></div>
       </div>
       <div class="card" style="margin-bottom:14px;">
-        <input placeholder="🔍 Buscar projetos, leis, votações, atas..." style="width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;outline:none;">
+        <input placeholder="🔍 Buscar matérias, leis, votações, atas..." style="width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:inherit;outline:none;">
       </div>
       <div class="g4" style="margin-bottom:14px;">
-        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('📜 Projetos publicados')"><div style="font-size:24px;margin-bottom:6px;">📜</div><div style="font-size:11px;font-weight:700;">Projetos</div></div>
-        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('⚖️ Leis publicadas')"><div style="font-size:24px;margin-bottom:6px;">⚖️</div><div style="font-size:11px;font-weight:700;">Leis</div></div>
-        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('🏛️ Sessões publicadas')"><div style="font-size:24px;margin-bottom:6px;">🏛️</div><div style="font-size:11px;font-weight:700;">Sessões</div></div>
-        <div class="card" style="text-align:center;cursor:pointer;" onclick="toast('🗳️ Votações publicadas')"><div style="font-size:24px;margin-bottom:6px;">🗳️</div><div style="font-size:11px;font-weight:700;">Votações</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="sw('materias')"><div style="font-size:24px;margin-bottom:6px;">📜</div><div style="font-size:11px;font-weight:700;">Matérias</div><div style="font-size:11px;color:var(--tx3);" id="transpCountMaterias">0 registros</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="sw('sessao')"><div style="font-size:24px;margin-bottom:6px;">🏛️</div><div style="font-size:11px;font-weight:700;">Sessões</div><div style="font-size:11px;color:var(--tx3);">Plenário</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="sw('votacao')"><div style="font-size:24px;margin-bottom:6px;">🗳️</div><div style="font-size:11px;font-weight:700;">Votações</div><div style="font-size:11px;color:var(--tx3);">Nominais e simbólicas</div></div>
+        <div class="card" style="text-align:center;cursor:pointer;" onclick="sw('atas')"><div style="font-size:24px;margin-bottom:6px;">📝</div><div style="font-size:11px;font-weight:700;">Atas</div><div style="font-size:11px;color:var(--tx3);">Geradas por IA</div></div>
       </div>
       <!-- Galeria de Vereadores -->
       <div class="card" style="margin-bottom:14px;">
-        <div class="card-title">👥 Vereadores — Galeria Pública</div>
+        <div class="card-title">👥 Vereadores — 19ª Legislatura</div>
         <div id="galVereadores" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:4px;"></div>
       </div>
-      <!-- Emendas publicadas -->
+      <!-- Matérias aprovadas publicadas -->
       <div class="card" style="margin-bottom:14px;">
-        <div class="card-title">📌 Emendas Parlamentares Publicadas</div>
-        <table class="tbl"><thead><tr><th>Autor</th><th>Beneficiário</th><th>Valor</th><th>Função</th><th>Status</th></tr></thead>
-        <tbody id="tbTranspEmendas"></tbody></table>
-      </div>
-      <!-- Remuneração -->
-      <div class="card" style="margin-bottom:14px;">
-        <div class="card-title">💰 Remuneração dos Vereadores (Subsídios)</div>
-        <table class="tbl"><thead><tr><th>Cargo</th><th>Subsídio Mensal Bruto</th><th>Descontos</th><th>Líquido</th><th>Ref. Legal</th></tr></thead>
-        <tbody id="tbTranspRemun"></tbody></table>
+        <div class="card-title">✅ Matérias Aprovadas — publicadas</div>
+        <table class="tbl"><thead><tr><th>Nº</th><th>Tipo</th><th>Ementa</th><th>Autor</th><th>Situação</th></tr></thead>
+        <tbody id="tbTranspMaterias"></tbody></table>
       </div>
       <div class="card">
         <div class="card-title">📋 Publicações Recentes</div>
@@ -1608,7 +1594,7 @@ async function entrar(u){
   curUser=u;
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('mainApp').classList.add('on');
-  document.getElementById('userAv').textContent=u.av;
+  const avEl=document.getElementById('userAv');if(avEl)avEl.textContent=avEl.textContent=u.av;
 
   const seletor=document.getElementById('seletorCamaraSuporte');
   const badgeCamara=document.getElementById('tbCamara');
@@ -1633,6 +1619,7 @@ async function entrar(u){
 
   toast('⏳ Carregando dados do banco...');
   await initDados();
+  carregarPartidosSalvos();
   renderAll();
   if(supabaseOnline)toast('✅ Conectado ao banco de dados real');
 }
@@ -1705,6 +1692,14 @@ function renderDash(){
   setKpi('kpiComissoesSub', totalComissoes > 0 ? `${comissoes.filter(c=>c.tipo==='CPI').length} CPI(s)` : 'Nenhuma cadastrada');
   setKpi('kpiEmendas', pctExec + '%');
   setKpi('kpiEmendasSub', totalEmVal > 0 ? `R$ ${(execEmVal/1e6).toFixed(1)}M de R$ ${(totalEmVal/1e6).toFixed(1)}M` : '—');
+  // KPIs extras (6ª coluna)
+  setKpi('kpiVereadores', vereadores.length);
+  setKpi('kpiVereadoresSub', vereadores.length > 0 ? `${vereadores.filter(v=>v.presente).length} presentes hoje` : '—');
+  setKpi('kpiContas', contasExec.length);
+  setKpi('kpiContasSub', contasExec.length > 0 ? 'processos registrados' : '—');
+  // Atualiza badge da nav
+  const bm=document.getElementById('badgeMaterias');if(bm)bm.textContent=materias.length;
+  const ba=document.getElementById('badgeAtas');if(ba){ba.textContent=0;}
 
   // ── Projetos por status ────────────────────────────────────────────
   const spEl = document.getElementById('dashStatusProj');
@@ -1979,16 +1974,12 @@ function salvarPartido(){
     espectro:document.getElementById('ptEspectro')?.value||'Centro',
     obs:document.getElementById('ptObs')?.value||''
   });
+  persistirPartidos();
   fecharModal('mPartido');
   renderPartidos();
   toast(`✅ Partido ${sigla} cadastrado!`);
 }
-function removerPartido(sigla){
-  if(!confirm(`Remover ${sigla}?`))return;
-  partidos=partidos.filter(p=>p.sigla!==sigla);
-  renderPartidos();
-  toast(`🗑️ ${sigla} removido`);
-}
+function removerPartido(sigla){if(!confirm(`Remover ${sigla}?`))return;partidos=partidos.filter(p=>p.sigla!==sigla);persistirPartidos();renderPartidos();toast(`🗑️ ${sigla} removido`);}
 function salvarColigacao(){
   const nome=document.getElementById('colNome')?.value.trim();
   const leg=document.getElementById('colLeg')?.value;
@@ -2001,16 +1992,9 @@ function salvarColigacao(){
     vagas:parseInt(document.getElementById('colVagas')?.value)||0,
     obs:document.getElementById('colObs')?.value||''
   });
-  fecharModal('mColigacao');
-  renderPartidos();
-  toast(`✅ Coligação "${nome}" cadastrada!`);
+  persistirPartidos();fecharModal('mColigacao');renderPartidos();toast(`✅ Coligação "${nome}" cadastrada!`);
 }
-function removerColigacao(nome){
-  if(!confirm(`Remover coligação "${nome}"?`))return;
-  coligacoes=coligacoes.filter(c=>c.nome!==nome);
-  renderPartidos();
-  toast('🗑️ Coligação removida');
-}
+function removerColigacao(nome){if(!confirm(`Remover coligação "${nome}"?`))return;coligacoes=coligacoes.filter(c=>c.nome!==nome);persistirPartidos();renderPartidos();toast('🗑️ Coligação removida');}
 
 // ═══ VEREADORES ═══
 function renderVereadores(){
@@ -2977,9 +2961,6 @@ function salvarEmenda(){
 }
 
 // ═══ TRANSPARÊNCIA ═══
-function renderTransparencia(){document.getElementById('listaTransparencia').innerHTML=[
-  {t:'PL 045/2026 publicado',d:'há 2h'},{t:'Ata da Sessão 18/06/2026 publicada',d:'há 5h'},{t:'Emenda 2026-014 atualizada para PAGA',d:'há 1 dia'},
-].map(x=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;"><span style="color:var(--tx2);">${x.t}</span><span style="color:var(--tx3);">${x.d}</span></div>`).join('');}
 
 // ═══ ATAS IA ═══
 function renderAtas(){
@@ -3127,53 +3108,18 @@ function mtAtualizarTipo(){
 
 // ══ TRANSPARÊNCIA — galeria, emendas e remuneração ════════════════════
 function renderTransparencia(){
-  // Galeria de vereadores
+  const cm=document.getElementById('transpCountMaterias');
+  if(cm) cm.textContent=materias.length+' registros';
   const gal=document.getElementById('galVereadores');
-  if(gal){
-    if(!vereadores.length){
-      gal.innerHTML='<div style="font-size:12px;color:var(--tx3);">Nenhum vereador cadastrado.</div>';
-    } else {
-      gal.innerHTML=vereadores.map(v=>`
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;text-align:center;">
-          <div class="av" style="width:48px;height:48px;background:${v.cor};font-size:16px;margin:0 auto 8px;">${v.av}</div>
-          <div style="font-size:12px;font-weight:800;">${v.nomeUrna||v.nome.split(' ')[0]}</div>
-          <div style="font-size:11px;color:var(--tx3);">${v.nome}</div>
-          <span class="b b-navy" style="margin-top:6px;display:inline-block;">${v.partido}</span>
-        </div>`).join('');
-    }
-  }
-  // Emendas publicadas
-  const te=document.getElementById('tbTranspEmendas');
-  if(te){
-    te.innerHTML=emendas.length===0
-      ?'<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--tx3);">Nenhuma emenda publicada.</td></tr>'
-      :emendas.map(e=>`<tr>
-          <td>${e.autor}</td><td>${e.benef}</td>
-          <td style="font-weight:700;">R$ ${(e.valor||0).toLocaleString('pt-BR')}</td>
-          <td style="font-size:11px;">${e.funcao||'—'}</td>
-          <td><span class="b ${e.status==='Paga'?'b-emerald':e.status==='Empenhada'||e.status==='Aprovada'?'b-gold':'b-gray'}">${e.status}</span></td>
-        </tr>`).join('');
-  }
-  // Remuneração
-  const tr=document.getElementById('tbTranspRemun');
-  if(tr){
-    const subsidios=[
-      {cargo:'Presidente da Câmara',bruto:'R$ 8.400,00',desc:'R$ 945,00',liq:'R$ 7.455,00',ref:'Lei Municipal nº 045/2024'},
-      {cargo:'Vereador(a)',bruto:'R$ 7.200,00',desc:'R$ 810,00',liq:'R$ 6.390,00',ref:'Lei Municipal nº 045/2024'},
-    ];
-    tr.innerHTML=subsidios.map(s=>`<tr>
-      <td><strong>${s.cargo}</strong></td><td>${s.bruto}</td><td>${s.desc}</td>
-      <td><strong>${s.liq}</strong></td><td style="font-size:11px;">${s.ref}</td>
-    </tr>`).join('');
-  }
-  // Publicações recentes
+  if(gal) gal.innerHTML=!vereadores.length
+    ?'<div style="font-size:12px;color:var(--tx3);">Nenhum vereador cadastrado.</div>'
+    :vereadores.map(v=>`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;text-align:center;"><div class="av" style="width:48px;height:48px;background:${v.cor};font-size:16px;margin:0 auto 8px;">${v.av}</div><div style="font-size:12px;font-weight:800;">${v.nomeUrna||v.nome.split(' ')[0]}</div><div style="font-size:11px;color:var(--tx3);">${v.nome}</div><span class="b b-navy" style="margin-top:6px;display:inline-block;">${v.partido}</span></div>`).join('');
+  const tm=document.getElementById('tbTranspMaterias');
+  if(tm){const aprov=materias.filter(m=>m.situacao==='Aprovado');
+    tm.innerHTML=!aprov.length?'<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--tx3);">Nenhuma matéria aprovada ainda.</td></tr>'
+      :aprov.map(m=>`<tr><td><strong>${m.num}</strong></td><td><span class="b b-navy">${m.tipo}</span></td><td>${m.ementa}</td><td>${m.autor}</td><td><span class="b b-emerald">Aprovado</span></td></tr>`).join('');}
   const lp=document.getElementById('listaTransparencia');
-  if(lp) lp.innerHTML=materias.slice(0,5).map(m=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
-      <span class="b b-navy">${m.tipo}</span>
-      <span style="font-size:12.5px;flex:1;">${m.num} — ${m.ementa.substring(0,60)}${m.ementa.length>60?'…':''}</span>
-      <span class="b ${m.situacao==='Aprovado'?'b-emerald':m.situacao==='Rejeitado'?'b-red':'b-gray'}">${m.situacao}</span>
-    </div>`).join('')||'<div style="font-size:12px;color:var(--tx3);padding:8px 0;">Nenhuma matéria publicada ainda.</div>';
+  if(lp) lp.innerHTML=materias.slice(0,5).map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);"><span class="b b-navy">${m.tipo}</span><span style="font-size:12.5px;flex:1;">${m.num} — ${m.ementa.substring(0,60)}${m.ementa.length>60?'…':''}</span><span class="b ${m.situacao==='Aprovado'?'b-emerald':m.situacao==='Rejeitado'?'b-red':'b-gray'}">${m.situacao}</span></div>`).join('')||'<div style="font-size:12px;color:var(--tx3);padding:8px 0;">Nenhuma matéria publicada ainda.</div>';
 }
 
 // ══ FLUXOS DE TRAMITAÇÃO por tipo ════════════════════════════════════
@@ -3186,6 +3132,26 @@ const FLUXO_POR_TIPO={
 };
 function obterFluxoTipo(tipo){ return FLUXO_POR_TIPO[tipo]||FLUXO_POR_TIPO['_default']; }
 
+
+// ── Persistência de partidos/coligações no localStorage ──────────────
+function persistirPartidos(){
+  try{
+    const key='legisgov_partidos_'+camaraAtual;
+    const keyC='legisgov_coligacoes_'+camaraAtual;
+    localStorage.setItem(key, JSON.stringify(partidos));
+    localStorage.setItem(keyC, JSON.stringify(coligacoes));
+  }catch(_){}
+}
+function carregarPartidosSalvos(){
+  try{
+    const key='legisgov_partidos_'+camaraAtual;
+    const keyC='legisgov_coligacoes_'+camaraAtual;
+    const p=localStorage.getItem(key);
+    const cc=localStorage.getItem(keyC);
+    if(p) partidos=JSON.parse(p);
+    if(cc) coligacoes=JSON.parse(cc);
+  }catch(_){}
+}
 </script>
 </body>
 </html>
