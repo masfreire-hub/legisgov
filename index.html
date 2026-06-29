@@ -1931,7 +1931,10 @@ function renderPartidos(){
           ${vereadores.filter(v=>v.partido===p.sigla).length} vereador(es) atual(is)
         </div>
       </div>
-      <button onclick="removerPartido('${p.sigla}')" class="leg-del" title="Remover">✕</button>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button onclick="editarPartido('${p.sigla}')" style="padding:4px 10px;font-size:11px;font-weight:700;border:1px solid var(--border2);border-radius:6px;background:var(--surface2);color:var(--navy2);cursor:pointer;">✏️ Editar</button>
+        <button onclick="removerPartido('${p.sigla}')" class="leg-del" title="Remover">✕</button>
+      </div>
     </div>`).join('');
 
   const lc=document.getElementById('listaColigacoes');
@@ -1945,6 +1948,7 @@ function renderPartidos(){
         <strong style="font-size:13px;flex:1;">${c.nome}</strong>
         <span class="b b-navy">${c.legislatura} Leg.</span>
         <span class="b b-emerald">${c.vagas} vaga${c.vagas!==1?'s':''}</span>
+        <button onclick="editarColigacao(${coligacoes.indexOf(c)})" style="padding:3px 8px;font-size:11px;font-weight:700;border:1px solid var(--border2);border-radius:6px;background:var(--surface2);color:var(--navy2);cursor:pointer;">✏️</button>
         <button onclick="removerColigacao('${c.nome}')" class="leg-del">✕</button>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
@@ -1962,22 +1966,64 @@ function renderPartidos(){
       <span style="font-weight:700;color:${p.cor};">${p.sigla}</span>
     </label>`).join('');
 }
+
+let _editandoPartido=null;
+let _editandoColigacao=-1;
+
+function editarPartido(sigla){
+  const p=partidos.find(x=>x.sigla===sigla);if(!p)return;
+  _editandoPartido=sigla;
+  document.getElementById('ptSigla').value=p.sigla;
+  document.getElementById('ptSigla').disabled=true;
+  document.getElementById('ptNome').value=p.nome||'';
+  document.getElementById('ptNum').value=p.numero||'';
+  document.getElementById('ptCor').value=p.cor||'#0F2A4A';
+  document.getElementById('ptEspectro').value=p.espectro||'Centro';
+  document.getElementById('ptObs').value=p.obs||'';
+  document.querySelector('#mPartido .m-title').textContent='✏️ Editar Partido';
+  document.querySelector('#mPartido .btn-p').textContent='💾 SALVAR ALTERAÇÕES';
+  abrirModal('mPartido');
+}
+
+function editarColigacao(idx){
+  const c=coligacoes[idx];if(!c)return;
+  _editandoColigacao=idx;
+  document.getElementById('colNome').value=c.nome;
+  document.getElementById('colNome').disabled=true;
+  document.getElementById('colLeg').value=c.legislatura||'19ª';
+  document.getElementById('colCandidato').value=c.candidato||'';
+  document.getElementById('colVice').value=c.vice||'';
+  document.getElementById('colVagas').value=c.vagas||'';
+  document.getElementById('colObs').value=c.obs||'';
+  document.querySelector('#mColigacao .m-title').textContent='✏️ Editar Coligação';
+  document.querySelector('#mColigacao .btn-p').textContent='💾 SALVAR ALTERAÇÕES';
+  abrirModal('mColigacao');
+  setTimeout(()=>{
+    document.querySelectorAll('#colPartidosCheck input').forEach(cb=>{cb.checked=c.partidos.includes(cb.value);});
+  },60);
+}
 function salvarPartido(){
   const sigla=document.getElementById('ptSigla')?.value.trim().toUpperCase();
   const nome=document.getElementById('ptNome')?.value.trim();
   if(!sigla){toast('⚠️ Informe a sigla do partido');return;}
-  if(partidos.find(p=>p.sigla===sigla)){toast('⚠️ Partido já cadastrado');return;}
-  partidos.push({
-    sigla,nome:nome||sigla,
-    numero:parseInt(document.getElementById('ptNum')?.value)||0,
+  const dados={sigla,nome:nome||sigla,numero:parseInt(document.getElementById('ptNum')?.value)||0,
     cor:document.getElementById('ptCor')?.value||'#0F2A4A',
     espectro:document.getElementById('ptEspectro')?.value||'Centro',
-    obs:document.getElementById('ptObs')?.value||''
-  });
-  persistirPartidos();
-  fecharModal('mPartido');
-  renderPartidos();
-  toast(`✅ Partido ${sigla} cadastrado!`);
+    obs:document.getElementById('ptObs')?.value||''};
+  if(_editandoPartido){
+    // edição
+    const idx=partidos.findIndex(p=>p.sigla===_editandoPartido);
+    if(idx>=0) partidos[idx]={...partidos[idx],...dados};
+    _editandoPartido=null;
+  } else {
+    if(partidos.find(p=>p.sigla===sigla)){toast('⚠️ Partido já cadastrado');return;}
+    partidos.push(dados);
+  }
+  document.getElementById('ptSigla').disabled=false;
+  document.querySelector('#mPartido .m-title').textContent='🏛️ Cadastrar Partido';
+  document.querySelector('#mPartido .btn-p').textContent='🏛️ CADASTRAR PARTIDO';
+  persistirPartidos();fecharModal('mPartido');renderPartidos();
+  toast(`✅ Partido ${sigla} salvo!`);
 }
 function removerPartido(sigla){
   if(!confirm(`Remover ${sigla}?`))return;
@@ -2000,7 +2046,16 @@ function salvarColigacao(){
     vagas:parseInt(document.getElementById('colVagas')?.value)||0,
     obs:document.getElementById('colObs')?.value||''
   });
-  persistirPartidos();fecharModal('mColigacao');renderPartidos();toast(`✅ Coligação "${nome}" cadastrada!`);
+  if(_editandoColigacao>=0){
+    coligacoes[_editandoColigacao]={nome,legislatura:leg,partidos:checks,candidato:document.getElementById('colCandidato')?.value||'',vice:document.getElementById('colVice')?.value||'',vagas:parseInt(document.getElementById('colVagas')?.value)||0,obs:document.getElementById('colObs')?.value||''};
+    _editandoColigacao=-1;
+  } else {
+    coligacoes.push({nome,legislatura:leg,partidos:checks,candidato:document.getElementById('colCandidato')?.value||'',vice:document.getElementById('colVice')?.value||'',vagas:parseInt(document.getElementById('colVagas')?.value)||0,obs:document.getElementById('colObs')?.value||''});
+  }
+  document.getElementById('colNome').disabled=false;
+  document.querySelector('#mColigacao .m-title').textContent='🤝 Nova Coligação';
+  document.querySelector('#mColigacao .btn-p').textContent='🤝 CADASTRAR COLIGAÇÃO';
+  persistirPartidos();fecharModal('mColigacao');renderPartidos();toast(`✅ Coligação "${nome}" salva!`);
 }
 function removerColigacao(nome){
   if(!confirm(`Remover coligação "${nome}"?`))return;
