@@ -418,7 +418,7 @@ select.linp option{color:#0F172A;background:#fff;}
         <div><div class="ph-title">🏛️ Partidos & Coligações</div><div class="ph-sub">Cadastro por legislatura — partidos, composição e coligações eleitorais</div></div>
         <div style="display:flex;gap:8px;">
           <button class="btn-sm" style="background:var(--surface);border:1px solid var(--border);" onclick="abrirModal('mColigacao')">+ Nova Coligação</button>
-          <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="abrirModal('mPartido')">+ Novo Partido</button>
+          <button class="btn-sm" style="background:var(--navy2);color:#fff;" onclick="novoPartido()">+ Novo Partido</button>
         </div>
       </div>
       <div class="g2">
@@ -1969,6 +1969,20 @@ function renderPartidos(){
 
 let _editandoPartido=null;
 let _editandoColigacao=-1;
+
+function novoPartido(){
+  _editandoPartido=null;
+  document.getElementById('ptSigla').value='';
+  document.getElementById('ptSigla').disabled=false;
+  document.getElementById('ptNome').value='';
+  document.getElementById('ptNum').value='';
+  document.getElementById('ptCor').value='#0F2A4A';
+  document.getElementById('ptEspectro').value='Centro';
+  document.getElementById('ptObs').value='';
+  document.querySelector('#mPartido .m-title').textContent='🏛️ Novo Partido';
+  document.querySelector('#mPartido .btn-p').textContent='💾 SALVAR PARTIDO';
+  abrirModal('mPartido');
+}
 
 function editarPartido(sigla){
   const p=partidos.find(x=>x.sigla===sigla);if(!p)return;
